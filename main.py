@@ -62,7 +62,7 @@ if torch.cuda.device_count() > 1:
     opt.bs = opt.bs * torch.cuda.device_count()
 
 print('Total batch size: %d' % opt.bs)
-dataloaders = dataset.get_dataloaders(opt)
+dataloaders = dataset.get_datasets(opt)
 if not opt.evaluate:
     opt.n_classes = dataloaders['training'][0].dataset.class_embed.shape[0]
 else:

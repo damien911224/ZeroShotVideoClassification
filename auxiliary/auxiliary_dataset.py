@@ -5,31 +5,44 @@ import cv2, torch
 from torch.utils.data import Dataset
 from auxiliary.transforms import get_transform
 from scipy.spatial.distance import cdist
+import json
+import glob
 
 
 def get_ucf101():
-    folder = '/workplace/UCF101/videos/'
+    folder = '/mnt/hdd1/UCF101/videos'
     fnames, labels = [], []
-    for label in sorted(os.listdir(str(folder))):
-        for fname in os.listdir(os.path.join(str(folder), label)):
-            fnames.append(os.path.join(str(folder), label, fname))
-            labels.append(label)
+    paths = sorted(glob.glob(os.path.join(folder, "*")))
+    for path in paths:
+        # for fname in os.listdir(os.path.join(str(folder), label)):
+        fname = os.path.basename(path)
+        label = fname.split("_")[1]
+        fnames.append(path)
+        labels.append(label)
 
     classes = np.unique(labels)
     return fnames, labels, classes
 
 
 def get_hmdb():
-    folder = '/workplace/HMDB51/videos/'
+    root_folder = os.path.join("/mnt/hdd1/HMDB51")
+    with open(os.path.join(root_folder, "hmdb51.json"), "r") as fp:
+        gt_json = json.load(fp)
+    class_map = dict()
+    with open(os.path.join(root_folder, "hmdb51_classes.txt"), "r") as fp:
+        while True:
+            line = fp.readline().rstrip()
+            if not line:
+                break
+            name, idx = line.split(" ")
+            class_map[int(idx)] = name
+
     fnames, labels = [], []
-    for label in sorted(os.listdir(str(folder))):
-        dir = os.path.join(str(folder), label)
-        if not os.path.isdir(dir): continue
-        for fname in sorted(os.listdir(dir)):
-            if fname[-4:] != '.avi':
-                continue
-            fnames.append(os.path.join(str(folder), label, fname))
-            labels.append(label.replace('_', ' '))
+    paths = sorted(glob.glob(os.path.join(root_folder, "videos", "*")))
+    for fname in paths:
+        fnames.append(fname)
+        label = class_map[gt_json[os.path.basename(fname).split(".")[0]]]
+        labels.append(label.replace('_', ' '))
 
     fnames, labels = np.array(fnames), np.array(labels)
     classes = np.unique(labels)
@@ -41,21 +54,22 @@ This function is ad-hoc to my personal format of kinetics.
 You need to adjust it to your data format.
 '''
 def get_kinetics(dataset=''):
-    sourcepath = '/workplace/kinetics/'
+    sourcepath = '/mnt/hdd1/Kinetics'
     n_classes = '700' if '700' in dataset else '400'
-    with open('./assets/kinetics%s.txt' % n_classes, 'r') as f:
-        data = [r[:-1].split(',') for r in f.readlines()]
+    with open(os.path.join(sourcepath, "Kinetics-{}".format(n_classes), "train.csv"), 'r') as f:
+        data = [r[:-1].split(',') for r in f.readlines()][1:]
+    with open(os.path.join(sourcepath, "Kinetics-{}".format(n_classes), "validate.csv"), 'r') as f:
+        data += [r[:-1].split(',') for r in f.readlines()][1:]
 
     fnames, labels = [], []
     for x in data:
         if len(x) < 2: continue
-        fnames.append(sourcepath + x[0])
-        labels.append(x[1][1:])
+        fnames.append(os.path.join(sourcepath, x[4], x[0], x[1] + ".mp4"))
+        labels.append(x[0])
 
     classes = sorted(np.unique(labels).tolist())
+
     return fnames, labels, classes
-
-
 """========================================================="""
 
 
