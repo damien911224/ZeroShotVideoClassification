@@ -1,5 +1,4 @@
 import os, numpy as np
-import simplejson as json
 import cv2
 import json, glob
 
