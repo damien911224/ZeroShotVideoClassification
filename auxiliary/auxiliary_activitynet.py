@@ -59,7 +59,9 @@ def load_clips_npy(fname, clip_len=16, n_clips=1, is_validation=False):
 
 def save_clips2npy(sourcepath, sample):
     identity = sample[0]
-    fname = os.path.basename(glob.glob(os.path.join(sourcepath, "videos", '{}.*'.format(identity)))[0])
+    fname = glob.glob(os.path.join(sourcepath, "training", '{}.*'.format(identity)))
+    fname += glob.glob(os.path.join(sourcepath, "validation", '{}.*'.format(identity)))
+    fname = os.path.basename(fname[0])
     annotations = sample[1]["annotations"]
     loc = [anno['segment'] for anno in annotations]
 
@@ -117,7 +119,8 @@ if __name__ == "__main__":
     savepath = os.path.join(sourcepath, 'clips')
     os.makedirs(savepath, exist_ok=True)
 
-    video_paths = glob.glob(os.path.join(sourcepath, "*.mp4"))
+    video_paths = glob.glob(os.path.join(sourcepath, "training", "*"))
+    video_paths += glob.glob(os.path.join(sourcepath, "validation", "*"))
     with open(os.path.join(savepath, 'annotations_all.csv'), 'w') as f:
         for path in tqdm(video_paths):
             fname = os.path.basename(path)
