@@ -8,12 +8,11 @@ It probably does not work with the defult version.
 So, you need to adjust it to your data format.
 '''
 def get_activitynet():
-    sourcepath = '/workplace/activitynet/'
-    sourcepath += 'clips_split/'
-    annotationfile = sourcepath + 'annotations_all.csv'
+    sourcepath = os.path.join('/mnt/hdd0/ActivityNet/v1.3', "clips")
+    annotationfile = os.path.join(sourcepath, 'annotations_all.csv')
     with open(annotationfile, 'r') as f:
         lines = [l[:-1].split(',') for l in f.readlines()]
-        fnames = [sourcepath + 'numpy/' + l[0] + '.npy' for l in lines]
+        fnames = [os.path.join(sourcepath, l[0] + '.npy') for l in lines]
         labels = [l[1] for l in lines]
 
     classes = np.unique(labels)
@@ -136,7 +135,7 @@ if __name__ == "__main__":
             if len(loc) == 0: continue
             # f.write('{}_0, {}\n'.format(fname[len('dataset') + 1:-4], labels[0]))
             for loc_idx in range(len(loc)):
-                f.write('{}_{}, {}\n'.format(fname.split(".")[0], loc_idx, labels[loc_idx]))
+                f.write('{}_{},{}\n'.format(fname.split(".")[0], loc_idx, labels[loc_idx]))
 
     # [save_clips2npy(sourcepath, sample) for sample in tqdm(data.items())]
     with Parallel(n_jobs=multiprocessing.cpu_count()) as par:
