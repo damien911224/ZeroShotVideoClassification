@@ -1,6 +1,7 @@
 import os, numpy as np
 import simplejson as json
 import cv2
+import json, glob
 
 '''
 This function is ad-hoc to my personal format of activity-net.
@@ -58,14 +59,18 @@ def load_clips_npy(fname, clip_len=16, n_clips=1, is_validation=False):
 
 
 def save_clips2npy(sourcepath, sample):
-    fname = sample['filename']
-    loc = [anno['temporal_location'] for anno in sample['annotations']]
+    identity = sample[0]
+    fname = os.path.basename(glob.glob(os.path.join(sourcepath, "videos", '{}.*'.format(identity)))[0])
+    annotations = sample[1]["annotations"]
+    loc = [anno['segment'] for anno in annotations]
 
-    if len(loc) == 0 or os.path.exists(savepath + 'videos/' + fname[len('dataset') + 1:-4] + '_%d.npy' % (len(loc)-1)):
+    if len(loc) == 0 or os.path.exists(os.path.join(savepath, fname.split(".")[0] + '_{}.npy'.format(len(loc) - 1))):
         return
 
     frames = []
-    capture = cv2.VideoCapture(sourcepath + 'videos/' + fname)
+    capture = cv2.VideoCapture(os.path.join(sourcepath, 'videos', fname))
+    fps = cv2.get(cv2.CAP_PROP_FPS)
+    loc = [(round(l[0] * fps), round(l[1] * fps)) for l in loc]
     count, loc_idx = 0, 0
     while count < loc[-1][1]:
         retained, frame = capture.read()
@@ -82,7 +87,7 @@ def save_clips2npy(sourcepath, sample):
         count += 1
         if count == loc[loc_idx][1]:
             frames = np.stack(frames).astype('uint8')
-            np.save(savepath + 'videos/' + fname[len('dataset') + 1:-4] + '_%d' % loc_idx, frames)
+            np.save(os.path.join(savepath, fname.split(".")[0] + '_{}.npy'.format(loc_idx)), frames)
             loc_idx += 1
             frames = []
     return
@@ -105,26 +110,27 @@ if __name__ == "__main__":
     from joblib import Parallel, delayed
     import multiprocessing
 
-    sourcepath = '/workplace/activitynet/'
-    annotationpath = sourcepath + 'annotation/'
-    with open(annotationpath+'annotation-v1.json') as f:
-        data = json.load(f)['videos']
+    sourcepath = '/mnt/hdd0/ActivityNet/v1.3'
+    annotationpath = os.path.join(sourcepath, "activity_net.v1.3.min.json")
+    with open(annotationpath) as f:
+        data = json.load(f)['database']
 
-    savepath = sourcepath + 'clips_split/'
-    os.makedirs(savepath)
-    datalist = list(data.values())
+    savepath = os.path.join(sourcepath, 'clips')
+    os.makedirs(savepath, exist_ok=True)
 
-    with open(savepath+'annotations_all.csv', 'w') as f:
-        for sample in tqdm(datalist):
-            fname = sample['filename']
-            annotations = sample['annotations']
-            loc = [anno['temporal_location'] for anno in annotations]
+    video_paths = glob.glob(os.path.join(sourcepath, "*.mp4"))
+    with open(os.path.join(savepath, 'annotations_all.csv'), 'w') as f:
+        for path in tqdm(video_paths):
+            fname = os.path.basename(path)
+            identity = os.path.basename(path).split(".")[0]
+            annotations = data[identity]["annotations"]
+            loc = [anno['segment'] for anno in annotations]
             labels = [anno['label'] for anno in annotations]
             if len(loc) == 0: continue
             # f.write('{}_0, {}\n'.format(fname[len('dataset') + 1:-4], labels[0]))
             for loc_idx in range(len(loc)):
-                f.write('{}_{}, {}\n'.format(fname[len('dataset')+1:-4], loc_idx, labels[loc_idx]))
+                f.write('{}_{}, {}\n'.format(fname.split(".")[0], loc_idx, labels[loc_idx]))
 
     # [save_clips(sourcepath, sample) for sample in tqdm(datalist)]
     with Parallel(n_jobs=multiprocessing.cpu_count()) as par:
-        par(delayed(save_clips2npy)(sourcepath, sample) for sample in tqdm(datalist))
+        par(delayed(save_clips2npy)(sourcepath, sample) for sample in tqdm(data.items()))

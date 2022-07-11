@@ -44,7 +44,7 @@ def get_all_datasets(opt):
     test_class_embedding2 = classes2embedding('hmdb51', test_classes2, wv_model)
     print('HMDB51: total number of videos {}, classes {}'.format(len(test_fnames2), len(test_classes2)))
 
-    # TRAINING ON ActivityNet
+    # TESTING ON ActivityNet
     test_fnames3, test_labels3, test_classes3 = get_activitynet()
     test_class_embedding3 = classes2embedding('activitynet', test_classes3, wv_model)
     print('ACTIVITYNET: total number of videos {}, classes {}'.format(len(test_fnames3), len(test_classes3)))
@@ -79,10 +79,10 @@ def get_all_datasets(opt):
     val_dataset2  = VideoDataset(test_fnames2, test_labels2, test_class_embedding2, test_classes2, 'hmdb51',
                                  clip_len=opt.clip_len, n_clips=n_clips, crop_size=opt.size, is_validation=True,
                                  evaluation_only=opt.evaluate)
-    val_dataset3  = VideoDataset(test_fnames3, test_labels3, test_class_embedding3, test_classes3, 'ActivityNet',
-                 load_clips_npy, clip_len=opt.clip_len, n_clips=n_clips,
-                                 crop_size=opt.size, is_validation=True,
-                                 evaluation_only=opt.evaluate)
+    val_dataset3 = VideoDataset(test_fnames3, test_labels3, test_class_embedding3, test_classes3, 'ActivityNet',
+                                load_clips=load_clips_npy, clip_len=opt.clip_len, n_clips=n_clips,
+                                crop_size=opt.size, is_validation=True,
+                                evaluation_only=opt.evaluate)
 
     if opt.evaluate:
         return {'training': [], 'testing': [val_dataset3, val_dataset, val_dataset2]}
