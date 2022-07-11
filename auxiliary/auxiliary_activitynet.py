@@ -62,7 +62,7 @@ def save_clips2npy(sourcepath, sample):
     fname = glob.glob(os.path.join(sourcepath, "training", '{}.*'.format(identity)))
     fname += glob.glob(os.path.join(sourcepath, "validation", '{}.*'.format(identity)))
     try:
-        fname = os.path.basename(fname[0])
+        fname = fname[0]
     except IndexError:
         return
     annotations = sample[1]["annotations"]
@@ -70,12 +70,11 @@ def save_clips2npy(sourcepath, sample):
     subset = sample[1]["subset"]
 
     if subset == "testing" or \
-            os.path.exists(os.path.join(savepath, fname.split(".")[0] + '_{}.npy'.format(len(loc) - 1))):
+            os.path.exists(os.path.join(savepath, os.path.basename(fname).split(".")[0] + '_{}.npy'.format(len(loc) - 1))):
         return
 
     frames = []
-    capture = cv2.VideoCapture(os.path.join(sourcepath, 'videos', fname))
-    print(os.path.join(sourcepath, 'videos', fname))
+    capture = cv2.VideoCapture(fname)
     fps = capture.get(cv2.CAP_PROP_FPS)
     loc = [(round(l[0] * fps), round(l[1] * fps)) for l in loc]
     count, loc_idx = 0, 0
@@ -94,7 +93,7 @@ def save_clips2npy(sourcepath, sample):
         count += 1
         if count == loc[loc_idx][1]:
             frames = np.stack(frames).astype('uint8')
-            np.save(os.path.join(savepath, fname.split(".")[0] + '_{}.npy'.format(loc_idx)), frames)
+            np.save(os.path.join(savepath, os.path.basename(fname).split(".")[0] + '_{}.npy'.format(loc_idx)), frames)
             loc_idx += 1
             frames = []
     return
