@@ -91,7 +91,6 @@ def save_clips2npy(sourcepath, sample):
         frame = (255 * frame).astype('uint8')
         frames.append(frame)
         count += 1
-        print(count, loc[loc_idx][1])
         if count == loc[loc_idx][1]:
             frames = np.stack(frames).astype('uint8')
             np.save(os.path.join(savepath, fname.split(".")[0] + '_{}.npy'.format(loc_idx)), frames)
@@ -140,6 +139,6 @@ if __name__ == "__main__":
             for loc_idx in range(len(loc)):
                 f.write('{}_{}, {}\n'.format(fname.split(".")[0], loc_idx, labels[loc_idx]))
 
-    # [save_clips(sourcepath, sample) for sample in tqdm(datalist)]
-    with Parallel(n_jobs=multiprocessing.cpu_count()) as par:
-        par(delayed(save_clips2npy)(sourcepath, sample) for sample in tqdm(data.items()))
+    [save_clips2npy(sourcepath, sample) for sample in tqdm(data.items())]
+    # with Parallel(n_jobs=multiprocessing.cpu_count()) as par:
+    #     par(delayed(save_clips2npy)(sourcepath, sample) for sample in tqdm(data.items()))
