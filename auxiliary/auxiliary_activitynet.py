@@ -76,6 +76,7 @@ def save_clips2npy(sourcepath, sample):
     frames = []
     capture = cv2.VideoCapture(os.path.join(sourcepath, 'videos', fname))
     fps = capture.get(cv2.CAP_PROP_FPS)
+    print(fps)
     loc = [(round(l[0] * fps), round(l[1] * fps)) for l in loc]
     print(loc)
     count, loc_idx = 0, 0
