@@ -61,7 +61,10 @@ def save_clips2npy(sourcepath, sample):
     identity = sample[0]
     fname = glob.glob(os.path.join(sourcepath, "training", '{}.*'.format(identity)))
     fname += glob.glob(os.path.join(sourcepath, "validation", '{}.*'.format(identity)))
-    fname = os.path.basename(fname[0])
+    try:
+        fname = os.path.basename(fname[0])
+    except IndexError:
+        return
     annotations = sample[1]["annotations"]
     loc = [anno['segment'] for anno in annotations]
     subset = sample[1]["subset"]
