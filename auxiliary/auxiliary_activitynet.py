@@ -91,10 +91,10 @@ def save_clips2npy(sourcepath, sample):
         frame = (255 * frame).astype('uint8')
         frames.append(frame)
         count += 1
+        print(os.path.join(savepath, fname.split(".")[0] + '_{}.npy'.format(loc_idx)))
         if count == loc[loc_idx][1]:
             frames = np.stack(frames).astype('uint8')
             np.save(os.path.join(savepath, fname.split(".")[0] + '_{}.npy'.format(loc_idx)), frames)
-            print(os.path.join(savepath, fname.split(".")[0] + '_{}.npy'.format(loc_idx)))
             loc_idx += 1
             frames = []
     return
