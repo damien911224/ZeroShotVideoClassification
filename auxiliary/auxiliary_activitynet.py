@@ -138,6 +138,6 @@ if __name__ == "__main__":
             for loc_idx in range(len(loc)):
                 f.write('{}_{}, {}\n'.format(fname.split(".")[0], loc_idx, labels[loc_idx]))
 
-    [save_clips2npy(sourcepath, sample) for sample in tqdm(data.items())]
-    # with Parallel(n_jobs=multiprocessing.cpu_count()) as par:
-    #     par(delayed(save_clips2npy)(sourcepath, sample) for sample in tqdm(data.items()))
+    # [save_clips2npy(sourcepath, sample) for sample in tqdm(data.items())]
+    with Parallel(n_jobs=multiprocessing.cpu_count()) as par:
+        par(delayed(save_clips2npy)(sourcepath, sample) for sample in tqdm(data.items()))
