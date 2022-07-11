@@ -64,13 +64,15 @@ def save_clips2npy(sourcepath, sample):
     fname = os.path.basename(fname[0])
     annotations = sample[1]["annotations"]
     loc = [anno['segment'] for anno in annotations]
+    subset = sample[1]["subset"]
 
-    if len(loc) == 0 or os.path.exists(os.path.join(savepath, fname.split(".")[0] + '_{}.npy'.format(len(loc) - 1))):
+    if subset == "testing" or \
+            os.path.exists(os.path.join(savepath, fname.split(".")[0] + '_{}.npy'.format(len(loc) - 1))):
         return
 
     frames = []
     capture = cv2.VideoCapture(os.path.join(sourcepath, 'videos', fname))
-    fps = cv2.get(cv2.CAP_PROP_FPS)
+    fps = capture.get(cv2.CAP_PROP_FPS)
     loc = [(round(l[0] * fps), round(l[1] * fps)) for l in loc]
     count, loc_idx = 0, 0
     while count < loc[-1][1]:
