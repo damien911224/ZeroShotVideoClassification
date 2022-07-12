@@ -187,8 +187,9 @@ class Decoder(nn.Module):
         self.d_model = 256
         self.word2input_proj = nn.Linear(300, self.d_model)
         self.feature2input_proj = nn.Linear(512, self.d_model)
-        self.text_decoder = nn.TransformerDecoderLayer(d_model=self.d_model, dim_feedforward=self.d_model * 4,
+        decoder_layer = nn.TransformerDecoderLayer(d_model=self.d_model, dim_feedforward=self.d_model * 4,
                                                        nhead=8, dropout=0.1, activation="gelu")
+        self.text_decoder = nn.TransformerDecoder(decoder_layer, num_layers=6)
         self.output2word_proj = nn.Linear(self.d_model, 3000000)
 
     def forward(self, x):
@@ -207,6 +208,28 @@ class Decoder(nn.Module):
         x = F.normalize(x)
         return x
 
+    def decode(self, x):
+        y_input = torch.tensor([[SOS_token]], dtype=torch.long, device=device)
+
+        num_tokens = len(input_sequence[0])
+
+        for _ in range(max_length):
+            # Get source mask
+            tgt_mask = model.get_tgt_mask(y_input.size(1)).to(device)
+
+            pred = model(input_sequence, y_input, tgt_mask)
+
+            next_item = pred.topk(1)[1].view(-1)[-1].item()  # num with highest probability
+            next_item = torch.tensor([[next_item]], device=device)
+
+            # Concatenate previous input with predicted best word
+            y_input = torch.cat((y_input, next_item), dim=1)
+
+            # Stop if model predicts end of sentence
+            if next_item.view(-1).item() == EOS_token:
+                break
+
+        return y_input.view(-1).tolist()
 
 """=================================================================================================================="""
 
