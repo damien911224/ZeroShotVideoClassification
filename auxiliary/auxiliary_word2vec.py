@@ -36,7 +36,7 @@ def load_word2vec():
         wv_model.init_sims(replace=True)
         wv_model.save('./assets/GoogleNews')
     print(len(wv_model))
-    print(wv_model.vocab.shape)
+    print(wv_model.index_to_key(0))
     exit()
     return wv_model
 
