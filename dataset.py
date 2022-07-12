@@ -1,7 +1,7 @@
 import numpy as np, cv2, torch
 from auxiliary.auxiliary_word2vec import classes2embedding, load_word2vec
 from auxiliary.auxiliary_dataset import VideoDataset, filter_samples, filter_classes, filter_overlapping_classes, \
-                                        get_ucf101, get_hmdb, get_kinetics
+                                        get_ucf101, get_hmdb, get_kinetics, load_frames_tsn
 
 from auxiliary.auxiliary_activitynet import get_activitynet, load_clips_npy
 from auxiliary.auxiliary_stillimages import ImageDataset, get_sun
@@ -124,6 +124,7 @@ def get_both_datasets(opt):
         # Initialize datasets
         train_dataset = VideoDataset(train_fnames, train_labels, train_class_embedding, train_classes,
                                      'kinetics%d' % len(train_classes), clip_len=opt.clip_len, n_clips=opt.n_clips,
+                                     load_clips=load_frames_tsn,
                                      crop_size=opt.size, is_validation=False)
 
     n_clips = opt.n_clips if not opt.evaluate else max(5*5, opt.n_clips)
