@@ -47,7 +47,7 @@ parser.add_argument('--network', default='r2plus1d_18', type=str,
 ### Paths to datasets and storage folder
 parser.add_argument('--save_path',    default='./experiments', type=str, help='Where to save log and checkpoint.')
 parser.add_argument('--weights',      default=None, type=str, help='Weights to load from a previously run.')
-parser.add_argument('--progressbar', action='store_true', default=False,   help='Show progress bar during train/test.')
+parser.add_argument('--progressbar', action='store_true', default=True,   help='Show progress bar during train/test.')
 parser.add_argument('--evaluate', action='store_true', default=False,   help='Evaluation only using 25 clips per video')
 
 ##### Read in parameters
