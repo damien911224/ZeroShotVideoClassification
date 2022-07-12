@@ -114,7 +114,8 @@ def filter_classes(opt, fnames, labels, classes, class_embedding):
 
 def filter_overlapping_classes(fnames, labels, classes, class_embedding, ucf_class_embedding, class_overlap):
     class_distances = cdist(class_embedding, ucf_class_embedding, 'cosine').min(1)
-    sel = class_distances >= class_overlap
+    # sel = class_distances >= class_overlap
+    sel = class_distances > class_overlap
 
     classes = np.array(classes)[sel].tolist()
     class_embedding = class_embedding[sel]
