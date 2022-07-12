@@ -186,14 +186,19 @@ class Decoder(nn.Module):
 
         self.d_model = 256
         self.word2input_proj = nn.Linear(300, self.d_model)
+        self.feature2input_proj = nn.Linear(512, self.d_model)
         self.text_decoder = nn.TransformerDecoderLayer(d_model=self.d_model, dim_feedforward=self.d_model * 4,
                                                        nhead=8, dropout=0.1, activation="gelu")
-        self.output2word_proj = nn.Linear(self.d_model, )
+        self.output2word_proj = nn.Linear(self.d_model, 3000000)
 
     def forward(self, x):
         bs, nc, ch, l, h, w = x.shape
         x = x.reshape(bs*nc, ch, l, h, w)
         x, f = self.model(x)
+
+        f = self.feature2input_proj(f)
+
+
         x = x.view(bs*nc, -1)
         x = x.reshape(bs, nc, -1)
         x = torch.mean(x, 1)
