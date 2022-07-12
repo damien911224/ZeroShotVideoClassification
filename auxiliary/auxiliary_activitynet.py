@@ -120,7 +120,7 @@ if __name__ == "__main__":
     with open(annotationpath) as f:
         data = json.load(f)['database']
 
-    savepath = os.path.join(sourcepath, 'clips')
+    savepath = os.path.join("/mnt/hdd1/ActivityNet/v1.3", 'clips')
     os.makedirs(savepath, exist_ok=True)
 
     video_paths = glob.glob(os.path.join(sourcepath, "training", "*"))
