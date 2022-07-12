@@ -104,7 +104,7 @@ def one_class2embed_kinetics(name, wv_model):
         'pretending to be a statue': ['pretend', 'statue'],
         'throwing ball (not baseball or American football)': ['throw',  'ball'],
         'curling (sport)': ['curling', 'sport'],
-        "massaging person's head": ["massage", "head"]
+        "massaging person's head": ["massage", "person", "head"]
     }
     if name in change:
         name_vec = change[name]
