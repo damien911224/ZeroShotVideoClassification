@@ -31,7 +31,6 @@ def get_ucf101():
         labels.append(label)
 
     classes = np.unique(labels)
-    print(classes)
     return fnames, labels, classes
 
 
@@ -57,7 +56,6 @@ def get_hmdb():
 
     fnames, labels = np.array(fnames), np.array(labels)
     classes = np.unique(labels)
-    print(classes)
     return fnames, labels, classes
 
 
