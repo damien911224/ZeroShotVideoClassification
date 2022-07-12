@@ -53,7 +53,7 @@ def get_hmdb():
     paths = sorted(glob.glob(os.path.join(root_folder, "videos", "*")))
     for fname in paths:
         fnames.append(fname)
-        label = class_map[gt_json["database"][os.path.basename(fname).split(".")[0]]]
+        label = class_map[gt_json["database"][os.path.basename(fname).split(".")[0]]["annotations"]]
         labels.append(label.replace('_', ' '))
 
     fnames, labels = np.array(fnames), np.array(labels)
