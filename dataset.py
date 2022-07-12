@@ -16,7 +16,7 @@ def get_datasets(opt):
         get_datasets = get_image_datasets(opt)
 
     # datasets = get_datasets(opt)
-    datasets = get_all_datasets(opt)
+    datasets = get_both_datasets(opt)
 
     # Move datasets to dataloaders.
     dataloaders = {}

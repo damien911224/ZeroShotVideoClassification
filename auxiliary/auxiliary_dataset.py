@@ -53,12 +53,12 @@ def get_hmdb():
 This function is ad-hoc to my personal format of kinetics.
 You need to adjust it to your data format.
 '''
-def get_kinetics(dataset=''):
+def get_kinetics(dataset='k700'):
     sourcepath = '/mnt/hdd1/Kinetics'
     n_classes = '700' if '700' in dataset else '400'
-    with open(os.path.join(sourcepath, "Kinetics-{}".format(n_classes), "train.csv"), 'r') as f:
+    with open(os.path.join(sourcepath, "Kinetics-{}".format(n_classes), "annotations", "train.csv"), 'r') as f:
         data = [r[:-1].split(',') for r in f.readlines()][1:]
-    with open(os.path.join(sourcepath, "Kinetics-{}".format(n_classes), "validate.csv"), 'r') as f:
+    with open(os.path.join(sourcepath, "Kinetics-{}".format(n_classes), "annotations", "val.csv"), 'r') as f:
         data += [r[:-1].split(',') for r in f.readlines()][1:]
 
     fnames, labels = [], []
