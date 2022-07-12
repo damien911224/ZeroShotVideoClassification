@@ -19,13 +19,14 @@ def get_ucf101():
         label = fname.split("_")[1]
         words = [[label[0]]]
 
-        for c in label[1:]:
-            if words[-1][-1].islower() and c.isupper():
-                words.append(list(c))
-            else:
-                words[-1].append(c)
+        if label not in ["TaiChi", "YoYo"]:
+            for c in label[1:]:
+                if words[-1][-1].islower() and c.isupper():
+                    words.append(list(c))
+                else:
+                    words[-1].append(c)
 
-        label = "_".join([''.join(word) for word in words])
+            label = " ".join([''.join(word) for word in words])
         fnames.append(path)
         labels.append(label)
 
