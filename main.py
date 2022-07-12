@@ -29,7 +29,7 @@ parser.add_argument('--class_total',  default=-1,  type=int, help='For debugging
 parser.add_argument('--clip_len',     default=16,   type=int, help='Number of frames of each sample clip')
 parser.add_argument('--n_clips',     default=1,   type=int, help='Number of clips per video')
 
-parser.add_argument('--class_overlap', default=0.051,  type=float, help='tau. see Eq.3 in main paper')
+parser.add_argument('--class_overlap', default=0.040,  type=float, help='tau. see Eq.3 in main paper')
 
 ### General Training Parameters
 parser.add_argument('--lr',           default=1e-3, type=float, help='Learning Rate for network parameters.')
