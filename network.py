@@ -161,3 +161,47 @@ class C3D(nn.Module):
         return h
 
 
+"""=================================================================================================================="""
+
+
+class Decoder(nn.Module):
+    """
+    Container for ResNet50 s.t. it can be used for metric learning.
+    The Network has been broken down to allow for higher modularity, if one wishes
+    to target specific layers/blocks directly.
+    """
+
+    def __init__(self, network, fixconvs=False, nopretrained=False):
+        super(Decoder, self).__init__()
+        self.model = network(pretrained=nopretrained)
+        if fixconvs:
+            for param in self.model.parameters():
+                param.requires_grad = False
+
+        self.regressor = nn.Linear(self.model.fc.in_features, 300)
+        self.dropout = torch.nn.Dropout(p=0.05)
+        self.model = torch.nn.Sequential(*(list(self.model.children())[:-1]))
+        # model.fc.weight.requires_grad = True
+        # model.fc.bias.requires_grad = True
+
+        self.d_model = 256
+        self.word2input_proj = nn.Linear(300, self.d_model)
+        self.text_decoder = nn.TransformerDecoderLayer(d_model=self.d_model, dim_feedforward=self.d_model * 4,
+                                                       nhead=8, dropout=0.1, activation="gelu")
+        self.output2word_proj = nn.Linear(self.d_model, )
+
+    def forward(self, x):
+        bs, nc, ch, l, h, w = x.shape
+        x = x.reshape(bs*nc, ch, l, h, w)
+        x, f = self.model(x)
+        x = x.view(bs*nc, -1)
+        x = x.reshape(bs, nc, -1)
+        x = torch.mean(x, 1)
+        x = self.dropout(x)
+        x = self.regressor(x)
+        x = F.normalize(x)
+        return x
+
+
+"""=================================================================================================================="""
+

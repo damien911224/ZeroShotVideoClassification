@@ -35,6 +35,8 @@ def load_word2vec():
         wv_model = Word2Vec.load_word2vec_format('./assets/GoogleNews-vectors-negative300.bin', binary=True)
         wv_model.init_sims(replace=True)
         wv_model.save('./assets/GoogleNews')
+    print(wv_model.keys())
+    exit()
     return wv_model
 
 
