@@ -67,7 +67,8 @@ You need to adjust it to your data format.
 '''
 def get_kinetics(dataset='k700'):
     sourcepath = '/mnt/hdd1/Kinetics'
-    n_classes = '700' if '700' in dataset else '400'
+    # n_classes = '700' if '700' in dataset else '400'
+    n_classes = '700'
     with open(os.path.join(sourcepath, "Kinetics-{}".format(n_classes), "annotations", "train.csv"), 'r') as f:
         data = [r[:-1].split(',') for r in f.readlines()][1:]
     with open(os.path.join(sourcepath, "Kinetics-{}".format(n_classes), "annotations", "val.csv"), 'r') as f:
