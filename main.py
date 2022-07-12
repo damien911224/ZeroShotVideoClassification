@@ -21,7 +21,7 @@ Style.RESET_ALL
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--split',        default=-1,   type=int, help='Train/test classes split. Use -1 for kinetics2ucf')
-parser.add_argument('--dataset',      default='ucf101',   type=str, help='Dataset: [kinetics2oboth, kinetics2others, sun2both]')
+parser.add_argument('--dataset',      default='kinetics2oboth',   type=str, help='Dataset: [kinetics2oboth, kinetics2others, sun2both]')
 
 parser.add_argument('--train_samples',  default=-1,  type=int, help='Reduce number of train samples to the given value')
 parser.add_argument('--class_total',  default=-1,  type=int, help='For debugging only. Reduce the total number of classes')
