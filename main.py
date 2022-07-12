@@ -45,7 +45,7 @@ parser.add_argument('--network', default='r2plus1d_18', type=str,
                     help='Network backend choice: [resnet18, r2plus1d_18, r3d_18, c3d].')
 
 ### Paths to datasets and storage folder
-parser.add_argument('--save_path',    default='/workplace/debug/', type=str, help='Where to save log and checkpoint.')
+parser.add_argument('--save_path',    default='./experiments', type=str, help='Where to save log and checkpoint.')
 parser.add_argument('--weights',      default=None, type=str, help='Weights to load from a previously run.')
 parser.add_argument('--progressbar', action='store_true', default=False,   help='Show progress bar during train/test.')
 parser.add_argument('--evaluate', action='store_true', default=False,   help='Evaluation only using 25 clips per video')
