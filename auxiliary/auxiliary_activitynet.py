@@ -8,7 +8,7 @@ It probably does not work with the defult version.
 So, you need to adjust it to your data format.
 '''
 def get_activitynet():
-    sourcepath = os.path.join('/mnt/hdd0/ActivityNet/v1.3', "clips")
+    sourcepath = os.path.join('/mnt/hdd1/ActivityNet/v1.3', "clips")
     annotationfile = os.path.join(sourcepath, 'annotations_all.csv')
     with open(annotationfile, 'r') as f:
         lines = [l[:-1].split(',') for l in f.readlines()]
