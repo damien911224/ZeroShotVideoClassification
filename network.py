@@ -2,7 +2,7 @@
 import torch
 import torch.nn as nn
 # import torchvision.models as models
-import .resnet as models
+import resnet as models
 import torch.nn.functional as F
 
 """=================================================================================================================="""

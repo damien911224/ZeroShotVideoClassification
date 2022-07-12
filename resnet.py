@@ -3,8 +3,8 @@ from typing import Tuple, Optional, Callable, List, Sequence, Type, Any, Union
 import torch.nn as nn
 from torch import Tensor
 
-from ..._internally_replaced_utils import load_state_dict_from_url
-from ...utils import _log_api_usage_once
+from torchvision._internally_replaced_utils import load_state_dict_from_url
+from torchvision.utils import _log_api_usage_once
 
 __all__ = ["r3d_18", "mc3_18", "r2plus1d_18"]
 
