@@ -1,7 +1,8 @@
 ############################# LIBRARIES ######################################
 import torch
 import torch.nn as nn
-import torchvision.models as models
+# import torchvision.models as models
+import resnet as models
 import torch.nn.functional as F
 
 """=================================================================================================================="""
@@ -12,9 +13,11 @@ def get_network(opt):
     Selection function for available networks.
     """
     if 'r3d' in opt.network:
-        network = models.video.r3d_18
+        # network = models.video.r3d_18
+        network = models.r3d_18
     elif '2plus1d' in opt.network:
-        network = models.video.r2plus1d_18
+        # network = models.video.r2plus1d_18
+        network = models.r2plus1d_18
     elif 'c3d' in opt.network:
         return C3D(fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
     else:
@@ -48,7 +51,7 @@ class ResNet18(nn.Module):
     def forward(self, x):
         bs, nc, ch, l, h, w = x.shape
         x = x.reshape(bs*nc, ch, l, h, w)
-        x = self.model(x)
+        x, f = self.model(x)
         x = x.view(bs*nc, -1)
         x = x.reshape(bs, nc, -1)
         x = torch.mean(x, 1)
