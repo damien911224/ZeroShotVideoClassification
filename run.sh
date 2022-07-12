@@ -14,5 +14,5 @@ PRE="--nopretrained"
 WEIGHTS="none"
 
 
-SAVEPATH="/workplace/"
+SAVEPATH="./experiments"
 python3 main.py --dataset ${DATA} --save_path ${SAVEPATH} --n_epochs ${EPOCHS} --lr ${LR} --weights ${WEIGHTS} ${PRE}
