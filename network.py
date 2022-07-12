@@ -105,7 +105,7 @@ class C3D(nn.Module):
         self.softmax = nn.Softmax()
 
         if nopretrained:
-            self.load_state_dict(torch.load('/workplace/c3d.pickle'))
+            self.load_state_dict(torch.load('./assets/c3d.pickle'))
 
         self.regressor = nn.Linear(4096, 300)
 
