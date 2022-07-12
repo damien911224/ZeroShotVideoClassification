@@ -21,6 +21,7 @@ def classes2embedding(dataset_name, class_name_inputs, wv_model):
     for class_name in class_name_inputs:
         print(class_name)
         a = one_class2embed(class_name, wv_model)[0]
+    exit()
     embedding = [one_class2embed(class_name, wv_model)[0] for class_name in class_name_inputs]
     embedding = np.stack(embedding)
     # np.savez('/workplace/data/motion_efs/home/biagib/ZeroShot/W2V_embedding/'+dataset_name,
