@@ -77,7 +77,7 @@ def get_kinetics(dataset='k700'):
     fnames, labels = [], []
     for x in data:
         if len(x) < 2: continue
-        fnames.append(os.path.join(sourcepath, x[4], x[0], x[1] + ".mp4"))
+        fnames.append(os.path.join(sourcepath, "Kinetics-{}".format(n_classes), x[4], x[0], x[1] + ".mp4"))
         labels.append(x[0])
 
     classes = sorted(np.unique(labels).tolist())
