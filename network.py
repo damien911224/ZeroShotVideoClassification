@@ -4,6 +4,7 @@ import torch.nn as nn
 # import torchvision.models as models
 import resnet as models
 import torch.nn.functional as F
+from gensim.models import KeyedVectors as Word2Vec
 
 """=================================================================================================================="""
 
@@ -164,15 +165,15 @@ class C3D(nn.Module):
 """=================================================================================================================="""
 
 
-class Decoder(nn.Module):
+class Model(nn.Module):
     """
     Container for ResNet50 s.t. it can be used for metric learning.
     The Network has been broken down to allow for higher modularity, if one wishes
     to target specific layers/blocks directly.
     """
 
-    def __init__(self, network, fixconvs=False, nopretrained=False):
-        super(Decoder, self).__init__()
+    def __init__(self, network, decoder, encoder, fixconvs=False, nopretrained=False):
+        super(Model, self).__init__()
         self.model = network(pretrained=nopretrained)
         if fixconvs:
             for param in self.model.parameters():
@@ -188,7 +189,7 @@ class Decoder(nn.Module):
         self.word2input_proj = nn.Linear(300, self.d_model)
         self.feature2input_proj = nn.Linear(512, self.d_model)
         decoder_layer = nn.TransformerDecoderLayer(d_model=self.d_model, dim_feedforward=self.d_model * 4,
-                                                       nhead=8, dropout=0.1, activation="gelu")
+                                                   nhead=8, dropout=0.1, activation="gelu")
         self.text_decoder = nn.TransformerDecoder(decoder_layer, num_layers=6)
         self.output2word_proj = nn.Linear(self.d_model, 3000000)
 
@@ -208,28 +209,84 @@ class Decoder(nn.Module):
         x = F.normalize(x)
         return x
 
-    def decode(self, x):
-        y_input = torch.tensor([[SOS_token]], dtype=torch.long, device=device)
 
-        num_tokens = len(input_sequence[0])
+class Decoder(nn.Module):
 
-        for _ in range(max_length):
-            # Get source mask
-            tgt_mask = model.get_tgt_mask(y_input.size(1)).to(device)
+    def __init__(self):
+        super(Decoder, self).__init__()
 
-            pred = model(input_sequence, y_input, tgt_mask)
+        self.embeddings = Word2Vec.load('./assets/GoogleNews', mmap='r')
 
-            next_item = pred.topk(1)[1].view(-1)[-1].item()  # num with highest probability
-            next_item = torch.tensor([[next_item]], device=device)
+        self.word2input_proj = nn.Linear(300, self.d_model)
+        self.feature2input_proj = nn.Linear(512, self.d_model)
+        decoder_layer = nn.TransformerDecoderLayer(d_model=self.d_model, dim_feedforward=self.d_model * 4,
+                                                   nhead=8, dropout=0.1, activation="gelu")
+        self.decoder = nn.TransformerDecoder(decoder_layer, num_layers=6)
+        self.output2word_proj = nn.Linear(self.d_model, len(self.embeddings))
 
-            # Concatenate previous input with predicted best word
-            y_input = torch.cat((y_input, next_item), dim=1)
+    def step(self, embs, feats):
+        """
+        RelGAN step forward
+        :param inp: [batch_size]
+        :param hidden: memory size
+        :return: pred, hidden, next_token, next_token_onehot, next_o
+            - pred: batch_size * vocab_size, use for adversarial training backward
+            - hidden: next hidden
+            - next_token: [batch_size], next sentence token
+            - next_token_onehot: batch_size * vocab_size, not used yet
+            - next_o: batch_size * vocab_size, not used yet
+        """
+        out = self.decoder(embs, feats)
+        out = self.output2word_proj(out)
+        gumbel_t = self.add_gumbel(out)
+        next_token = torch.argmax(gumbel_t, dim=1).detach()
 
-            # Stop if model predicts end of sentence
-            if next_item.view(-1).item() == EOS_token:
-                break
+        pred = F.softmax(gumbel_t, dim=-1)  # batch_size * vocab_size
 
-        return y_input.view(-1).tolist()
+        return pred, next_token
+
+    def sample(self, feats, start_letter="\s"):
+        """
+        Sample from RelGAN Generator
+        - one_hot: if return pred of RelGAN, used for adversarial training
+        :return:
+            - all_preds: batch_size * seq_len * vocab_size, only use for a batch
+            - samples: all samples
+        """
+        num_batch = feats.size[0]
+        samples = torch.zeros(num_batch, self.max_seq_len).long()
+        all_preds = torch.zeros(batch_size, self.max_seq_len, self.vocab_size)
+        all_preds = all_preds.cuda()
+
+        for b in range(num_batch):
+            hidden = self.init_hidden(batch_size)
+            inp = torch.LongTensor([start_letter] * batch_size)
+            if self.gpu:
+                inp = inp.cuda()
+
+            for i in range(self.max_seq_len):
+                pred, next_token = self.step(inp, hidden)
+                samples[b * batch_size:(b + 1) * batch_size, i] = next_token
+                if one_hot:
+                    all_preds[:, i] = pred
+                inp = next_token
+        samples = samples[:num_samples]  # num_samples * seq_len
+
+        if one_hot:
+            return all_preds  # batch_size * seq_len * vocab_size
+        return samples
+
+    @staticmethod
+    def add_gumbel(o_t, eps=1e-10, gpu=cfg.CUDA):
+        """Add o_t by a vector sampled from Gumbel(0,1)"""
+        u = torch.zeros(o_t.size())
+        if gpu:
+            u = u.cuda()
+
+        u.uniform_(0, 1)
+        g_t = -torch.log(-torch.log(u + eps) + eps)
+        gumbel_t = o_t + g_t
+        return gumbel_t
 
 """=================================================================================================================="""
 
