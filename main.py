@@ -156,11 +156,11 @@ def train_one_epoch(train_dataloader, model, optimizer, criterion, opt, epoch):
     for i, (X, l, Z, _) in enumerate(data_iterator):
         not_broken = l != -1
         X, l, Z = X[not_broken], l[not_broken], Z[not_broken]
-        if i % 20000 == 0:
-            # Save clip for debugging
-            clip = X[0].transpose(0, 1).reshape(3, -1, 112, 112)
-            label = class_names[int(l[0])].replace('/', '_')
-            batch2gif(clip, int(l[0]), opt.savename + '/samples/samples_train_epoch%d_iter%d_%s' % (epoch, i, label))
+        # if i % 20000 == 0:
+        #     # Save clip for debugging
+        #     clip = X[0].transpose(0, 1).reshape(3, -1, 112, 112)
+        #     label = class_names[int(l[0])].replace('/', '_')
+        #     batch2gif(clip, int(l[0]), opt.savename + '/samples/samples_train_epoch%d_iter%d_%s' % (epoch, i, label))
         batch_times.append(time.time() - tt_batch)
         s = list(X.shape)
 
