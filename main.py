@@ -13,7 +13,7 @@ from scipy.spatial.distance import cdist
 from sklearn.metrics import accuracy_score
 
 from colorama import Fore, Style
-from torch.cuda.amp import GradScaler
+from torch.cuda.amp import GradScaler, autocast
 
 Style.RESET_ALL
 
