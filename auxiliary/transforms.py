@@ -47,10 +47,10 @@ def get_transform(is_validation, crop_size=112):
     normalize = Normalize(mean=[0.43216, 0.394666, 0.37645],
                           std=[0.22803, 0.22145, 0.216989])
     transform = [
+        crop,
         ToFloatTensorInZeroOne(),
-        Resize(size),
-        normalize,
-        crop]
+        # Resize(size),
+        normalize]
     if not is_validation:
         transform += [RandomHorizontalFlip()]
     return transforms.Compose(transform)
