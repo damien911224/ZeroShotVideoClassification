@@ -277,11 +277,9 @@ class Decoder(nn.Module):
         return samples
 
     @staticmethod
-    def add_gumbel(o_t, eps=1e-10, gpu=cfg.CUDA):
+    def add_gumbel(o_t, eps=1e-10):
         """Add o_t by a vector sampled from Gumbel(0,1)"""
-        u = torch.zeros(o_t.size())
-        if gpu:
-            u = u.cuda()
+        u = torch.zeros(o_t.size()).cuda()
 
         u.uniform_(0, 1)
         g_t = -torch.log(-torch.log(u + eps) + eps)
