@@ -41,7 +41,7 @@ parser.add_argument('--fixconvs', action='store_true', default=False,   help='Fr
 parser.add_argument('--nopretrained', action='store_false', default=False,   help='Pretrain network.')
 
 ##### Network parameters
-parser.add_argument('--network', default='r2plus1d_18', type=str,
+parser.add_argument('--network', default='r3d_18', type=str,
                     help='Network backend choice: [resnet18, r2plus1d_18, r3d_18, c3d].')
 
 ### Paths to datasets and storage folder
