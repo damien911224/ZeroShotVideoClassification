@@ -165,23 +165,26 @@ def train_one_epoch(train_dataloader, model, optimizer, criterion, opt, epoch):
         s = list(X.shape)
 
         optimizer.zero_grad()
+        tt_model = time.time()
         with autocast():
             # Compute embeddings for input batch.
-            tt_model = time.time()
             Y = model(X.to(opt.device))
             Y = Y[:s[0]]
             Z = Z.to(opt.device)
 
-            # Compute Accuracy.
-            pred_embed = Y.detach().cpu().numpy()
-            pred_label = cdist(pred_embed, class_embedding, 'cosine').argmin(1)
-            acc = accuracy_score(l.numpy(), pred_label) * 100
-            accuracy_regressor.append(acc)
-
             # Compute loss.
             loss = criterion(Y, Z)
 
+        # Compute Accuracy.
+        pred_embed = Y.detach().cpu().numpy()
+        pred_label = cdist(pred_embed, class_embedding, 'cosine').argmin(1)
+        acc = accuracy_score(l.numpy(), pred_label) * 100
+        accuracy_regressor.append(acc)
+
         # loss.backward()
+
+        #Update weights using comp. gradients.
+        # optimizer.step()
 
         # Scales loss.  Calls backward() on scaled loss to create scaled gradients.
         # Backward passes under autocast are not recommended.
@@ -195,9 +198,6 @@ def train_one_epoch(train_dataloader, model, optimizer, criterion, opt, epoch):
 
         # Updates the scale for next iteration.
         scaler.update()
-
-        #Update weights using comp. gradients.
-        # optimizer.step()
 
         model_times.append(time.time() - tt_model)
         #Store loss per iteration.
