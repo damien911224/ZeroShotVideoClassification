@@ -211,7 +211,7 @@ def load_frames_tsn(fname, clip_len=16, n_clips=1, is_validation=False):
     frames = []
     count = ret_count = 0
     while count < selection[-1]+clip_len:
-        retained = count <= frame_count
+        retained = count < frame_count
         if count not in selection:
             count += 1
             continue
