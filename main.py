@@ -13,6 +13,7 @@ from scipy.spatial.distance import cdist
 from sklearn.metrics import accuracy_score
 
 from colorama import Fore, Style
+from torch.cuda.amp import GradScaler
 
 Style.RESET_ALL
 
@@ -133,7 +134,7 @@ if opt.lr == 1e-3:
 else:
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [int(0.8*opt.n_epochs)], gamma=0.1)
 
-
+scaler = GradScaler()
 """===========================TRAINER FUNCTION==============================="""
 
 
@@ -163,25 +164,40 @@ def train_one_epoch(train_dataloader, model, optimizer, criterion, opt, epoch):
         batch_times.append(time.time() - tt_batch)
         s = list(X.shape)
 
-        # Compute embeddings for input batch.
-        tt_model = time.time()
-        Y = model(X.to(opt.device))
-        Y = Y[:s[0]]
-        Z = Z.to(opt.device)
-
-        # Compute Accuracy.
-        pred_embed = Y.detach().cpu().numpy()
-        pred_label = cdist(pred_embed, class_embedding, 'cosine').argmin(1)
-        acc = accuracy_score(l.numpy(), pred_label) * 100
-        accuracy_regressor.append(acc)
-
-        # Compute loss.
-        loss = criterion(Y, Z)
         optimizer.zero_grad()
-        loss.backward()
+        with autocast():
+            # Compute embeddings for input batch.
+            tt_model = time.time()
+            Y = model(X.to(opt.device))
+            Y = Y[:s[0]]
+            Z = Z.to(opt.device)
+
+            # Compute Accuracy.
+            pred_embed = Y.detach().cpu().numpy()
+            pred_label = cdist(pred_embed, class_embedding, 'cosine').argmin(1)
+            acc = accuracy_score(l.numpy(), pred_label) * 100
+            accuracy_regressor.append(acc)
+
+            # Compute loss.
+            loss = criterion(Y, Z)
+
+        # loss.backward()
+
+        # Scales loss.  Calls backward() on scaled loss to create scaled gradients.
+        # Backward passes under autocast are not recommended.
+        # Backward ops run in the same dtype autocast chose for corresponding forward ops.
+        scaler.scale(loss).backward()
+
+        # scaler.step() first unscales the gradients of the optimizer's assigned params.
+        # If these gradients do not contain infs or NaNs, optimizer.step() is then called,
+        # otherwise, optimizer.step() is skipped.
+        scaler.step(optimizer)
+
+        # Updates the scale for next iteration.
+        scaler.update()
 
         #Update weights using comp. gradients.
-        optimizer.step()
+        # optimizer.step()
 
         model_times.append(time.time() - tt_model)
         #Store loss per iteration.
