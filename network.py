@@ -45,7 +45,7 @@ class ResNet18(nn.Module):
 
         self.regressor = nn.Linear(self.model.fc.in_features, 300)
         self.dropout = torch.nn.Dropout(p=0.05)
-        self.model = torch.nn.Sequential(*(list(self.model.children())[:-1]))
+        # self.model = torch.nn.Sequential(*(list(self.model.children())[:-1]))
         # model.fc.weight.requires_grad = True
         # model.fc.bias.requires_grad = True
 
