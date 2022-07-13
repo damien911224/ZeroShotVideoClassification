@@ -253,6 +253,8 @@ class VideoResNet(nn.Module):
         x = x.flatten(1)
         x = self.fc(x)
 
+        print("!!")
+
         return x, f
 
     def _make_layer(
