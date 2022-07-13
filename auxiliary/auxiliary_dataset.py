@@ -81,9 +81,9 @@ def get_kinetics(dataset='k700'):
         #                            "{}_{:06d}_{:06d}.mp4".format(x[1], int(x[2]), int(x[3]))))
         path = os.path.join(sourcepath, "Kinetics-{}".format(n_classes), "frames",
                                    "{}_{:06d}_{:06d}".format(x[1], int(x[2]), int(x[3])))
-        if len(glob.glob(os.path.join(path, "images", "*.jpg"))) >= 200:
-            fnames.append(path)
-            labels.append(x[0])
+        # if len(glob.glob(os.path.join(path, "images", "*.jpg"))) >= 200:
+        fnames.append(path)
+        labels.append(x[0])
 
     classes = sorted(np.unique(labels).tolist())
 
@@ -192,8 +192,8 @@ def load_frames_tsn(fname, clip_len=16, n_clips=1, is_validation=False):
         return []
 
     frame_count = len(glob.glob(os.path.join(fname, "images", "*")))
-    one_frame = cv2.imread(os.path.join(fname, "images", "img_00001.jpg"))
-    frame_height, frame_width, _ = one_frame.shape
+    frame = cv2.imread(os.path.join(fname, "images", "img_00001.jpg"))
+    frame_height, frame_width, _ = frame.shape
 
     if frame_count == 0 or frame_width == 0 or frame_height == 0:
         print('loading error, switching video ...')

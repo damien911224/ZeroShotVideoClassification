@@ -255,26 +255,23 @@ class Decoder(nn.Module):
         """
         num_batch = feats.size[0]
         samples = torch.zeros(num_batch, self.max_seq_len).long()
-        all_preds = torch.zeros(batch_size, self.max_seq_len, self.vocab_size)
+        all_preds = torch.zeros(num_batch, self.max_seq_len, self.vocab_size)
         all_preds = all_preds.cuda()
 
         for b in range(num_batch):
-            hidden = self.init_hidden(batch_size)
-            inp = torch.LongTensor([start_letter] * batch_size)
+            hidden = self.init_hidden(num_batch)
+            inp = torch.LongTensor([start_letter] * num_batch)
             if self.gpu:
                 inp = inp.cuda()
 
             for i in range(self.max_seq_len):
                 pred, next_token = self.step(inp, hidden)
-                samples[b * batch_size:(b + 1) * batch_size, i] = next_token
-                if one_hot:
-                    all_preds[:, i] = pred
-                inp = next_token
-        samples = samples[:num_samples]  # num_samples * seq_len
+                samples[b * num_batch:(b + 1) * num_batch, i] = next_token
 
-        if one_hot:
-            return all_preds  # batch_size * seq_len * vocab_size
-        return samples
+                all_preds[:, i] = pred
+                inp = next_token
+
+        return all_preds
 
     @staticmethod
     def add_gumbel(o_t, eps=1e-10):
