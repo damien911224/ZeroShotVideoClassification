@@ -186,6 +186,7 @@ def load_clips_tsn(fname, clip_len=16, n_clips=1, is_validation=False):
     frames = frames.reshape([n_clips, clip_len, frame_height, frame_width, 3])
     return frames
 
+
 def load_frames_tsn(fname, clip_len=16, n_clips=1, is_validation=False):
     if not os.path.exists(fname):
         print('Missing: '+fname)
@@ -227,7 +228,13 @@ def load_frames_tsn(fname, clip_len=16, n_clips=1, is_validation=False):
             count += 1
             continue
         frame = cv2.imread(os.path.join(fname, "images", "img_{:05d}.jpg".format(count + 1)))
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        try:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        except cv2.error:
+            if len(frames) > 0:
+                frame = np.copy(frames[-1])
+            else:
+                frame = (255*np.random.rand(frame_height, frame_width, 3)).astype('uint8')
         frames.append(frame)
         count += 1
     frames = np.stack(frames)
