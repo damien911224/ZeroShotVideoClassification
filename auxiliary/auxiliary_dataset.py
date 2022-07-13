@@ -192,8 +192,8 @@ def load_frames_tsn(fname, clip_len=16, n_clips=1, is_validation=False):
         return []
 
     frame_count = len(glob.glob(os.path.join(fname, "images", "*")))
-    frame = cv2.imread(os.path.join(fname, "images", "img_00001.jpg"))
-    frame_height, frame_width, _ = frame.shape
+    one_frame = cv2.imread(os.path.join(fname, "images", "img_00001.jpg"))
+    frame_height, frame_width, _ = one_frame.shape
 
     if frame_count == 0 or frame_width == 0 or frame_height == 0:
         print('loading error, switching video ...')
@@ -222,10 +222,11 @@ def load_frames_tsn(fname, clip_len=16, n_clips=1, is_validation=False):
                 frame = np.copy(frames[-1])
             else:
                 frame = (255*np.random.rand(frame_height, frame_width, 3)).astype('uint8')
-            frames.append(cv2.imread(os.path.join(fname, "images", "img_{:05d}.jpg".format(count + 1))))
+            frames.append(frame)
             ret_count += 1
             count += 1
             continue
+        frame = cv2.imread(os.path.join(fname, "images", "img_{:05d}.jpg".format(count + 1)))
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frames.append(frame)
         count += 1
