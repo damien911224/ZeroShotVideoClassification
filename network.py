@@ -262,7 +262,7 @@ class Decoder(nn.Module):
 
         return pred, next_token
 
-    def sample(self, feats, start_letter="\s"):
+    def sample(self, feats, start_letter="</s>", end_letter="<EOS>"):
         """
         Sample from RelGAN Generator
         - one_hot: if return pred of RelGAN, used for adversarial training
@@ -271,7 +271,7 @@ class Decoder(nn.Module):
             - samples: all samples
         """
         bs, c, t, h, w = feats.size[0]
-        feats = self.feature2input_proj(feat.view(bs, c, t * h * w)).permute(2, 0, 1)
+        feats = self.feature2input_proj(feats.view(bs, c, t * h * w)).permute(2, 0, 1)
         pos_embeds = (self.t_pos_embeds.weight.view(t, 1, 1, self.d_model) +
                       self.h_pos_embeds.weight.view(1, h, 1, self.d_model) +
                       self.w_pos_embeds.weight.view(1, 1, w, self.d_model)).view(1, t * h * w, self.d_model)
@@ -280,14 +280,19 @@ class Decoder(nn.Module):
         all_preds = all_preds.cuda()
 
         embeddings = self.embeddings[start_letter]
-        inp = torch.Tensor([embeddings] * num_batch).view(1, bs, 300).cuda()
+        inp = torch.Tensor([embeddings] * bs).view(1, bs, 300).cuda()
         inp = inp.cuda()
 
+        end_flags = [False] * bs
         for i in range(self.max_seq_len):
             pred, next_token = self.step(inp, feats)
+            next_token = self.embeddings.index_to_key[next_token]
             all_preds[:, i] = pred
             next_inp = torch.Tensor(self.embeddings[next_token]).view(1, bs, 300).cuda()
+            next_inp[end_flags] = torch.zeros_like(next_inp[:, 0])
             inp = torch.cat((inp, next_inp), dim=0)
+
+            end_flags = next_token == end_letter
 
         return all_preds
 
