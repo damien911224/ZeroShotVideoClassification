@@ -34,6 +34,9 @@ def load_word2vec():
     except:
         wv_model = Word2Vec.load_word2vec_format('./assets/GoogleNews-vectors-negative300.bin', binary=True)
         wv_model.init_sims(replace=True)
+        word_list = ["<EOS>", "<UNK>"]
+        vector_list = [np.random.normal(size=(300, )), np.random.normal(size=(300, ))]
+        wv_model.add(wordList, vectorList)
         wv_model.save('./assets/GoogleNews')
     # print(len(wv_model))
     # print(wv_model.index_to_key[300])
