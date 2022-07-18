@@ -223,7 +223,7 @@ class Decoder(nn.Module):
         # np.save("./assets/embeddings.npy", embeddings)
         # exit()
         split = 0
-        self.embeddings = np.load("./assets/embeddings.npy", mmap_mode="r")
+        self.embeddings = np.load("./assets/embeddings.npy")
         self.embeddings = torch.Tensor(self.embeddings).cuda()
         self.t_pos_embeds = nn.Embedding(2, self.d_model)
         self.h_pos_embeds = nn.Embedding(7, self.d_model)
