@@ -385,10 +385,15 @@ if __name__ == "__main__":
     # bs, l, v
     fake_samples, text_samples = decoder.sample(dummy_data)
 
-    print(text_samples)
+    print(" ".join(text_samples[0]))
+    adversarial_criterion = torch.nn.BCEWithLogitsLoss().cuda()
 
     fake_dis, fake_emb = encoder(fake_samples)
     real_dis, real_emb = encoder(dummy_captions)
+
+    d_loss = adversarial_criterion(real_dis - fake_dis, torch.ones_like(real_dis))
+    g_loss = adversarial_criterion(fake_dis - real_dis, torch.ones_like(fake_dis))
+    adv_loss = g_loss + d_loss
 
 """=================================================================================================================="""
 
