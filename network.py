@@ -195,7 +195,7 @@ class Model(nn.Module):
         x, f = self.model(x)
 
         f = self.feature2input_proj(f)
-
+        print(f.shape)
         # bs, l, v
         fake_samples, text_samples = self.decoder.sample(f)
 
