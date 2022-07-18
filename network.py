@@ -367,9 +367,11 @@ class Encoder(nn.Module):
         return dis_out, emb_out
 
 if __name__ == "__main__":
-    network = models.r2plus1d_18
+    # network = models.r2plus1d_18
     decoder = Decoder()
+    print("Decoder Done")
     encoder = Encoder()
+    print("Encoder Done")
     # model = Model(network, decoder=decoder, encoder=encoder, fixconvs=False, nopretrained=True).cuda()
 
     dummy_data = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 512, 2, 7, 7))).cuda()
