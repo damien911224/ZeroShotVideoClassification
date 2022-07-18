@@ -385,7 +385,6 @@ if __name__ == "__main__":
     # bs, l, v
     fake_samples, text_samples = decoder.sample(dummy_data)
 
-    print(" ".join(text_samples[0]))
     adversarial_criterion = torch.nn.BCEWithLogitsLoss().cuda()
 
     fake_dis, fake_emb = encoder(fake_samples)
