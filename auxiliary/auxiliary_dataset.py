@@ -419,14 +419,14 @@ class VideoDataset(Dataset):
         buffer = buffer.reshape(3, s[0], s[1], self.crop_size, self.crop_size).transpose(0, 1)
 
         if 'kinetics' in self.name:
-            image_caption = random.choice(self.image_captions)
+            image_caption = torch.Tensor(random.choice(self.image_captions))
             image_caption = F.one_hot(image_caption, 3000002).float()
             if len(image_caption) < self.max_seq_len:
                 image_caption = torch.cat((image_caption,
                                            torch.zeros(dtype=torch.float32,
                                                        shape=(self.max_seq_len - len(image_caption), 3000002))),
                                           dim=0)
-            video_caption = random.choice(self.video_captions)
+            video_caption = torch.Tensor(random.choice(self.video_captions))
             video_caption = F.one_hot(video_caption, 3000002).float()
             if len(video_caption) < self.max_seq_len:
                 video_caption = torch.cat((video_caption,
