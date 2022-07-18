@@ -313,7 +313,7 @@ class VideoDataset(Dataset):
                             embeds = wv_model[token]
                         except KeyError:
                             if token.lower() in wv_model:
-                                embeds = wv_model[token.title()]
+                                embeds = wv_model[token.lower()]
                             elif token.lower().title() in wv_model:
                                 embeds = wv_model[token.lower().title()]
                             elif "-" in token:
@@ -322,9 +322,8 @@ class VideoDataset(Dataset):
                                     try:
                                         embeds = wv_model[new_token]
                                     except KeyError:
-
                                         if token.lower() in wv_model:
-                                            embeds = wv_model[token.title()]
+                                            embeds = wv_model[token.lower()]
                                         elif token.lower().title() in wv_model:
                                             embeds = wv_model[token.lower().title()]
                                         else:
