@@ -293,22 +293,22 @@ class Decoder(nn.Module):
         inp = inp + s_pos_embeds[:, 0]
 
         end_flags = [False] * bs
-        this_samples = list()
         for i in range(self.max_seq_len):
             pred, next_token = self.step(inp, feats)
             next_token = self.wv_model.index_to_key[next_token.cpu().numpy().tolist()]
             next_token[end_flags] = ""
             pred_embeddings = torch.matmul(pred, self.embeddings)
+            print(pred_embeddings.shape)
             pred_embeddings[end_flags] = torch.zeros_like(pred[:, 0])
             all_preds.append(pred_embeddings)
             # next_inp = torch.Tensor(self.wv_model[next_token]).view(bs, 1, 300).cuda()
             # next_inp[end_flags] = torch.zeros_like(next_inp[:, 0])
             # inp = torch.cat((inp, next_inp + s_pos_embeds[:, i + 1]), dim=0)
             inp = torch.cat((inp, pred_embeddings + s_pos_embeds[:, i + 1]), dim=0)
-            this_samples.append(next_token)
+            all_samples.append(next_token)
             end_flags = next_token == end_letter
         all_preds = torch.stack(all_preds, dim=1)
-        all_samples = np.stack(this_samples, axis=1).tolist()
+        all_samples = np.stack(all_samples, axis=1).tolist()
 
         return all_preds, this_samples
 
