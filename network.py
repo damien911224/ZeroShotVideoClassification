@@ -304,6 +304,8 @@ class Decoder(nn.Module):
         end_flags = [False] * bs
         for i in range(self.max_seq_len):
             pred, next_token = self.step(inp, feats)
+            a = next_token.cpu().numpy().tolist()
+            print(a)
             next_token = self.wv_model.index_to_key[next_token.cpu().numpy().tolist()]
             next_token[end_flags] = ""
             pred_embeddings = torch.matmul(pred, self.embeddings)
