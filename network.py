@@ -337,7 +337,7 @@ class Encoder(nn.Module):
         # self.embeddings = nn.Linear(len(self.wv_model), self.d_model, bias=False)
         self.s_pos_embeds = nn.Embedding(self.max_seq_len, self.d_model)
 
-        self.special_tokens = nn.Embedding(2, self.d_model).weight.view(1, 2, self.d_model).cuda()
+        self.special_tokens = nn.Embedding(2, self.d_model)
 
         self.word2input_proj = nn.Linear(300, self.d_model)
         encoder_layer = nn.TransformerEncoderLayer(d_model=self.d_model, dim_feedforward=self.d_model * 4,
