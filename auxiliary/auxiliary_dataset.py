@@ -390,8 +390,10 @@ class VideoDataset(Dataset):
         split = 0
         self.max_seq_len = 83
         caption_folder = "/mnt/hdd1/captions"
-        self.image_captions = np.load(os.path.join(caption_folder, "COCO", "image_captions.npy"), allow_pickle=True, mmap_mode="r")
-        self.video_captions = np.load(os.path.join(caption_folder, "ActivityNet", "video_captions.npy"), allow_pickle=True, mmap_mode="r")
+        print("Load")
+        self.image_captions = np.load(os.path.join(caption_folder, "COCO", "image_captions.npy"), allow_pickle=True)
+        self.video_captions = np.load(os.path.join(caption_folder, "ActivityNet", "video_captions.npy"), allow_pickle=True)
+        print("Loaded")
 
     def __getitem__(self, idx):
         sample = self.data[idx]
