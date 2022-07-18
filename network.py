@@ -309,7 +309,7 @@ class Decoder(nn.Module):
             next_token[end_flags] = ""
             pred_embeddings = torch.matmul(pred, self.embeddings)
             print(pred_embeddings.shape)
-            pred_embeddings[end_flags] = torch.zeros_like(pred)
+            pred_embeddings[end_flags] = torch.zeros_like(pred_embeddings[:, 0])
             all_preds.append(pred_embeddings)
             # next_inp = torch.Tensor(self.wv_model[next_token]).view(bs, 1, 300).cuda()
             # next_inp[end_flags] = torch.zeros_like(next_inp[:, 0])
