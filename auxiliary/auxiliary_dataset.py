@@ -312,17 +312,25 @@ class VideoDataset(Dataset):
                         try:
                             embeds = wv_model[token]
                         except KeyError:
-                            if token.title() in wv_model:
+                            if token.lower() in wv_model:
                                 embeds = wv_model[token.title()]
+                            elif token.lower().title() in wv_model:
+                                embeds = wv_model[token.lower().title()]
                             elif "-" in token:
                                 new_tokens = token.split("-")
                                 for new_token in new_tokens:
                                     try:
                                         embeds = wv_model[new_token]
                                     except KeyError:
-                                        embeds = wv_model["<UNK>"]
-                                        UNK_count += 1
-                                        print(new_token)
+
+                                        if token.lower() in wv_model:
+                                            embeds = wv_model[token.title()]
+                                        elif token.lower().title() in wv_model:
+                                            embeds = wv_model[token.lower().title()]
+                                        else:
+                                            embeds = wv_model["<UNK>"]
+                                            UNK_count += 1
+                                            print(new_token)
                             else:
                                 embeds = wv_model["<UNK>"]
                                 UNK_count += 1
