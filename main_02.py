@@ -164,7 +164,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         #     label = class_names[int(l[0])].replace('/', '_')
         #     batch2gif(clip, int(l[0]), opt.savename + '/samples/samples_train_epoch%d_iter%d_%s' % (epoch, i, label))
         batch_times.append(time.time() - tt_batch)
-        s = list(X.shape)
+        # s = list(X.shape)
 
         X = X.cuda()
         Z = Z.cuda()

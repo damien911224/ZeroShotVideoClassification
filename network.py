@@ -218,9 +218,9 @@ class Decoder(nn.Module):
         for w_i in range(len(self.wv_model)):
             self.embeddings.append(self.wv_model[self.wv_model.index_to_key[w_i]])
         self.embeddings = torch.Tensor(np.asarray(self.embeddings)).cuda()
-        self.t_pos_embeds = nn.Embedding(3, self.d_model)
-        self.h_pos_embeds = nn.Embedding(4, self.d_model)
-        self.w_pos_embeds = nn.Embedding(4, self.d_model)
+        self.t_pos_embeds = nn.Embedding(2, self.d_model)
+        self.h_pos_embeds = nn.Embedding(7, self.d_model)
+        self.w_pos_embeds = nn.Embedding(7, self.d_model)
         self.s_pos_embeds = nn.Embedding(self.max_seq_len, self.d_model)
 
         self.word2input_proj = nn.Linear(300, self.d_model)
@@ -370,10 +370,16 @@ if __name__ == "__main__":
     network = models.r2plus1d_18
     decoder = Decoder()
     encoder = Encoder()
-    model = Model(network, decoder=decoder, encoder=encoder, fixconvs=False, nopretrained=True).cuda()
-    dummy_data = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 1, 3, 16, 112, 112))).cuda()
+    # model = Model(network, decoder=decoder, encoder=encoder, fixconvs=False, nopretrained=True).cuda()
+
+    dummy_data = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 512, 2, 7, 7))).cuda()
     dummy_captions = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 50, 300))).cuda()
-    fake_emb, (real_dis, fake_dis), text_samples = model(dummy_data, dummy_captions)
+
+    # bs, l, v
+    fake_samples, text_samples = decoder.sample(dummy_data)
+
+    fake_dis, fake_emb = encoder(fake_samples)
+    real_dis, real_emb = encoder(dummy_captions)
 
 """=================================================================================================================="""
 
