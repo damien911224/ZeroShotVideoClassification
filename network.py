@@ -309,7 +309,7 @@ class Decoder(nn.Module):
             all_preds.append(pred_embeddings)
             next_inp = torch.Tensor(self.wv_model[next_token]).view(bs, 1, 300).cuda()
             next_inp[end_flags] = torch.zeros_like(next_inp[:, 0])
-            inp = torch.cat((inp, next_inp + s_pos_embeds[:, i]), dim=0)
+            inp = torch.cat((inp, next_inp + s_pos_embeds[:, i].unsqueeze(1)), dim=1)
             # inp = torch.cat((inp, (self.word2input_proj(pred_embeddings) + s_pos_embeds[:, i]).unsqueeze(1)), dim=1)
             all_samples.append(next_token)
             end_flags = np.logical_or(end_flags, next_token == end_letter)
