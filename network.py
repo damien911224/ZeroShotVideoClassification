@@ -302,7 +302,6 @@ class Decoder(nn.Module):
         for i in range(self.max_seq_len):
             pred, next_token = self.step(inp, feats)
             next_token = np.asarray([self.wv_model.index_to_key[idx] for idx in next_token.cpu().numpy().tolist()])
-            next_token[end_flags] = ""
             # pred_embeddings = torch.matmul(pred, self.embeddings)
             # pred_embeddings[end_flags] = torch.zeros_like(pred_embeddings[0])
             pred[end_flags] = torch.zeros_like(pred[0])
@@ -311,6 +310,7 @@ class Decoder(nn.Module):
             next_inp[end_flags] = torch.zeros_like(next_inp[0])
             inp = torch.cat((inp, (self.word2input_proj(next_inp) + s_pos_embeds[:, i]).unsqueeze(1)), dim=1)
             # inp = torch.cat((inp, (self.word2input_proj(pred_embeddings) + s_pos_embeds[:, i]).unsqueeze(1)), dim=1)
+            next_token[end_flags] = ""
             all_samples.append(next_token)
             end_flags = np.logical_or(end_flags, next_token == end_letter)
         all_preds = torch.stack(all_preds, dim=1)
