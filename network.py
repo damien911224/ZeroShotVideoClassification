@@ -359,8 +359,8 @@ class Encoder(nn.Module):
     def forward(self, x):
         special_tokens = self.special_tokens.weight.view(1, 2, self.d_model).cuda()
         s_pos_embeds = self.s_pos_embeds.weight.view(1, 2, self.d_model).cuda()
-        x = self.word2input_proj(x) + self.s_pos_embeds
-        x = torch.cat((self.special_tokens, x), dim=1)
+        x = self.word2input_proj(x) + s_pos_embeds
+        x = torch.cat((special_tokens, x), dim=1)
         out = self.encoder(x.permute(1, 0, 2)).permute(1, 0, 2)
         dis_out = self.output2dis_proj(out[:, 0]).squeeze(-1)
         emb_out = F.normalize(self.output2emb_proj(out[:, 1]))
