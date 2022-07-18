@@ -277,7 +277,7 @@ class Decoder(nn.Module):
             - all_preds: batch_size * seq_len * vocab_size, only use for a batch
             - samples: all samples
         """
-        bs, c, t, h, w = feats.size[0]
+        bs, c, t, h, w = feats.shape[0]
         feats = self.feature2input_proj(feats.view(bs, c, t * h * w).permute(0, 2, 1))
         pos_embeds = (self.t_pos_embeds.weight.view(t, 1, 1, self.d_model) +
                       self.h_pos_embeds.weight.view(1, h, 1, self.d_model) +
@@ -372,7 +372,6 @@ if __name__ == "__main__":
     encoder = Encoder()
     model = Model(network, decoder=decoder, encoder=encoder, fixconvs=False, nopretrained=True)
     model.cuda()
-
     dummy_data = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 1, 3, 16, 112, 112))).cuda()
     dummy_captions = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 50, 300))).cuda()
     fake_emb, (real_dis, fake_dis), text_samples = model(dummy_data, dummy_captions)
