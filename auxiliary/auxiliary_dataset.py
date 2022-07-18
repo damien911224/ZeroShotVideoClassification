@@ -298,7 +298,7 @@ class VideoDataset(Dataset):
                     caption = datum["caption"]
                     # tokens = self.preprocess_text(caption)
                     tokens = bert_uncased(caption)
-                    tokens = [t if "<" not in t and "#" not in t for t in tokens]
+                    tokens = [t for t in tokens if "<" not in t and "#" not in t]
                     print(tokens)
                     tokens.append("<EOS>")
                     this_len = len(tokens)
