@@ -407,7 +407,7 @@ class VideoDataset(Dataset):
 
     def clean_text(self, x):
         pattern = r'[^a-zA-z0-9\s]'
-        text = re.sub(pattern, '', x)
+        x = re.sub(pattern, '', x)
         return x
 
     def clean_numbers(self, x):
