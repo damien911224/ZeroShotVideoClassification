@@ -370,9 +370,7 @@ if __name__ == "__main__":
     network = models.r2plus1d_18
     decoder = Decoder()
     encoder = Encoder()
-    model = Model(network, decoder=decoder, encoder=encoder, fixconvs=False, nopretrained=True)
-    model.cuda()
-    print("Model Done")
+    model = Model(network, decoder=decoder, encoder=encoder, fixconvs=False, nopretrained=True).cuda()
     dummy_data = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 1, 3, 16, 112, 112))).cuda()
     dummy_captions = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 50, 300))).cuda()
     fake_emb, (real_dis, fake_dis), text_samples = model(dummy_data, dummy_captions)
