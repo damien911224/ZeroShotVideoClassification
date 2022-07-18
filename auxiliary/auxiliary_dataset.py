@@ -298,7 +298,7 @@ class VideoDataset(Dataset):
                 for datum in tqdm(caption_json["annotations"], desc="Image Caption ({})".format(c_i + 1)):
                     caption = datum["caption"]
                     # tokens = self.preprocess_text(caption)
-                    tokens = bert_uncased.encode(caption)
+                    tokens = bert_uncased.encode(caption).tokens
                     tokens = [t for t in tokens if "<" not in t and "#" not in t]
                     print(tokens)
                     tokens.append("<EOS>")
