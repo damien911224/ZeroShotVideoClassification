@@ -212,7 +212,7 @@ class Decoder(nn.Module):
 
         self.d_model = 256
         self.temperature = 1
-        self.max_seq_len = 83
+        self.max_seq_len = 50
 
         self.wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
         self.embeddings = list()
@@ -256,7 +256,9 @@ class Decoder(nn.Module):
             - next_o: batch_size * vocab_size, not used yet
         """
         out = self.decoder(embs.permute(1, 0, 2), feats.permute(1, 0, 2)).permute(1, 0, 2)
+        print(out.shape)
         out = self.output2word_proj(out[:, -1])
+        print(out.shape)
 
         pred = F.gumbel_softmax(out, tau=self.temperature, hard=True, dim=-1)
         next_token = torch.argmax(pred, dim=1).detach()
@@ -277,7 +279,7 @@ class Decoder(nn.Module):
             - samples: all samples
         """
         bs, c, t, h, w = feats.size[0]
-        feats = self.feature2input_proj(feats.view(bs, c, t * h * w)).permute(0, 2, 1)
+        feats = self.feature2input_proj(feats.view(bs, c, t * h * w).permute(0, 2, 1))
         pos_embeds = (self.t_pos_embeds.weight.view(t, 1, 1, self.d_model) +
                       self.h_pos_embeds.weight.view(1, h, 1, self.d_model) +
                       self.w_pos_embeds.weight.view(1, 1, w, self.d_model)).view(1, t * h * w, self.d_model)
@@ -290,7 +292,7 @@ class Decoder(nn.Module):
 
         embeddings = self.wv_model[start_letter]
         inp = torch.Tensor([embeddings] * bs).view(bs, 1, 300).cuda().detach()
-        inp = inp + s_pos_embeds[:, 0]
+        inp = inp + s_pos_embeds[:, 0].unsqueeze(1)
 
         end_flags = [False] * bs
         for i in range(self.max_seq_len):
@@ -310,7 +312,7 @@ class Decoder(nn.Module):
         all_preds = torch.stack(all_preds, dim=1)
         all_samples = np.stack(all_samples, axis=1).tolist()
 
-        return all_preds, this_samples
+        return all_preds, all_samples
 
     @staticmethod
     def add_gumbel(o_t, eps=1e-10):
@@ -329,7 +331,7 @@ class Encoder(nn.Module):
         super(Encoder, self).__init__()
 
         self.d_model = 256
-        self.max_seq_len = 83
+        self.max_seq_len = 50
 
         self.wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
         # self.embeddings = nn.Linear(len(self.wv_model), self.d_model, bias=False)
