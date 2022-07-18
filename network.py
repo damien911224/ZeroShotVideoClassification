@@ -24,8 +24,8 @@ def get_network(opt):
         return C3D(fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
     else:
         raise Exception('Network {} not available!'.format(opt.network))
-    encoder = Encoder()
     decoder = Decoder()
+    encoder = Encoder()
     # return ResNet18(network, fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
     return Model(network, decoder=decoder, encoder=encoder, fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
 
@@ -194,7 +194,6 @@ class Model(nn.Module):
         x = x.reshape(bs*nc, ch, l, h, w)
         x, f = self.model(x)
 
-        f = self.feature2input_proj(f)
         print(f.shape)
         # bs, l, v
         fake_samples, text_samples = self.decoder.sample(f)
@@ -367,6 +366,16 @@ class Encoder(nn.Module):
 
         return dis_out, emb_out
 
+if __name__ == "__main__":
+    network = models.r2plus1d_18
+    decoder = Decoder()
+    encoder = Encoder()
+    model = Model(network, decoder=decoder, encoder=encoder, fixconvs=False, nopretrained=True)
+    model.cuda()
+
+    dummy_data = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 512, 3, 4, 4))).cuda()
+    dummy_captions = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 50, 300))).cuda()
+    fake_emb, (real_dis, fake_dis), text_samples = model(dummy_data, dummy_captions)
 
 """=================================================================================================================="""
 
