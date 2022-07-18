@@ -375,9 +375,9 @@ class Encoder(nn.Module):
 
 if __name__ == "__main__":
     # network = models.r2plus1d_18
-    decoder = Decoder()
+    decoder = Decoder().cuda()
     print("Decoder Done")
-    encoder = Encoder()
+    encoder = Encoder().cuda()
     print("Encoder Done")
     # model = Model(network, decoder=decoder, encoder=encoder, fixconvs=False, nopretrained=True).cuda()
 
