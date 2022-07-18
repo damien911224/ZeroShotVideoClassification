@@ -277,7 +277,7 @@ class Decoder(nn.Module):
             - all_preds: batch_size * seq_len * vocab_size, only use for a batch
             - samples: all samples
         """
-        bs, c, t, h, w = feats.shape[0]
+        bs, c, t, h, w = feats.shape
         feats = self.feature2input_proj(feats.view(bs, c, t * h * w).permute(0, 2, 1))
         pos_embeds = (self.t_pos_embeds.weight.view(t, 1, 1, self.d_model) +
                       self.h_pos_embeds.weight.view(1, h, 1, self.d_model) +
