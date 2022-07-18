@@ -24,7 +24,10 @@ def get_network(opt):
         return C3D(fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
     else:
         raise Exception('Network {} not available!'.format(opt.network))
-    return ResNet18(network, fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
+    encoder = Encoder()
+    decoder = Decoder()
+    # return ResNet18(network, fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
+    return Model(network, decoder=decoder, encoder=encoder, fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
 
 
 """=================================================================================================================="""
@@ -183,8 +186,8 @@ class Model(nn.Module):
         self.dropout = torch.nn.Dropout(p=0.05)
 
         self.d_model = 256
-        self.decoder = decoder()
-        self.encoder = encoder()
+        self.decoder = decoder
+        self.encoder = encoder
 
     def forward(self, x, real_samples):
         bs, nc, ch, l, h, w = x.shape
@@ -194,12 +197,12 @@ class Model(nn.Module):
         f = self.feature2input_proj(f)
 
         # bs, l, v
-        fake_samples = self.decoder.sample(f)
+        fake_samples, text_samples = self.decoder.sample(f)
 
         fake_dis, fake_emb = self.encoder(fake_samples)
         real_dis, real_emb = self.encoder(real_samples)
 
-        return fake_emb, (real_dis, fake_dis)
+        return fake_emb, (real_dis, fake_dis), text_samples
 
 
 class Decoder(nn.Module):
@@ -208,8 +211,8 @@ class Decoder(nn.Module):
         super(Decoder, self).__init__()
 
         self.d_model = 256
-        self.temperature = 1.0
-        self.max_seq_len = 20
+        self.temperature = 1
+        self.max_seq_len = 83
 
         self.wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
         self.embeddings = list()
@@ -254,10 +257,14 @@ class Decoder(nn.Module):
         """
         out = self.decoder(embs.permute(1, 0, 2), feats.permute(1, 0, 2)).permute(1, 0, 2)
         out = self.output2word_proj(out[:, -1])
-        gumbel_t = self.add_gumbel(out)
-        next_token = torch.argmax(gumbel_t, dim=1).detach()
 
-        pred = F.softmax(gumbel_t * self.temperature, dim=-1)  # batch_size * vocab_size
+        pred = F.gumbel_softmax(out, tau=self.temperature, hard=True, dim=-1)
+        next_token = torch.argmax(pred, dim=1).detach()
+
+        # gumbel_t = self.add_gumbel(out)
+        # next_token = torch.argmax(gumbel_t, dim=1).detach()
+
+        # pred = F.softmax(gumbel_t * self.temperature, dim=-1)  # batch_size * vocab_size
 
         return pred, next_token
 
@@ -279,25 +286,31 @@ class Decoder(nn.Module):
         s_pos_embeds = self.s_pos_embeds.weight.view(1, self.max_seq_len, self.d_model).cuda()
 
         all_preds = list()
+        all_samples = list()
 
-        embeddings = self.embeddings[start_letter]
-        inp = torch.Tensor([embeddings] * bs).view(bs, 1, 300).cuda()
-        inp = inp.cuda() + s_pos_embeds[:, 0]
+        embeddings = self.wv_model[start_letter]
+        inp = torch.Tensor([embeddings] * bs).view(bs, 1, 300).cuda().detach()
+        inp = inp + s_pos_embeds[:, 0]
 
         end_flags = [False] * bs
+        this_samples = list()
         for i in range(self.max_seq_len):
             pred, next_token = self.step(inp, feats)
-            next_token = self.embeddings.index_to_key[next_token]
-            pred[end_flags] = torch.zeros_like(pred[:, 0])
-            all_preds.append(pred)
-            next_inp = torch.Tensor(self.embeddings[next_token]).view(bs, 1, 300).cuda()
-            next_inp[end_flags] = torch.zeros_like(next_inp[:, 0])
-            inp = torch.cat((inp, next_inp + s_pos_embeds[:, i + 1]), dim=0)
-
+            next_token = self.wv_model.index_to_key[next_token.cpu().numpy().tolist()]
+            next_token[end_flags] = ""
+            pred_embeddings = torch.matmul(pred, self.embeddings)
+            pred_embeddings[end_flags] = torch.zeros_like(pred[:, 0])
+            all_preds.append(pred_embeddings)
+            # next_inp = torch.Tensor(self.wv_model[next_token]).view(bs, 1, 300).cuda()
+            # next_inp[end_flags] = torch.zeros_like(next_inp[:, 0])
+            # inp = torch.cat((inp, next_inp + s_pos_embeds[:, i + 1]), dim=0)
+            inp = torch.cat((inp, pred_embeddings + s_pos_embeds[:, i + 1]), dim=0)
+            this_samples.append(next_token)
             end_flags = next_token == end_letter
         all_preds = torch.stack(all_preds, dim=1)
+        this_samples = np.stack(this_samples, axis=1).tolist()
 
-        return all_preds
+        return all_preds, this_samples
 
     @staticmethod
     def add_gumbel(o_t, eps=1e-10):
@@ -316,15 +329,16 @@ class Encoder(nn.Module):
         super(Encoder, self).__init__()
 
         self.d_model = 256
-        self.max_seq_len = 20
+        self.max_seq_len = 83
 
         self.wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
-        self.embeddings = nn.Linear(len(self.wv_model), self.d_model, bias=False)
+        # self.embeddings = nn.Linear(len(self.wv_model), self.d_model, bias=False)
         self.s_pos_embeds = \
             nn.Embedding(self.max_seq_len, self.d_model).weight.view(1, self.max_seq_len, self.d_model).cuda()
 
         self.special_tokens = nn.Embedding(2, self.d_model).weight.view(1, 2, self.d_model).cuda()
 
+        self.word2input_proj = nn.Linear(300, self.d_model)
         encoder_layer = nn.TransformerEncoderLayer(d_model=self.d_model, dim_feedforward=self.d_model * 4,
                                                    nhead=8, dropout=0.1, activation="gelu")
         self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=6)
@@ -333,7 +347,6 @@ class Encoder(nn.Module):
 
         self.reset_parameters()
 
-        self.embeddings = self.embeddings.weight.view(1, self.max_seq_len, self.d_model).cuda()
         self.special_tokens = self.special_tokens.weight.view(1, 2, self.d_model).cuda()
 
     def reset_parameters(self):
@@ -345,11 +358,11 @@ class Encoder(nn.Module):
         nn.init.normal_(self.special_tokens.weight)
 
     def forward(self, x):
-        x = self.embeddings(x) + self.s_pos_embeds
-        x = torch.cat((x, self.special_tokens), dim=1)
+        x = self.word2input_proj(x) + self.s_pos_embeds
+        x = torch.cat((self.special_tokens, x), dim=1)
         out = self.encoder(x.permute(1, 0, 2)).permute(1, 0, 2)
-        dis_out = self.output2dis_proj(out)
-        emb_out = F.normalize(self.output2emb_proj(out))
+        dis_out = self.output2dis_proj(out[:, 0]).squeeze(-1)
+        emb_out = F.normalize(self.output2emb_proj(out[:, 1]))
 
         return dis_out, emb_out
 

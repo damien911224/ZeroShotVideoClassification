@@ -14,6 +14,7 @@ from sklearn.metrics import accuracy_score
 
 from colorama import Fore, Style
 from torch.cuda.amp import GradScaler, autocast
+import random
 
 Style.RESET_ALL
 
@@ -127,7 +128,8 @@ model = nn.DataParallel(model)
 _ = model.to(opt.device)
 
 """==========================OPTIM SETUP=================================="""
-criterion = torch.nn.MSELoss().to(opt.device)
+embed_criterion = torch.nn.MSELoss().to(opt.device)
+adversarial_criterion = torch.nn.BCEWithLogitsLoss().to(opt.device)
 optimizer = torch.optim.Adam(model.parameters(), lr=opt.lr)
 if opt.lr == 1e-3:
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [60, 120], gamma=0.1)
@@ -138,7 +140,7 @@ scaler = GradScaler()
 """===========================TRAINER FUNCTION==============================="""
 
 
-def train_one_epoch(train_dataloader, model, optimizer, criterion, opt, epoch):
+def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversarial_criterion, opt, epoch):
     """
     This function is called every epoch to perform training of the network over one full
     (randomized) iteration of the dataset.
@@ -153,7 +155,7 @@ def train_one_epoch(train_dataloader, model, optimizer, criterion, opt, epoch):
     if opt.progressbar:
         data_iterator = tqdm(train_dataloader, desc='Epoch {} Training...'.format(epoch))
 
-    for i, (X, l, Z, _, (image_caption, video_caption)) in enumerate(data_iterator):
+    for i, (X, l, Z, _, (image_captions, video_captions)) in enumerate(data_iterator):
         not_broken = l != -1
         X, l, Z = X[not_broken], l[not_broken], Z[not_broken]
         # if i % 20000 == 0:
@@ -166,20 +168,27 @@ def train_one_epoch(train_dataloader, model, optimizer, criterion, opt, epoch):
 
         X = X.cuda()
         Z = Z.cuda()
+        image_captions = image_captions.cuda()
+        video_captions = video_captions.cuda()
 
         optimizer.zero_grad()
         tt_model = time.time()
         with autocast():
             # Compute embeddings for input batch.
-            Y = model(X.to(opt.device))
-            Y = Y[:s[0]]
-            Z = Z.to(opt.device)
+            fake_emb, (real_dis, fake_dis), text_samples = model(X, image_captions)
+            # Y = Y[:s[0]]
 
             # Compute loss.
-            loss = criterion(Y, Z)
+            d_loss = adversarial_criterion(real_dis - fake_dis, torch.ones_like(real_dis))
+            g_loss = adversarial_criterion(fake_dis - real_dis, torch.ones_like(fake_dis))
+            adv_loss = g_loss + d_loss
+
+            embed_loss = embed_criterion(fake_emb, Z)
+
+            loss = embed_loss + 1.0e-4 * adv_loss
 
         # Compute Accuracy.
-        pred_embed = Y.detach().cpu().numpy()
+        pred_embed = fake_emb.detach().cpu().numpy()
         pred_label = cdist(pred_embed, class_embedding, 'cosine').argmin(1)
         acc = accuracy_score(l.numpy(), pred_label) * 100
         accuracy_regressor.append(acc)
@@ -205,10 +214,24 @@ def train_one_epoch(train_dataloader, model, optimizer, criterion, opt, epoch):
         model_times.append(time.time() - tt_model)
         #Store loss per iteration.
         losses.append(loss.item())
-        if i == len(train_dataloader)-1 or i*opt.bs > 100000:
-            txwriter.add_scalar('Train/Loss', np.mean(losses), epoch)
-            txwriter.add_scalar('Train/RegressorAccuracy', np.mean(accuracy_regressor), epoch)
-            break
+
+        if (i + 1) % 100 == 0:
+            txwriter.add_scalar('Train/Loss', loss.item(), i + 1)
+            txwriter.add_scalar('Train/EmbeddingLoss', embed_loss.item(), i + 1)
+            txwriter.add_scalar('Train/GeneratorLoss', g_loss.item(), i + 1)
+            txwriter.add_scalar('Train/DiscriminatorLoss', d_loss.item(), i + 1)
+            txwriter.add_scalar('Train/Accuracy', np.mean(acc), epoch)
+
+            random_index = random.choice(range(len(X)))
+            txwriter.add_text("Train/Caption", " ".join(text_samples[random_index]))
+            videos = ((X.detach().cpu().numpy() * 2.0 + 1) * 255.0).astype(np.uint8).permute(0, 2, 1, 3, 4)
+            txwriter.add_video("Train/Video", " ".join(videos[random_index].unsqueeze(0)))
+
+
+        # if i == len(train_dataloader)-1 or i*opt.bs > 100000:
+        #     txwriter.add_scalar('Train/Loss', np.mean(losses), epoch)
+        #     txwriter.add_scalar('Train/RegressorAccuracy', np.mean(accuracy_regressor), epoch)
+        #     break
 
         tt_batch = time.time()
 
@@ -349,7 +372,8 @@ if __name__ == '__main__':
         ## Train one epoch
         if not opt.evaluate:
             _ = model.train()
-            train_one_epoch(dataloaders['training'][0], model, optimizer, criterion, opt, epoch)
+            train_one_epoch(dataloaders['training'][0], model, optimizer,
+                            embed_criterion, adversarial_criterion, opt, epoch)
 
         ### Evaluation
         accuracies = []

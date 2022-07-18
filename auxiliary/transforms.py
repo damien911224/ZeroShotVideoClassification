@@ -44,12 +44,12 @@ def get_transform(is_validation, crop_size=112):
         crop = CenterCrop((crop_size, crop_size))
     else:
         crop = RandomCrop((crop_size, crop_size))
-    normalize = Normalize(mean=[0.43216, 0.394666, 0.37645],
-                          std=[0.22803, 0.22145, 0.216989])
+    # normalize = Normalize(mean=[0.43216, 0.394666, 0.37645],
+    #                       std=[0.22803, 0.22145, 0.216989])
     transform = [
         ToFloatTensorInZeroOne(),
         # Resize(size),
-        normalize,
+        # normalize,
         crop]
     if not is_validation:
         transform += [RandomHorizontalFlip()]
@@ -114,7 +114,7 @@ def pad(vid, padding, fill=0, padding_mode="constant"):
 
 
 def to_normalized_float_tensor(vid):
-    return vid.permute(3, 0, 1, 2).to(torch.float32) / 255
+    return (vid.permute(3, 0, 1, 2).to(torch.float32) / 255 - 1.0) / 2.0
 
 def to_float_tensor(vid):
     return vid.permute(3, 0, 1, 2).to(torch.float32)
