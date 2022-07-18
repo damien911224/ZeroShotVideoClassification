@@ -373,7 +373,7 @@ if __name__ == "__main__":
     model = Model(network, decoder=decoder, encoder=encoder, fixconvs=False, nopretrained=True)
     model.cuda()
 
-    dummy_data = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 512, 3, 4, 4))).cuda()
+    dummy_data = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 1, 3, 16, 112, 112))).cuda()
     dummy_captions = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 50, 300))).cuda()
     fake_emb, (real_dis, fake_dis), text_samples = model(dummy_data, dummy_captions)
 
