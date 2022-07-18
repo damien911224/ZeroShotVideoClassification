@@ -291,7 +291,8 @@ class Decoder(nn.Module):
 
         s_pos_embeds = self.s_pos_embeds.weight.view(1, self.max_seq_len, self.d_model).cuda()
 
-        all_preds = list()
+        # all_preds = list()
+        all_preds = torch.zeros(bs, self.max_seq_len, len(self.wv_model))
         all_samples = list()
 
         embeddings = self.wv_model[start_letter]
@@ -305,7 +306,8 @@ class Decoder(nn.Module):
             # pred_embeddings = torch.matmul(pred, self.embeddings)
             # pred_embeddings[end_flags] = torch.zeros_like(pred_embeddings[0])
             pred[end_flags] = torch.zeros_like(pred[0])
-            all_preds.append(pred)
+            # all_preds.append(pred)
+            all_preds[:, i, np.logical_not(end_flags)] = pred[np.logical_not(end_flags)]
             next_inp = torch.Tensor(self.wv_model[next_token]).view(bs, 300).cuda()
             next_inp[end_flags] = torch.zeros_like(next_inp[0])
             inp = torch.cat((inp, (self.word2input_proj(next_inp) + s_pos_embeds[:, i]).unsqueeze(1)), dim=1)
