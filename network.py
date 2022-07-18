@@ -225,9 +225,7 @@ class Decoder(nn.Module):
         split = 0
         # self.embeddings = np.load("./assets/embeddings.npy")
         self.embeddings = np.zeros(dtype=np.float32, shape=(3000002, 300))
-        print("AA")
         self.embeddings = torch.Tensor(self.embeddings).cuda()
-        print("BB")
         self.t_pos_embeds = nn.Embedding(2, self.d_model)
         self.h_pos_embeds = nn.Embedding(7, self.d_model)
         self.w_pos_embeds = nn.Embedding(7, self.d_model)
@@ -368,7 +366,8 @@ class Encoder(nn.Module):
         nn.init.normal_(self.special_tokens.weight)
 
     def forward(self, x):
-        special_tokens = self.special_tokens.weight.view(1, 2, self.d_model).cuda()
+        bs = x.shape[0]
+        special_tokens = self.special_tokens.weight.view(1, 2, self.d_model).repeat(bs, 1, 1).cuda()
         s_pos_embeds = self.s_pos_embeds.weight.view(1, self.max_seq_len, self.d_model).cuda()
         x = self.word2input_proj(x) + s_pos_embeds
         x = torch.cat((special_tokens, x), dim=1)
