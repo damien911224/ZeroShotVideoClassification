@@ -215,12 +215,14 @@ class Decoder(nn.Module):
         self.max_seq_len = 50
 
         self.wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
-        self.embeddings = list()
-        for w_i in tqdm(range(len(self.wv_model))):
-            self.embeddings.append(self.wv_model[self.wv_model.index_to_key[w_i]])
-        embeddings = np.array(self.embeddings, dtype=np.float32)
-        np.save("./assets/embeddings.npy", embeddings)
-        exit()
+        split = 0
+        # self.embeddings = list()
+        # for w_i in tqdm(range(len(self.wv_model))):
+        #     self.embeddings.append(self.wv_model[self.wv_model.index_to_key[w_i]])
+        # embeddings = np.array(self.embeddings, dtype=np.float32)
+        # np.save("./assets/embeddings.npy", embeddings)
+        # exit()
+        split = 0
         self.embeddings = np.load("./assets/embeddings.npy", mmap_mode="r")
         self.embeddings = torch.Tensor(np.asarray(self.embeddings)).cuda()
         self.t_pos_embeds = nn.Embedding(2, self.d_model)
