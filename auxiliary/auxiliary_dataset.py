@@ -18,6 +18,7 @@ import random
 # bert_uncased = BertTokenizer.from_pretrained('bert-base-uncased')
 
 import re
+import torch.nn.functional as F
 
 def get_ucf101():
     folder = '/mnt/hdd1/UCF101/videos'
@@ -281,126 +282,127 @@ class VideoDataset(Dataset):
         self.transform = get_transform(self.is_validation, crop_size)
         self.loadvideo = load_clips
         split = 0
-        # caption_folder = "/mnt/hdd1/captions"
-        # self.image_caption_paths = \
-        #     [os.path.join(caption_folder, "COCO", "captions_train2014.json"),
-        #      os.path.join(caption_folder, "COCO", "captions_val2014.json")]
-        # self.video_caption_paths = \
-        #     [os.path.join(caption_folder, "ActivityNet", "train.json"),
-        #      os.path.join(caption_folder, "ActivityNet", "val_1.json"),
-        #      os.path.join(caption_folder, "ActivityNet", "val_2.json")]
-        #
-        # wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
-        #
-        # image_captions = list()
-        # UNK_count = 0
-        # max_len = -1
-        # for c_i, path in enumerate(self.image_caption_paths):
-        #     with open(path, "r") as fp:
-        #         caption_json = json.load(fp)
-        #         for datum in tqdm(caption_json["annotations"], desc="Image Caption ({})".format(c_i + 1)):
-        #             caption = datum["caption"]
-        #             # tokens = self.preprocess_text(caption)
-        #             caption = self.clean_text(caption)
-        #             caption = self.clean_numbers(caption)
-        #             tokens = word_tokenize(caption)
-        #             tokens.append("<EOS>")
-        #             this_len = len(tokens)
-        #             if this_len > max_len:
-        #                 max_len = this_len
-        #             embeddings = list()
-        #             for token in tokens:
-        #                 try:
-        #                     embeds = wv_model[token]
-        #                 except KeyError:
-        #                     if token.lower() in wv_model:
-        #                         embeds = wv_model[token.lower()]
-        #                     elif token.lower().title() in wv_model:
-        #                         embeds = wv_model[token.lower().title()]
-        #                     elif "-" in token:
-        #                         new_tokens = token.split("-")
-        #                         for new_token in new_tokens:
-        #                             try:
-        #                                 embeds = wv_model[new_token]
-        #                             except KeyError:
-        #                                 if token.lower() in wv_model:
-        #                                     embeds = wv_model[token.lower()]
-        #                                 elif token.lower().title() in wv_model:
-        #                                     embeds = wv_model[token.lower().title()]
-        #                                 else:
-        #                                     embeds = wv_model["<UNK>"]
-        #                                     UNK_count += 1
-        #                     else:
-        #                         embeds = wv_model["<UNK>"]
-        #                         UNK_count += 1
-        #                 embeddings.append(embeds)
-        #             embeddings = np.array(embeddings, dtype=np.float32)
-        #             if len(embeddings) < 50:
-        #                 embeddings = np.concatenate((embeddings,
-        #                                              np.zeros(dtype=np.float32, shape=(50 - len(embeddings), 300))),
-        #                                             axis=0)
-        #             image_captions.append(embeddings)
-        # np.save(os.path.join(caption_folder, "COCO", "image_captions.npy"), np.array(image_captions))
-        # print("Image Captions: {} Sentences, {} UNK, MAXLEN {}".format(len(image_captions), UNK_count, max_len))
-        #
-        # video_captions = list()
-        # UNK_count = 0.0
-        # max_len = -1
-        # for c_i, path in enumerate(self.video_caption_paths):
-        #     with open(path, "r") as fp:
-        #         caption_json = json.load(fp)
-        #         for identity in tqdm(caption_json.keys(), desc="Video Caption ({})".format(c_i + 1)):
-        #             captions = caption_json[identity]["sentences"]
-        #             for caption in captions:
-        #                 caption = self.clean_text(caption)
-        #                 caption = self.clean_numbers(caption)
-        #                 tokens = word_tokenize(caption)
-        #                 tokens.append("<EOS>")
-        #                 this_len = len(tokens)
-        #                 if this_len > max_len:
-        #                     max_len = this_len
-        #                 embeddings = list()
-        #                 for token in tokens:
-        #                     try:
-        #                         embeds = wv_model[token]
-        #                     except KeyError:
-        #                         if token.lower() in wv_model:
-        #                             embeds = wv_model[token.lower()]
-        #                         elif token.lower().title() in wv_model:
-        #                             embeds = wv_model[token.lower().title()]
-        #                         elif "-" in token:
-        #                             new_tokens = token.split("-")
-        #                             for new_token in new_tokens:
-        #                                 try:
-        #                                     embeds = wv_model[new_token]
-        #                                 except KeyError:
-        #                                     if token.lower() in wv_model:
-        #                                         embeds = wv_model[token.lower()]
-        #                                     elif token.lower().title() in wv_model:
-        #                                         embeds = wv_model[token.lower().title()]
-        #                                     else:
-        #                                         embeds = wv_model["<UNK>"]
-        #                                         UNK_count += 1
-        #                         else:
-        #                             embeds = wv_model["<UNK>"]
-        #                             UNK_count += 1
-        #                     embeddings.append(embeds)
-        #                 embeddings = np.array(embeddings, dtype=np.float32)
-        #                 if len(embeddings) < 83:
-        #                     embeddings = np.concatenate((embeddings,
-        #                                                  np.zeros(dtype=np.float32, shape=(83 - len(embeddings), 300))),
-        #                                                 axis=0)
-        #                 video_captions.append(embeddings)
-        # np.save(os.path.join(caption_folder, "ActivityNet", "video_captions.npy"), np.array(video_captions))
-        # print("Video Captions: {} Sentences, {} UNK, MAXLEN {}".format(len(video_captions), UNK_count, max_len))
-        #
-        # exit()
+        caption_folder = "/mnt/hdd1/captions"
+        self.image_caption_paths = \
+            [os.path.join(caption_folder, "COCO", "captions_train2014.json"),
+             os.path.join(caption_folder, "COCO", "captions_val2014.json")]
+        self.video_caption_paths = \
+            [os.path.join(caption_folder, "ActivityNet", "train.json"),
+             os.path.join(caption_folder, "ActivityNet", "val_1.json"),
+             os.path.join(caption_folder, "ActivityNet", "val_2.json")]
+
+        wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
+        wv_model = wv_model.key_to_index
+
+        image_captions = list()
+        UNK_count = 0
+        max_len = -1
+        for c_i, path in enumerate(self.image_caption_paths):
+            with open(path, "r") as fp:
+                caption_json = json.load(fp)
+                for datum in tqdm(caption_json["annotations"], desc="Image Caption ({})".format(c_i + 1)):
+                    caption = datum["caption"]
+                    # tokens = self.preprocess_text(caption)
+                    caption = self.clean_text(caption)
+                    caption = self.clean_numbers(caption)
+                    tokens = word_tokenize(caption)
+                    tokens.append("<EOS>")
+                    this_len = len(tokens)
+                    if this_len > max_len:
+                        max_len = this_len
+                    embeddings = list()
+                    for token in tokens:
+                        try:
+                            embeds = wv_model[token]
+                        except KeyError:
+                            if token.lower() in wv_model:
+                                embeds = wv_model[token.lower()]
+                            elif token.lower().title() in wv_model:
+                                embeds = wv_model[token.lower().title()]
+                            elif "-" in token:
+                                new_tokens = token.split("-")
+                                for new_token in new_tokens:
+                                    try:
+                                        embeds = wv_model[new_token]
+                                    except KeyError:
+                                        if token.lower() in wv_model:
+                                            embeds = wv_model[token.lower()]
+                                        elif token.lower().title() in wv_model:
+                                            embeds = wv_model[token.lower().title()]
+                                        else:
+                                            embeds = wv_model["<UNK>"]
+                                            UNK_count += 1
+                            else:
+                                embeds = wv_model["<UNK>"]
+                                UNK_count += 1
+                        embeddings.append(embeds)
+                    embeddings = np.array(embeddings, dtype=np.uint8)
+                    # if len(embeddings) < 50:
+                    #     embeddings = np.concatenate((embeddings,
+                    #                                  np.zeros(dtype=np.float32, shape=(50 - len(embeddings), 300))),
+                    #                                 axis=0)
+                    image_captions.append(embeddings)
+        np.save(os.path.join(caption_folder, "COCO", "image_captions.npy"), image_captions, allow_pickle=True)
+        print("Image Captions: {} Sentences, {} UNK, MAXLEN {}".format(len(image_captions), UNK_count, max_len))
+
+        video_captions = list()
+        UNK_count = 0.0
+        max_len = -1
+        for c_i, path in enumerate(self.video_caption_paths):
+            with open(path, "r") as fp:
+                caption_json = json.load(fp)
+                for identity in tqdm(caption_json.keys(), desc="Video Caption ({})".format(c_i + 1)):
+                    captions = caption_json[identity]["sentences"]
+                    for caption in captions:
+                        caption = self.clean_text(caption)
+                        caption = self.clean_numbers(caption)
+                        tokens = word_tokenize(caption)
+                        tokens.append("<EOS>")
+                        this_len = len(tokens)
+                        if this_len > max_len:
+                            max_len = this_len
+                        embeddings = list()
+                        for token in tokens:
+                            try:
+                                embeds = wv_model[token]
+                            except KeyError:
+                                if token.lower() in wv_model:
+                                    embeds = wv_model[token.lower()]
+                                elif token.lower().title() in wv_model:
+                                    embeds = wv_model[token.lower().title()]
+                                elif "-" in token:
+                                    new_tokens = token.split("-")
+                                    for new_token in new_tokens:
+                                        try:
+                                            embeds = wv_model[new_token]
+                                        except KeyError:
+                                            if token.lower() in wv_model:
+                                                embeds = wv_model[token.lower()]
+                                            elif token.lower().title() in wv_model:
+                                                embeds = wv_model[token.lower().title()]
+                                            else:
+                                                embeds = wv_model["<UNK>"]
+                                                UNK_count += 1
+                                else:
+                                    embeds = wv_model["<UNK>"]
+                                    UNK_count += 1
+                            embeddings.append(embeds)
+                        embeddings = np.array(embeddings, dtype=np.float32)
+                        # if len(embeddings) < 83:
+                        #     embeddings = np.concatenate((embeddings,
+                        #                                  np.zeros(dtype=np.float32, shape=(83 - len(embeddings), 300))),
+                        #                                 axis=0)
+                        video_captions.append(embeddings)
+        np.save(os.path.join(caption_folder, "ActivityNet", "video_captions.npy"), video_captions, allow_pickle=True)
+        print("Video Captions: {} Sentences, {} UNK, MAXLEN {}".format(len(video_captions), UNK_count, max_len))
+
+        exit()
         split = 0
         if 'kinetics' in name:
             self.max_seq_len = 50
             caption_folder = "/mnt/hdd1/captions"
-            self.image_captions = np.load(os.path.join(caption_folder, "COCO", "image_captions.npy"), mmap_mode="r")
-            self.video_captions = np.load(os.path.join(caption_folder, "ActivityNet", "video_captions.npy"), mmap_mode="r")
+            self.image_captions = np.load(os.path.join(caption_folder, "COCO", "image_captions.npy"), allow_pickle=True)
+            self.video_captions = np.load(os.path.join(caption_folder, "ActivityNet", "video_captions.npy"), allow_pickle=True)
 
     def __getitem__(self, idx):
         sample = self.data[idx]
@@ -418,17 +420,19 @@ class VideoDataset(Dataset):
 
         if 'kinetics' in self.name:
             image_caption = random.choice(self.image_captions)
+            image_caption = F.one_hot(image_caption, 3000002).float()
             if len(image_caption) < self.max_seq_len:
-                image_caption = np.concatenate((image_caption,
-                                                np.zeros(dtype=np.float32,
-                                                         shape=(self.max_seq_len - len(image_caption), 300))),
-                                               axis=0)
+                image_caption = torch.cat((image_caption,
+                                           torch.zeros(dtype=torch.float32,
+                                                       shape=(self.max_seq_len - len(image_caption), 3000002))),
+                                          dim=0)
             video_caption = random.choice(self.video_captions)
+            video_caption = F.one_hot(video_caption, 3000002).float()
             if len(video_caption) < self.max_seq_len:
-                video_caption = np.concatenate((video_caption,
-                                                np.zeros(dtype=np.float32,
-                                                         shape=(self.max_seq_len - len(video_caption), 300))),
-                                               axis=0)
+                video_caption = torch.cat((video_caption,
+                                           torch.zeros(dtype=torch.float32,
+                                                       shape=(self.max_seq_len - len(image_caption), 3000002))),
+                                          dim=0)
 
             return buffer, label, self.class_embed[label], idx, (image_caption, video_caption)
         else:

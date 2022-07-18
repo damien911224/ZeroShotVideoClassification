@@ -210,7 +210,7 @@ class Decoder(nn.Module):
         super(Decoder, self).__init__()
 
         self.d_model = 256
-        self.temperature = 1
+        self.temperature = 1.0
         self.max_seq_len = 50
 
         self.wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
@@ -222,9 +222,9 @@ class Decoder(nn.Module):
         # np.save("./assets/embeddings.npy", embeddings)
         # exit()
         split = 0
-        self.embeddings = np.load("./assets/embeddings.npy")
+        # self.embeddings = np.load("./assets/embeddings.npy")
         # self.embeddings = np.zeros(dtype=np.float32, shape=(3000002, 300))
-        self.embeddings = torch.Tensor(self.embeddings).cuda()
+        # self.embeddings = torch.Tensor(self.embeddings).cuda()
         self.t_pos_embeds = nn.Embedding(2, self.d_model)
         self.h_pos_embeds = nn.Embedding(7, self.d_model)
         self.w_pos_embeds = nn.Embedding(7, self.d_model)
@@ -264,13 +264,13 @@ class Decoder(nn.Module):
         out = self.decoder(embs.permute(1, 0, 2), feats.permute(1, 0, 2)).permute(1, 0, 2)
         out = self.output2word_proj(out[:, -1])
 
-        pred = F.gumbel_softmax(out, tau=self.temperature, hard=True, dim=-1)
-        next_token = torch.argmax(pred, dim=1).detach()
+        # pred = F.gumbel_softmax(out, tau=self.temperature, hard=True, dim=-1)
+        # next_token = torch.argmax(pred, dim=1).detach()
 
-        # gumbel_t = self.add_gumbel(out)
-        # next_token = torch.argmax(gumbel_t, dim=1).detach()
+        gumbel_t = self.add_gumbel(out)
+        next_token = torch.argmax(gumbel_t, dim=1).detach()
 
-        # pred = F.softmax(gumbel_t * self.temperature, dim=-1)  # batch_size * vocab_size
+        pred = F.softmax(gumbel_t * self.temperature, dim=-1)  # batch_size * vocab_size
 
         return pred, next_token
 
@@ -303,13 +303,14 @@ class Decoder(nn.Module):
             pred, next_token = self.step(inp, feats)
             next_token = np.asarray([self.wv_model.index_to_key[idx] for idx in next_token.cpu().numpy().tolist()])
             next_token[end_flags] = ""
-            pred_embeddings = torch.matmul(pred, self.embeddings)
-            pred_embeddings[end_flags] = torch.zeros_like(pred_embeddings[0])
+            # pred_embeddings = torch.matmul(pred, self.embeddings)
+            # pred_embeddings[end_flags] = torch.zeros_like(pred_embeddings[0])
+            pred[end_flags] = torch.zeros_like(pred[0])
             all_preds.append(pred_embeddings)
-            # next_inp = torch.Tensor(self.wv_model[next_token]).view(bs, 1, 300).cuda()
-            # next_inp[end_flags] = torch.zeros_like(next_inp[:, 0])
-            # inp = torch.cat((inp, next_inp + s_pos_embeds[:, i + 1]), dim=0)
-            inp = torch.cat((inp, (self.word2input_proj(pred_embeddings) + s_pos_embeds[:, i]).unsqueeze(1)), dim=1)
+            next_inp = torch.Tensor(self.wv_model[next_token]).view(bs, 1, 300).cuda()
+            next_inp[end_flags] = torch.zeros_like(next_inp[:, 0])
+            inp = torch.cat((inp, next_inp + s_pos_embeds[:, i + 1]), dim=0)
+            # inp = torch.cat((inp, (self.word2input_proj(pred_embeddings) + s_pos_embeds[:, i]).unsqueeze(1)), dim=1)
             all_samples.append(next_token)
             end_flags = np.logical_or(end_flags, next_token == end_letter)
         all_preds = torch.stack(all_preds, dim=1)
@@ -337,12 +338,11 @@ class Encoder(nn.Module):
         self.max_seq_len = 50
 
         self.wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
-        # self.embeddings = nn.Linear(len(self.wv_model), self.d_model, bias=False)
         self.s_pos_embeds = nn.Embedding(self.max_seq_len, self.d_model)
 
         self.special_tokens = nn.Embedding(2, self.d_model)
 
-        self.word2input_proj = nn.Linear(300, self.d_model)
+        self.word2input_proj = nn.Linear(len(self.wv_model), self.d_model)
         encoder_layer = nn.TransformerEncoderLayer(d_model=self.d_model, dim_feedforward=self.d_model * 4,
                                                    nhead=8, dropout=0.1, activation="gelu")
         self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=6)
@@ -380,7 +380,7 @@ if __name__ == "__main__":
     # model = Model(network, decoder=decoder, encoder=encoder, fixconvs=False, nopretrained=True).cuda()
 
     dummy_data = torch.tensor(np.zeros(dtype=np.float32, shape=(8, 512, 2, 7, 7)), requires_grad=True).cuda()
-    dummy_captions = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 50, 300))).cuda()
+    dummy_captions = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 50, 3000002))).cuda()
 
     # bs, l, v
     fake_samples, text_samples = decoder.sample(dummy_data)
