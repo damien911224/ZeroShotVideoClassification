@@ -293,7 +293,7 @@ class VideoDataset(Dataset):
         for c_i, path in enumerate(self.image_caption_paths):
             with open(path, "r") as fp:
                 caption_json = json.load(fp)
-                for datum in tqdm(caption_json["annotations"], desc="Image Caption {}".format(c_i)):
+                for datum in tqdm(caption_json["annotations"], desc="Image Caption ({})".format(c_i + 1)):
                     caption = datum["caption"]
                     tokens = self.preprocess_text(caption)
                     tokens.append("<EOS>")
