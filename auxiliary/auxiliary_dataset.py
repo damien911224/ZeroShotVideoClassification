@@ -275,7 +275,7 @@ class VideoDataset(Dataset):
         self.transform = get_transform(self.is_validation, crop_size)
         self.loadvideo = load_clips
 
-        caption_folder = "/mnt/hdd1"
+        caption_folder = "/mnt/hdd1/captions"
         self.image_caption_paths = \
             [os.path.join(caption_folder, "COCO", "captions_train2014.json"),
              os.path.join(caption_folder, "COCO", "captions_val2014.json")]
