@@ -291,53 +291,53 @@ class VideoDataset(Dataset):
 
         wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
 
-        image_captions = list()
-        UNK_count = 0
-        max_len = -1
-        for c_i, path in enumerate(self.image_caption_paths):
-            with open(path, "r") as fp:
-                caption_json = json.load(fp)
-                for datum in tqdm(caption_json["annotations"], desc="Image Caption ({})".format(c_i + 1)):
-                    caption = datum["caption"]
-                    # tokens = self.preprocess_text(caption)
-                    caption = self.clean_text(caption)
-                    caption = self.clean_numbers(caption)
-                    tokens = word_tokenize(caption)
-                    tokens.append("<EOS>")
-                    this_len = len(tokens)
-                    if this_len > max_len:
-                        max_len = this_len
-                    embeddings = list()
-                    for token in tokens:
-                        try:
-                            embeds = wv_model[token]
-                        except KeyError:
-                            if token.lower() in wv_model:
-                                embeds = wv_model[token.lower()]
-                            elif token.lower().title() in wv_model:
-                                embeds = wv_model[token.lower().title()]
-                            elif "-" in token:
-                                new_tokens = token.split("-")
-                                for new_token in new_tokens:
-                                    try:
-                                        embeds = wv_model[new_token]
-                                    except KeyError:
-                                        if token.lower() in wv_model:
-                                            embeds = wv_model[token.lower()]
-                                        elif token.lower().title() in wv_model:
-                                            embeds = wv_model[token.lower().title()]
-                                        else:
-                                            embeds = wv_model["<UNK>"]
-                                            UNK_count += 1
-                                            print(new_token)
-                            else:
-                                embeds = wv_model["<UNK>"]
-                                UNK_count += 1
-                                print(token)
-                        embeddings.append(embeds)
-                    image_captions.append(embeddings)
-        np.save(os.path.join(caption_folder, "COCO", "image_captions.npy"), image_captions, allow_pickle=True)
-        print("Image Captions: {} Sentences, {} UNK, MAXLEN {}".format(len(image_captions), UNK_count, max_len))
+        # image_captions = list()
+        # UNK_count = 0
+        # max_len = -1
+        # for c_i, path in enumerate(self.image_caption_paths):
+        #     with open(path, "r") as fp:
+        #         caption_json = json.load(fp)
+        #         for datum in tqdm(caption_json["annotations"], desc="Image Caption ({})".format(c_i + 1)):
+        #             caption = datum["caption"]
+        #             # tokens = self.preprocess_text(caption)
+        #             caption = self.clean_text(caption)
+        #             caption = self.clean_numbers(caption)
+        #             tokens = word_tokenize(caption)
+        #             tokens.append("<EOS>")
+        #             this_len = len(tokens)
+        #             if this_len > max_len:
+        #                 max_len = this_len
+        #             embeddings = list()
+        #             for token in tokens:
+        #                 try:
+        #                     embeds = wv_model[token]
+        #                 except KeyError:
+        #                     if token.lower() in wv_model:
+        #                         embeds = wv_model[token.lower()]
+        #                     elif token.lower().title() in wv_model:
+        #                         embeds = wv_model[token.lower().title()]
+        #                     elif "-" in token:
+        #                         new_tokens = token.split("-")
+        #                         for new_token in new_tokens:
+        #                             try:
+        #                                 embeds = wv_model[new_token]
+        #                             except KeyError:
+        #                                 if token.lower() in wv_model:
+        #                                     embeds = wv_model[token.lower()]
+        #                                 elif token.lower().title() in wv_model:
+        #                                     embeds = wv_model[token.lower().title()]
+        #                                 else:
+        #                                     embeds = wv_model["<UNK>"]
+        #                                     UNK_count += 1
+        #                                     print(new_token)
+        #                     else:
+        #                         embeds = wv_model["<UNK>"]
+        #                         UNK_count += 1
+        #                         print(token)
+        #                 embeddings.append(embeds)
+        #             image_captions.append(embeddings)
+        # np.save(os.path.join(caption_folder, "COCO", "image_captions.npy"), image_captions, allow_pickle=True)
+        # print("Image Captions: {} Sentences, {} UNK, MAXLEN {}".format(len(image_captions), UNK_count, max_len))
 
         video_captions = list()
         UNK_count = 0.0
@@ -346,7 +346,7 @@ class VideoDataset(Dataset):
             with open(path, "r") as fp:
                 caption_json = json.load(fp)
                 for identity in caption_json.keys():
-                    captions = datum[identity]["sentences"]
+                    captions = caption_json[identity]["sentences"]
                     for caption in captions:
                         caption = self.clean_text(caption)
                         caption = self.clean_numbers(caption)
