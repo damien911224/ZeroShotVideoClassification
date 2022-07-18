@@ -344,7 +344,7 @@ class Encoder(nn.Module):
                                                    nhead=8, dropout=0.1, activation="gelu")
         self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=6)
         self.output2dis_proj = nn.Linear(self.d_model, 1)
-        self.output2emb_proj = nn.Linear(self.d_model, len(self.wv_model))
+        self.output2emb_proj = nn.Linear(self.d_model, 300)
 
         self.reset_parameters()
 
