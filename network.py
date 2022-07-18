@@ -391,6 +391,8 @@ if __name__ == "__main__":
     # bs, l, v
     fake_samples, text_samples = decoder.sample(dummy_data)
 
+    print(text_samples)
+
     fake_dis, fake_emb = encoder(fake_samples)
     real_dis, real_emb = encoder(dummy_captions)
 
