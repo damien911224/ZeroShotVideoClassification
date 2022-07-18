@@ -16,6 +16,8 @@ from tqdm import tqdm
 from transformers import BertTokenizer
 bert_uncased = BertTokenizer.from_pretrained('bert-base-uncased')
 
+import re
+
 def get_ucf101():
     folder = '/mnt/hdd1/UCF101/videos'
     fnames, labels = [], []
@@ -297,19 +299,23 @@ class VideoDataset(Dataset):
                 caption_json = json.load(fp)
                 for datum in tqdm(caption_json["annotations"], desc="Image Caption ({})".format(c_i + 1)):
                     caption = datum["caption"]
-                    tokens = self.preprocess_text(caption)
+                    # tokens = self.preprocess_text(caption)
+                    caption = self.clean_text(caption)
+                    caption = self.clean_numbers(caption)
+                    tokens = word_tokenize(caption)
                     tokens.append("<EOS>")
                     this_len = len(tokens)
                     if this_len > max_len:
                         max_len = this_len
                     embeddings = list()
                     for token in tokens:
+                        token.replace("'", "").replace(".", "").replace("")
                         try:
                             embeds = wv_model[token]
                         except KeyError:
                             if token.title() in wv_model:
                                 embeds = wv_model[token.title()]
-                            elif "-" in embeds:
+                            elif "-" in token:
                                 new_tokens = token.split("-")
                                 for new_token in new_tokens:
                                     try:
@@ -398,4 +404,17 @@ class VideoDataset(Dataset):
 
         # This return statement below uses the above function to process twitter tokenizer output further.
         return remove_stops_digits(word_tokenize(text))
+
+    def clean_text(self, x):
+        pattern = r'[^a-zA-z0-9\s]'
+        text = re.sub(pattern, '', x)
+        return x
+
+    def clean_numbers(self, x):
+        if bool(re.search(r'\d', x)):
+            x = re.sub('[0-9]{5,}', '#####', x)
+            x = re.sub('[0-9]{4}', '####', x)
+            x = re.sub('[0-9]{3}', '###', x)
+            x = re.sub('[0-9]{2}', '##', x)
+        return x
 
