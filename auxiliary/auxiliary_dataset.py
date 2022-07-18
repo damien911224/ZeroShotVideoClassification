@@ -297,10 +297,7 @@ class VideoDataset(Dataset):
                 caption_json = json.load(fp)
                 for datum in tqdm(caption_json["annotations"], desc="Image Caption ({})".format(c_i + 1)):
                     caption = datum["caption"]
-                    # tokens = self.preprocess_text(caption)
-                    tokens = bert_uncased.encode(caption).tokens
-                    tokens = [t for t in tokens if "<" not in t and "#" not in t]
-                    print(tokens)
+                    tokens = word_tokenize(caption)
                     tokens.append("<EOS>")
                     this_len = len(tokens)
                     if this_len > max_len:
@@ -310,9 +307,20 @@ class VideoDataset(Dataset):
                         try:
                             embeds = wv_model[token]
                         except KeyError:
-                            print(token)
+                            if token.title() in wv_model:
+                                embeds = wv_model[token.title()]
+                            elif "-" in embeds:
+                                new_tokens = token.split("-")
+                                for new_token in new_tokens:
+                                    try:
+                                        embeds = wv_model[new_token]
+                                    except KeyError:
+                                        embeds = wv_model["<UNK>"]
+                                        UNK_count += 1
+                                        print(new_token)
                             embeds = wv_model["<UNK>"]
                             UNK_count += 1
+                            print(token)
                         embeddings.append(embeds)
                     image_captions.append(embeddings)
         print("Image Captions: {} Sentences, {} UNK".format(len(image_captions), UNK_count))
