@@ -265,9 +265,7 @@ class Decoder(nn.Module):
             - next_o: batch_size * vocab_size, not used yet
         """
         out = self.decoder(embs.permute(1, 0, 2), feats.permute(1, 0, 2)).permute(1, 0, 2)
-        print(out.shape)
         out = self.output2word_proj(out[:, -1])
-        print(out.shape)
 
         pred = F.gumbel_softmax(out, tau=self.temperature, hard=True, dim=-1)
         next_token = torch.argmax(pred, dim=1).detach()
@@ -303,15 +301,15 @@ class Decoder(nn.Module):
         inp = torch.Tensor([embeddings] * bs).view(bs, 1, 300).cuda().detach()
         inp = self.word2input_proj(inp) + s_pos_embeds[:, 0].unsqueeze(1)
 
-        end_flags = [False] * bs
+        end_flags = np.asarray([False] * bs)
         for i in range(self.max_seq_len):
             pred, next_token = self.step(inp, feats)
-            a = next_token.cpu().numpy().tolist()
             next_token = np.asarray([self.wv_model.index_to_key[idx] for idx in next_token.cpu().numpy().tolist()])
+            print(next_token)
             next_token[end_flags] = ""
             pred_embeddings = torch.matmul(pred, self.embeddings)
             print(pred_embeddings.shape)
-            pred_embeddings[end_flags] = torch.zeros_like(pred[:, 0])
+            pred_embeddings[end_flags] = torch.zeros_like(pred)
             all_preds.append(pred_embeddings)
             # next_inp = torch.Tensor(self.wv_model[next_token]).view(bs, 1, 300).cuda()
             # next_inp[end_flags] = torch.zeros_like(next_inp[:, 0])
