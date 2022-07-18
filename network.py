@@ -6,6 +6,7 @@ import resnet as models
 import torch.nn.functional as F
 import numpy as np
 from gensim.models import KeyedVectors as Word2Vec
+from tqdm import tqdm
 
 """=================================================================================================================="""
 
@@ -215,7 +216,7 @@ class Decoder(nn.Module):
 
         self.wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
         self.embeddings = list()
-        for w_i in range(len(self.wv_model)):
+        for w_i in tqdm(range(len(self.wv_model))):
             self.embeddings.append(self.wv_model[self.wv_model.index_to_key[w_i]])
         embeddings = np.array(self.embeddings, dtype=np.float32)
         np.save("./assets/embeddings.npy", embeddings)
