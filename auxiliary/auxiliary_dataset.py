@@ -297,7 +297,7 @@ class VideoDataset(Dataset):
                 caption_json = json.load(fp)
                 for datum in tqdm(caption_json["annotations"], desc="Image Caption ({})".format(c_i + 1)):
                     caption = datum["caption"]
-                    tokens = word_tokenize(caption)
+                    tokens = self.preprocess_text(caption)
                     tokens.append("<EOS>")
                     this_len = len(tokens)
                     if this_len > max_len:
