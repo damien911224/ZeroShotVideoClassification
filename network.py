@@ -305,10 +305,8 @@ class Decoder(nn.Module):
         for i in range(self.max_seq_len):
             pred, next_token = self.step(inp, feats)
             next_token = np.asarray([self.wv_model.index_to_key[idx] for idx in next_token.cpu().numpy().tolist()])
-            print(next_token)
             next_token[end_flags] = ""
             pred_embeddings = torch.matmul(pred, self.embeddings)
-            print(pred_embeddings.shape)
             pred_embeddings[end_flags] = torch.zeros_like(pred_embeddings[0])
             all_preds.append(pred_embeddings)
             # next_inp = torch.Tensor(self.wv_model[next_token]).view(bs, 1, 300).cuda()
