@@ -12,6 +12,7 @@ from gensim.models import KeyedVectors as Word2Vec
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from string import punctuation
+from tqdm import tqdm
 
 def get_ucf101():
     folder = '/mnt/hdd1/UCF101/videos'
@@ -288,18 +289,23 @@ class VideoDataset(Dataset):
 
         image_captions = list()
         UNK_count = 0
-        for path in self.image_caption_paths:
+        max_len = -1
+        for c_i, path in enumerate(self.image_caption_paths):
             with open(path, "r") as fp:
                 caption_json = json.load(fp)
-                for datum in caption_json["annotations"]:
+                for datum in tqdm(caption_json["annotations"], desc="Image Caption {}".format(c_i)):
                     caption = datum["caption"]
                     tokens = self.preprocess_text(caption)
                     tokens.append("<EOS>")
+                    this_len = len(tokens)
+                    if this_len > max_len:
+                        max_len = this_len
                     embeddings = list()
                     for token in tokens:
                         try:
                             embeds = wv_model[token]
                         except KeyError:
+                            print(token)
                             embeds = wv_model["<UNK>"]
                             UNK_count += 1
                         embeddings.append(embeds)
