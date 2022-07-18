@@ -379,7 +379,7 @@ if __name__ == "__main__":
     print("Encoder Done")
     # model = Model(network, decoder=decoder, encoder=encoder, fixconvs=False, nopretrained=True).cuda()
 
-    dummy_data = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 512, 2, 7, 7))).cuda()
+    dummy_data = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 512, 2, 7, 7)), require_grad=True).cuda()
     dummy_captions = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 50, 300))).cuda()
 
     # bs, l, v
