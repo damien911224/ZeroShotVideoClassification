@@ -318,9 +318,10 @@ class VideoDataset(Dataset):
                                         embeds = wv_model["<UNK>"]
                                         UNK_count += 1
                                         print(new_token)
-                            embeds = wv_model["<UNK>"]
-                            UNK_count += 1
-                            print(token)
+                            else:
+                                embeds = wv_model["<UNK>"]
+                                UNK_count += 1
+                                print(token)
                         embeddings.append(embeds)
                     image_captions.append(embeddings)
         print("Image Captions: {} Sentences, {} UNK".format(len(image_captions), UNK_count))
