@@ -195,7 +195,6 @@ class Model(nn.Module):
         x = x.reshape(bs*nc, ch, l, h, w)
         x, f = self.model(x)
 
-        print(f.shape)
         # bs, l, v
         fake_samples, text_samples = self.decoder.sample(f)
 
@@ -311,13 +310,8 @@ class Decoder(nn.Module):
             # next_inp[end_flags] = torch.zeros_like(next_inp[:, 0])
             # inp = torch.cat((inp, next_inp + s_pos_embeds[:, i + 1]), dim=0)
             inp = torch.cat((inp, (self.word2input_proj(pred_embeddings) + s_pos_embeds[:, i]).unsqueeze(1)), dim=1)
-            print(inp.shape)
-            print(next_token)
             all_samples.append(next_token)
-            if i == 1:
-                next_token[0] = "<EOS>"
             end_flags = np.logical_or(end_flags, next_token == end_letter)
-            print(end_flags)
         all_preds = torch.stack(all_preds, dim=1)
         all_samples = np.stack(all_samples, axis=1).tolist()
 
