@@ -13,6 +13,7 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from string import punctuation
 from tqdm import tqdm
+from transformers import BertTokenizer
 bert_uncased = BertTokenizer.from_pretrained('bert-base-uncased')
 
 def get_ucf101():
