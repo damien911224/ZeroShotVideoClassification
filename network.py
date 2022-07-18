@@ -217,6 +217,9 @@ class Decoder(nn.Module):
         self.embeddings = list()
         for w_i in range(len(self.wv_model)):
             self.embeddings.append(self.wv_model[self.wv_model.index_to_key[w_i]])
+        embeddings = np.array(self.embeddings, dtype=np.float32)
+        np.save("./assets/embeddings.npy", embeddings)
+        exit()
         self.embeddings = torch.Tensor(np.asarray(self.embeddings)).cuda()
         self.t_pos_embeds = nn.Embedding(2, self.d_model)
         self.h_pos_embeds = nn.Embedding(7, self.d_model)
