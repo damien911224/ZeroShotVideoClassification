@@ -319,6 +319,7 @@ class Decoder(nn.Module):
             if i == 1:
                 next_token[0] = "<EOS>"
             end_flags = next_token == end_letter
+            print(end_flags)
         all_preds = torch.stack(all_preds, dim=1)
         all_samples = np.stack(all_samples, axis=1).tolist()
 
