@@ -337,7 +337,7 @@ class VideoDataset(Dataset):
                     embeddings = np.array(embeddings, dtype=np.float32)
                     if len(embeddings) < 50:
                         embeddings = np.concatenate((embeddings,
-                                                     np.zeros(dtype=np.float32, shape=(50 - len(embeddings)))),
+                                                     np.zeros(dtype=np.float32, shape=(50 - len(embeddings), 300))),
                                                     axis=0)
                     image_captions.append(embeddings)
         np.save(os.path.join(caption_folder, "COCO", "image_captions.npy"), image_captions, allow_pickle=True)
@@ -388,7 +388,7 @@ class VideoDataset(Dataset):
                         embeddings = np.array(embeddings, dtype=np.float32)
                         if len(embeddings) < 83:
                             embeddings = np.concatenate((embeddings,
-                                                         np.zeros(dtype=np.float32, shape=(50 - len(embeddings)))),
+                                                         np.zeros(dtype=np.float32, shape=(50 - len(embeddings), 300))),
                                                         axis=0)
                         video_captions.append(embeddings)
         np.save(os.path.join(caption_folder, "ActivityNet", "video_captions.npy"), video_captions, allow_pickle=True)
