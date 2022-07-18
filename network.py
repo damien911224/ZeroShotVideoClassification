@@ -348,9 +348,6 @@ class Encoder(nn.Module):
 
         self.reset_parameters()
 
-        self.special_tokens = self.special_tokens.weight.view(1, 2, self.d_model).cuda()
-        self.s_pos_embeds = self.s_pos_embeds.weight.view(1, self.max_seq_len, self.d_model).cuda()
-
     def reset_parameters(self):
         for p in self.parameters():
             if p.dim() > 1:
