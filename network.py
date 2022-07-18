@@ -335,7 +335,7 @@ class Encoder(nn.Module):
 
         self.wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
         # self.embeddings = nn.Linear(len(self.wv_model), self.d_model, bias=False)
-        self.s_pos_embeds = nn.Embedding(self.max_seq_len, self.d_model).weight
+        self.s_pos_embeds = nn.Embedding(self.max_seq_len, self.d_model)
 
         self.special_tokens = nn.Embedding(2, self.d_model).weight.view(1, 2, self.d_model).cuda()
 
