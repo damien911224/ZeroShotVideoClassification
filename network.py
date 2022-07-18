@@ -225,7 +225,9 @@ class Decoder(nn.Module):
         split = 0
         # self.embeddings = np.load("./assets/embeddings.npy")
         self.embeddings = np.zeros(dtype=np.float32, shape=(3000002, 300))
+        print("AA")
         self.embeddings = torch.Tensor(self.embeddings).cuda()
+        print("BB")
         self.t_pos_embeds = nn.Embedding(2, self.d_model)
         self.h_pos_embeds = nn.Embedding(7, self.d_model)
         self.w_pos_embeds = nn.Embedding(7, self.d_model)
@@ -305,8 +307,7 @@ class Decoder(nn.Module):
         for i in range(self.max_seq_len):
             pred, next_token = self.step(inp, feats)
             a = next_token.cpu().numpy().tolist()
-            print(a)
-            next_token = self.wv_model.index_to_key[next_token.cpu().numpy().tolist()]
+            next_token = np.asarray([self.wv_model.index_to_key[idx] for idx in next_token.cpu().numpy().tolist()])
             next_token[end_flags] = ""
             pred_embeddings = torch.matmul(pred, self.embeddings)
             print(pred_embeddings.shape)
