@@ -369,7 +369,7 @@ class Encoder(nn.Module):
 
     def forward(self, x):
         special_tokens = self.special_tokens.weight.view(1, 2, self.d_model).cuda()
-        s_pos_embeds = self.s_pos_embeds.weight.view(1, 2, self.d_model).cuda()
+        s_pos_embeds = self.s_pos_embeds.weight.view(1, self.max_seq_len, self.d_model).cuda()
         x = self.word2input_proj(x) + s_pos_embeds
         x = torch.cat((special_tokens, x), dim=1)
         out = self.encoder(x.permute(1, 0, 2)).permute(1, 0, 2)
