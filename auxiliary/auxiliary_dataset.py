@@ -396,12 +396,13 @@ class VideoDataset(Dataset):
         #
         # exit()
         split = 0
-        self.max_seq_len = 50
-        caption_folder = "/mnt/hdd1/captions"
-        print("Load")
-        self.image_captions = np.load(os.path.join(caption_folder, "COCO", "image_captions.npy"), mmap_mode="r")
-        self.video_captions = np.load(os.path.join(caption_folder, "ActivityNet", "video_captions.npy"), mmap_mode="r")
-        print("Loaded")
+        if 'kinetics' in name:
+            self.max_seq_len = 50
+            caption_folder = "/mnt/hdd1/captions"
+            print("Load")
+            self.image_captions = np.load(os.path.join(caption_folder, "COCO", "image_captions.npy"), mmap_mode="r")
+            self.video_captions = np.load(os.path.join(caption_folder, "ActivityNet", "video_captions.npy"), mmap_mode="r")
+            print("Loaded")
 
     def __getitem__(self, idx):
         sample = self.data[idx]
@@ -417,20 +418,23 @@ class VideoDataset(Dataset):
         buffer = self.transform(buffer)
         buffer = buffer.reshape(3, s[0], s[1], self.crop_size, self.crop_size).transpose(0, 1)
 
-        image_caption = random.choice(self.image_captions)
-        if len(image_caption) < self.max_seq_len:
-            image_caption = np.concatenate((image_caption,
-                                            np.zeros(dtype=np.float32,
-                                                     shape=(self.max_seq_len - len(image_caption), 300))),
-                                           axis=0)
-        video_caption = random.choice(self.video_captions)
-        if len(video_caption) < self.max_seq_len:
-            video_caption = np.concatenate((video_caption,
-                                            np.zeros(dtype=np.float32,
-                                                     shape=(self.max_seq_len - len(video_caption), 300))),
-                                           axis=0)
+        if 'kinetics' in self.name:
+            image_caption = random.choice(self.image_captions)
+            if len(image_caption) < self.max_seq_len:
+                image_caption = np.concatenate((image_caption,
+                                                np.zeros(dtype=np.float32,
+                                                         shape=(self.max_seq_len - len(image_caption), 300))),
+                                               axis=0)
+            video_caption = random.choice(self.video_captions)
+            if len(video_caption) < self.max_seq_len:
+                video_caption = np.concatenate((video_caption,
+                                                np.zeros(dtype=np.float32,
+                                                         shape=(self.max_seq_len - len(video_caption), 300))),
+                                               axis=0)
 
-        return buffer, label, self.class_embed[label], idx, (image_caption, video_caption)
+            return buffer, label, self.class_embed[label], idx, (image_caption, video_caption)
+        else:
+            return buffer, label, self.class_embed[label], idx
 
     def __len__(self):
         return len(self.data)

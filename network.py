@@ -335,7 +335,7 @@ class Encoder(nn.Module):
 
         self.wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
         # self.embeddings = nn.Linear(len(self.wv_model), self.d_model, bias=False)
-        self.s_pos_embeds = \
+        self.s_pos_embeds = nn.Embedding(self.max_seq_len, self.d_model).weight
             nn.Embedding(self.max_seq_len, self.d_model).weight.view(1, self.max_seq_len, self.d_model).cuda()
 
         self.special_tokens = nn.Embedding(2, self.d_model).weight.view(1, 2, self.d_model).cuda()
@@ -350,6 +350,7 @@ class Encoder(nn.Module):
         self.reset_parameters()
 
         self.special_tokens = self.special_tokens.weight.view(1, 2, self.d_model).cuda()
+        self.s_pos_embeds = self.s_pos_embeds.weight.view(1, self.max_seq_len, self.d_model).cuda()
 
     def reset_parameters(self):
         for p in self.parameters():
