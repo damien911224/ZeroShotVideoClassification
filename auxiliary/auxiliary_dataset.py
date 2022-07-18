@@ -8,6 +8,10 @@ from scipy.spatial.distance import cdist
 import json
 import glob
 
+from gensim.models import KeyedVectors as Word2Vec
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from string import punctuation
 
 def get_ucf101():
     folder = '/mnt/hdd1/UCF101/videos'
@@ -271,6 +275,60 @@ class VideoDataset(Dataset):
         self.transform = get_transform(self.is_validation, crop_size)
         self.loadvideo = load_clips
 
+        caption_folder = "/mnt/ssd2/damien/captions"
+        self.image_caption_paths = \
+            [os.path.join(caption_folder, "COCO", "captions_train2014.json"),
+             os.path.join(caption_folder, "COCO", "captions_val2014.json")]
+        self.video_caption_paths = \
+            [os.path.join(caption_folder, "COCO", "train.json"),
+             os.path.join(caption_folder, "COCO", "val_1.json"),
+             os.path.join(caption_folder, "COCO", "val_2.json")]
+
+        wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
+
+        image_captions = list()
+        UNK_count = 0
+        for path in self.image_caption_paths:
+            with open(path, "r") as fp:
+                caption_json = json.load(fp)
+                for datum in caption_json["annotations"]:
+                    caption = datum["caption"]
+                    tokens = self.preprocess_text(caption)
+                    tokens.append("<EOS>")
+                    embeddings = list()
+                    for token in tokens:
+                        try:
+                            embeds = wv_model[token]
+                        except KeyError:
+                            embeds = wv_model["<UNK>"]
+                            UNK_count += 1
+                        embeddings.append(embeds)
+                    image_captions.append(embeddings)
+        print("Image Captions: {} Sentences, {} UNK".format(len(image_captions), UNK_count))
+
+        video_captions = list()
+        UNK_count = 0.0
+        for path in self.video_caption_paths:
+            with open(path, "r") as fp:
+                caption_json = json.load(fp)
+                for identity in caption_json.keys():
+                    captions = datum[identity]["sentences"]
+                    for caption in captions:
+                        tokens = self.preprocess_text(caption)
+                        tokens.append("<EOS>")
+                        embeddings = list()
+                        for token in tokens:
+                            try:
+                                embeds = wv_model[token]
+                            except KeyError:
+                                embeds = wv_model["<UNK>"]
+                                UNK_count += 1.0
+                            embeddings.append(embeds)
+                        video_captions.append(embeddings)
+        print("Video Captions: {} Sentences, {} UNK".format(len(video_captions), UNK_count))
+
+        exit()
+
     def __getitem__(self, idx):
         sample = self.data[idx]
         label = self.label_array[idx]
@@ -308,4 +366,16 @@ class VideoDataset(Dataset):
         labels = np.array(labels)[keep_sample]
         print('Broken videos %.2f%% - removing took %.2f' % (100 * (1.0 - keep_sample.mean()), time() - t))
         return fnames, labels
+
+    # preprocess the text.
+    def preprocess_text(self, text):
+        mystopwords = set(stopwords.words("english"))
+
+        def remove_stops_digits(tokens):
+            # Nested function that lowercases, removes stopwords and digits from a list of tokens
+            return [token.lower() for token in tokens if token.lower() not in mystopwords and not token.isdigit()
+                    and token not in punctuation]
+
+        # This return statement below uses the above function to process twitter tokenizer output further.
+        return remove_stops_digits(word_tokenize(text))
 

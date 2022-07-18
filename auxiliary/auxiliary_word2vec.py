@@ -30,14 +30,16 @@ def classes2embedding(dataset_name, class_name_inputs, wv_model):
 
 def load_word2vec():
     try:
-        wv_model = Word2Vec.load('./assets/GoogleNews', mmap='r')
+        # wv_model = Word2Vec.load('./assets/GoogleNews', mmap='r')
+        wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
     except:
         wv_model = Word2Vec.load_word2vec_format('./assets/GoogleNews-vectors-negative300.bin', binary=True)
         wv_model.init_sims(replace=True)
-        word_list = ["<EOS>", "<UNK>"]
-        vector_list = [np.random.normal(size=(300, )), np.random.normal(size=(300, ))]
-        wv_model.add(wordList, vectorList)
-        wv_model.save('./assets/GoogleNews')
+        wordList = ["<EOS>", "<UNK>"]
+        vectorList = [np.random.normal(size=(300, )), np.random.normal(size=(300, ))]
+        wv_model.add_vectors(wordList, vectorList)
+        # wv_model.save('./assets/GoogleNews')
+        wv_model.save('./assets/GoogleNewsAdded')
     # print(len(wv_model))
     # print(wv_model.index_to_key[300])
     # exit()
