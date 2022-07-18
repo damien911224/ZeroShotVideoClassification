@@ -292,7 +292,7 @@ class Decoder(nn.Module):
         s_pos_embeds = self.s_pos_embeds.weight.view(1, self.max_seq_len, self.d_model).cuda()
 
         # all_preds = list()
-        all_preds = torch.zeros(bs, self.max_seq_len, len(self.wv_model))
+        all_preds = torch.zeros(bs, self.max_seq_len, len(self.wv_model)).cuda()
         all_samples = list()
 
         embeddings = self.wv_model[start_letter]
