@@ -281,9 +281,9 @@ class VideoDataset(Dataset):
             [os.path.join(caption_folder, "COCO", "captions_train2014.json"),
              os.path.join(caption_folder, "COCO", "captions_val2014.json")]
         self.video_caption_paths = \
-            [os.path.join(caption_folder, "COCO", "train.json"),
-             os.path.join(caption_folder, "COCO", "val_1.json"),
-             os.path.join(caption_folder, "COCO", "val_2.json")]
+            [os.path.join(caption_folder, "ActivityNet", "train.json"),
+             os.path.join(caption_folder, "ActivityNet", "val_1.json"),
+             os.path.join(caption_folder, "ActivityNet", "val_2.json")]
 
         wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
 
