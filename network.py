@@ -394,6 +394,7 @@ if __name__ == "__main__":
     g_loss = adversarial_criterion(fake_dis - real_dis, torch.ones_like(fake_dis))
     adv_loss = g_loss + d_loss
     adv_loss.backward()
+    dummy_data.retain_grad()
     print(fake_dis.grad)
     print(fake_samples.grad)
     print(dummy_data.grad)
