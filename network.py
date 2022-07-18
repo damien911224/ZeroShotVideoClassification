@@ -308,7 +308,7 @@ class Decoder(nn.Module):
             this_samples.append(next_token)
             end_flags = next_token == end_letter
         all_preds = torch.stack(all_preds, dim=1)
-        this_samples = np.stack(this_samples, axis=1).tolist()
+        all_samples = np.stack(this_samples, axis=1).tolist()
 
         return all_preds, this_samples
 
