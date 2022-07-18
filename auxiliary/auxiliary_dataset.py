@@ -13,6 +13,7 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from string import punctuation
 from tqdm import tqdm
+bert_uncased = BertTokenizer.from_pretrained('bert-base-uncased')
 
 def get_ucf101():
     folder = '/mnt/hdd1/UCF101/videos'
@@ -295,7 +296,10 @@ class VideoDataset(Dataset):
                 caption_json = json.load(fp)
                 for datum in tqdm(caption_json["annotations"], desc="Image Caption ({})".format(c_i + 1)):
                     caption = datum["caption"]
-                    tokens = self.preprocess_text(caption)
+                    # tokens = self.preprocess_text(caption)
+                    tokens = bert_uncased(caption)
+                    tokens = [t if "<" not in t and "#" not in t for t in tokens]
+                    print(tokens)
                     tokens.append("<EOS>")
                     this_len = len(tokens)
                     if this_len > max_len:
