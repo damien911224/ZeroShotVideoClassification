@@ -291,8 +291,6 @@ class VideoDataset(Dataset):
 
         wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
 
-        fix_len = 83
-
         image_captions = list()
         UNK_count = 0
         max_len = -1
@@ -335,13 +333,9 @@ class VideoDataset(Dataset):
                                 embeds = wv_model["<UNK>"]
                                 UNK_count += 1
                         embeddings.append(embeds)
-                    if len(embeddings) < fix_len:
-                        embeddings = np.array(embeddings, dtype=np.float32)
-                        embeddings = np.concatenate((embeddings, np.zeros(dtype=np.float32,
-                                                                          shape=(fix_len - len(embeddings), 300))),
-                                                    axis=0)
+                    embeddings = np.array(embeddings, dtype=np.float32)
                     image_captions.append(embeddings)
-        np.save(os.path.join(caption_folder, "COCO", "image_captions.npy"), np.array(image_captions))
+        np.save(os.path.join(caption_folder, "COCO", "image_captions.npy"), image_captions, allow_pickle=True)
         print("Image Captions: {} Sentences, {} UNK, MAXLEN {}".format(len(image_captions), UNK_count, max_len))
 
         video_captions = list()
@@ -386,13 +380,9 @@ class VideoDataset(Dataset):
                                     embeds = wv_model["<UNK>"]
                                     UNK_count += 1
                             embeddings.append(embeds)
-                        if len(embeddings) < fix_len:
-                            embeddings = np.array(embeddings, dtype=np.float32)
-                            embeddings = np.concatenate((embeddings, np.zeros(dtype=np.float32,
-                                                                              shape=(fix_len - len(embeddings), 300))),
-                                                        axis=0)
+                        embeddings = np.array(embeddings, dtype=np.float32)
                         video_captions.append(embeddings)
-        np.save(os.path.join(caption_folder, "ActivityNet", "video_captions.npy"), np.array(video_captions))
+        np.save(os.path.join(caption_folder, "ActivityNet", "video_captions.npy"), video_captions, allow_pickle=True)
         print("Video Captions: {} Sentences, {} UNK, MAXLEN {}".format(len(video_captions), UNK_count, max_len))
 
         exit()
