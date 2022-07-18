@@ -222,7 +222,7 @@ class Decoder(nn.Module):
         self.t_pos_embeds = nn.Embedding(3, self.d_model)
         self.h_pos_embeds = nn.Embedding(4, self.d_model)
         self.w_pos_embeds = nn.Embedding(4, self.d_model)
-        self.s_pos_embeds = nn.Embedding(self.max_len, self.d_model)
+        self.s_pos_embeds = nn.Embedding(self.max_seq_len, self.d_model)
 
         self.word2input_proj = nn.Linear(300, self.d_model)
         self.feature2input_proj = nn.Linear(512, self.d_model)
