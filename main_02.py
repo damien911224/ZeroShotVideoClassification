@@ -224,7 +224,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
 
             random_index = random.choice(range(len(X)))
             txwriter.add_text("Train/Caption", " ".join(text_samples[random_index]))
-            videos = ((X.detach().cpu().numpy() * 2.0 + 1) * 255.0).astype(np.uint8).permute(0, 2, 1, 3, 4)
+            videos = ((X.squeeze().detach().cpu().numpy() * 2.0 + 1) * 255.0).astype(np.uint8).permute(0, 2, 1, 3, 4)
             txwriter.add_video("Train/Video", " ".join(videos[random_index].unsqueeze(0)))
 
 
