@@ -380,6 +380,7 @@ class VideoDataset(Dataset):
                                     UNK_count += 1
                             embeddings.append(embeds)
                         video_captions.append(embeddings)
+        np.save(os.path.join(caption_folder, "ActivityNet", "video_captions.npy"), image_captions, allow_pickle=True)
         print("Video Captions: {} Sentences, {} UNK, MAXLEN {}".format(len(video_captions), UNK_count, max_len))
 
         exit()
