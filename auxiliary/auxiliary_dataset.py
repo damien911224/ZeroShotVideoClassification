@@ -309,7 +309,6 @@ class VideoDataset(Dataset):
                         max_len = this_len
                     embeddings = list()
                     for token in tokens:
-                        token.replace("'", "").replace(".", "").replace("")
                         try:
                             embeds = wv_model[token]
                         except KeyError:
