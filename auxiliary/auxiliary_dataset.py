@@ -314,8 +314,6 @@ class VideoDataset(Dataset):
                     if len(embeddings) < 50:
                         embeddings = np.pad(embeddings, ((0, 50 - len(embeddings)), (0, 0)))
 
-                    print(embeddings.shape)
-
                     # tokens = self.preprocess_text(caption)
                     # caption = self.clean_text(caption)
                     # caption = self.clean_numbers(caption)
