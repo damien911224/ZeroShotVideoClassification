@@ -234,7 +234,7 @@ class Decoder(nn.Module):
         self.feature2input_proj = nn.Linear(512, self.d_model)
         decoder_layer = nn.TransformerDecoderLayer(d_model=self.d_model, dim_feedforward=self.d_model * 4,
                                                    nhead=8, dropout=0.1, activation="gelu")
-        self.decoder = nn.TransformerDecoder(decoder_layer, num_layers=6)
+        self.decoder = nn.TransformerDecoder(decoder_layer, num_layers=2)
         self.output2word_proj = nn.Linear(self.d_model, len(self.wv_model))
 
         self.reset_parameters()
@@ -348,7 +348,7 @@ class Encoder(nn.Module):
         self.word2input_proj = nn.Linear(len(self.wv_model), self.d_model)
         encoder_layer = nn.TransformerEncoderLayer(d_model=self.d_model, dim_feedforward=self.d_model * 4,
                                                    nhead=8, dropout=0.1, activation="gelu")
-        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=6)
+        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=2)
         self.output2dis_proj = nn.Linear(self.d_model, 1)
         self.output2emb_proj = nn.Linear(self.d_model, 300)
 
