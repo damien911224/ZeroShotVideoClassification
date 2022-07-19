@@ -211,7 +211,7 @@ class Decoder(nn.Module):
 
         self.d_model = 256
         self.temperature = 1.0
-        self.max_seq_len = 50
+        self.max_seq_len = 64
 
         # self.wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
         split = 0
@@ -363,7 +363,7 @@ class Encoder(nn.Module):
         super(Encoder, self).__init__()
 
         self.d_model = 256
-        self.max_seq_len = 50
+        self.max_seq_len = 64
 
         # self.wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
         self.s_pos_embeds = nn.Embedding(self.max_seq_len, self.d_model)
