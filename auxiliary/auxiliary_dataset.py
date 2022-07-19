@@ -310,7 +310,7 @@ class VideoDataset(Dataset):
 
                     inputs = tokenizer(caption, return_tensors="pt")
                     # Predict hidden states features for each layer
-                    outputs = model(model(**inputs))
+                    outputs = model(**inputs)
                     # embeddings = encoded_layers[-1].detach().cpu().numpy()
                     print(outputs)
                     exit()
