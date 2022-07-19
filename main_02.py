@@ -37,7 +37,7 @@ parser.add_argument('--class_overlap', default=0.040,  type=float, help='tau. se
 ### General Training Parameters
 parser.add_argument('--lr',           default=1e-3, type=float, help='Learning Rate for network parameters.')
 parser.add_argument('--n_epochs',     default=150,   type=int,   help='Number of training epochs.')
-parser.add_argument('--bs',           default=32,   type=int,   help='Mini-Batchsize size per GPU.')
+parser.add_argument('--bs',           default=64,   type=int,   help='Mini-Batchsize size per GPU.')
 parser.add_argument('--size',         default=112,  type=int,   help='Image size in input.')
 
 parser.add_argument('--fixconvs', action='store_true', default=False,   help='Freezing conv layers')
@@ -187,22 +187,22 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         tt_model = time.time()
         with autocast():
             split = 0
-            fake_emb = model(X.to(opt.device))
-            embed_loss = embed_criterion(fake_emb, Z)
-            loss = embed_loss
-            split = 0
-            # # Compute embeddings for input batch.
-            # fake_emb, (real_dis, fake_dis) = model(X, image_captions)
-            # # Y = Y[:s[0]]
-            #
-            # # Compute loss.
-            # d_loss = adversarial_criterion(real_dis - fake_dis, torch.ones_like(real_dis))
-            # g_loss = adversarial_criterion(fake_dis - real_dis, torch.ones_like(fake_dis))
-            # adv_loss = g_loss + d_loss
-            #
+            # fake_emb = model(X.to(opt.device))
             # embed_loss = embed_criterion(fake_emb, Z)
-            #
-            # loss = embed_loss + 1.0e-4 * adv_loss
+            # loss = embed_loss
+            split = 0
+            # Compute embeddings for input batch.
+            fake_emb, (real_dis, fake_dis) = model(X, image_captions)
+            # Y = Y[:s[0]]
+
+            # Compute loss.
+            d_loss = adversarial_criterion(real_dis - fake_dis, torch.ones_like(real_dis))
+            g_loss = adversarial_criterion(fake_dis - real_dis, torch.ones_like(fake_dis))
+            adv_loss = g_loss + d_loss
+
+            embed_loss = embed_criterion(fake_emb, Z)
+
+            loss = embed_loss + 1.0e-4 * adv_loss
             split = 0
 
         # Compute Accuracy.
@@ -236,8 +236,8 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         if (i + 1) % 100 == 0:
             txwriter.add_scalar('Train/Loss', loss.item(), i + 1)
             txwriter.add_scalar('Train/EmbeddingLoss', embed_loss.item(), i + 1)
-            # txwriter.add_scalar('Train/GeneratorLoss', g_loss.item(), i + 1)
-            # txwriter.add_scalar('Train/DiscriminatorLoss', d_loss.item(), i + 1)
+            txwriter.add_scalar('Train/GeneratorLoss', g_loss.item(), i + 1)
+            txwriter.add_scalar('Train/DiscriminatorLoss', d_loss.item(), i + 1)
             txwriter.add_scalar('Train/Accuracy', np.mean(acc), i + 1)
 
             # random_index = random.choice(range(len(X)))
@@ -288,8 +288,8 @@ def evaluate(test_dataloader, txwriter, epoch):
             X, l, Z = X[not_broken], l[not_broken], Z[not_broken]
             if len(X) == 0: continue
             # Run network on batch
-            Y = model(X.to(opt.device))
-            # Y, _ = model(X.to(opt.device))
+            # Y = model(X.to(opt.device))
+            Y, _ = model(X.to(opt.device))
             Y = Y.cpu().detach().numpy()
             l = l.cpu().detach().numpy()
             predicted_embed[fi:fi + len(l)] = Y

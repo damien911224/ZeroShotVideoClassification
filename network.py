@@ -27,8 +27,8 @@ def get_network(opt):
         raise Exception('Network {} not available!'.format(opt.network))
     decoder = Decoder()
     encoder = Encoder()
-    return ResNet18(network, fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
-    # return Model(network, decoder=decoder, encoder=encoder, fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
+    # return ResNet18(network, fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
+    return Model(network, decoder=decoder, encoder=encoder, fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
 
 
 """=================================================================================================================="""
