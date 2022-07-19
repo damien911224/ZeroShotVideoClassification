@@ -312,7 +312,7 @@ class VideoDataset(Dataset):
                     # Predict hidden states features for each layer
                     encoded_layers, _ = model(tokens_tensor)
                     embeddings = encoded_layers[-1]
-                    print(embeddings.shape)
+                    print(encoded_layers)
                     exit()
 
                     # tokens = self.preprocess_text(caption)
