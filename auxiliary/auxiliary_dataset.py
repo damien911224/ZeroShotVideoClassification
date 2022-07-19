@@ -423,6 +423,7 @@ class VideoDataset(Dataset):
             image_caption = F.one_hot(image_caption, 3000002).float()
             if len(image_caption) < self.max_seq_len:
                 image_caption = F.pad(image_caption, (0, 0, 0, self.max_seq_len - len(image_caption)))
+            print(image_caption.shape)
             # video_caption = torch.Tensor(random.choice(self.video_captions)).long()
             # video_caption = F.one_hot(video_caption, 3000002).float()
             # if len(video_caption) < self.max_seq_len:
