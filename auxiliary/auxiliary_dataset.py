@@ -306,13 +306,13 @@ class VideoDataset(Dataset):
                 for datum in tqdm(caption_json["annotations"], desc="Image Caption ({})".format(c_i + 1)):
                     caption = datum["caption"]
 
-                    inputs = tokenizer(caption, return_tensors="pt")
-                    for key in inputs.keys():
-                        inputs[key] = inputs[key].cuda()
-                    outputs = model(**inputs)
-                    embeddings = outputs["last_hidden_state"].detach().cpu().numpy().squeeze(0)
-                    if len(embeddings) < 50:
-                        embeddings = np.pad(embeddings, ((0, 50 - len(embeddings)), (0, 0)))
+                    # inputs = tokenizer(caption, return_tensors="pt")
+                    # for key in inputs.keys():
+                    #     inputs[key] = inputs[key].cuda()
+                    # outputs = model(**inputs)
+                    # embeddings = outputs["last_hidden_state"].detach().cpu().numpy().squeeze(0)
+                    # if len(embeddings) < 50:
+                    #     embeddings = np.pad(embeddings, ((0, 50 - len(embeddings)), (0, 0)))
 
                     # tokens = self.preprocess_text(caption)
                     # caption = self.clean_text(caption)
@@ -353,9 +353,12 @@ class VideoDataset(Dataset):
                     #     embeddings = np.concatenate((embeddings,
                     #                                  np.zeros(dtype=np.float32, shape=(50 - len(embeddings), 300))),
                     #                                 axis=0)
-                    image_captions.append(embeddings)
+                    image_captions.append(caption)
         np.save(os.path.join(caption_folder, "COCO", "image_captions.npy"), np.array(image_captions, dtype=np.float32))
         print("Image Captions: {} Sentences, {} UNK, MAXLEN {}".format(len(image_captions), UNK_count, max_len))
+
+        with open(os.path.join(caption_folder, "COCO", "image_captions.json"), "w") as fp:
+            json.dump(image_captions, fp, indent=4, sort_keys=True)
 
         video_captions = list()
         UNK_count = 0.0
@@ -366,15 +369,15 @@ class VideoDataset(Dataset):
                 for identity in tqdm(caption_json.keys(), desc="Video Caption ({})".format(c_i + 1)):
                     captions = caption_json[identity]["sentences"]
                     for caption in captions:
-                        inputs = tokenizer(caption, return_tensors="pt")
-                        for key in inputs.keys():
-                            inputs[key] = inputs[key].cuda()
-
-                        with torch.no_grad():
-                            outputs = model(**inputs)
-                        embeddings = outputs["last_hidden_state"].detach().cpu().numpy().squeeze(0)
-                        if len(embeddings) < 83:
-                            embeddings = np.pad(embeddings, ((0, 83 - len(embeddings)), (0, 0)))
+                        # inputs = tokenizer(caption, return_tensors="pt")
+                        # for key in inputs.keys():
+                        #     inputs[key] = inputs[key].cuda()
+                        #
+                        # with torch.no_grad():
+                        #     outputs = model(**inputs)
+                        # embeddings = outputs["last_hidden_state"].detach().cpu().numpy().squeeze(0)
+                        # if len(embeddings) < 83:
+                        #     embeddings = np.pad(embeddings, ((0, 83 - len(embeddings)), (0, 0)))
 
                         # caption = self.clean_text(caption)
                         # caption = self.clean_numbers(caption)
@@ -414,18 +417,27 @@ class VideoDataset(Dataset):
                         #     embeddings = np.concatenate((embeddings,
                         #                                  np.zeros(dtype=np.float32, shape=(83 - len(embeddings), 300))),
                         #                                 axis=0)
-                        video_captions.append(embeddings)
+                        video_captions.append(caption)
         np.save(os.path.join(caption_folder, "ActivityNet", "video_captions.npy"),
                 np.array(video_captions, dtype=np.float32))
         print("Video Captions: {} Sentences, {} UNK, MAXLEN {}".format(len(video_captions), UNK_count, max_len))
+
+        with open(os.path.join(caption_folder, "ActivityNet", "video_captions.json"), "w") as fp:
+            json.dump(video_captions, fp, indent=4, sort_keys=True)
 
         exit()
         split = 0
         if 'kinetics' in name:
             self.max_seq_len = 50
             caption_folder = "/mnt/hdd1/captions"
-            self.image_captions = np.load(os.path.join(caption_folder, "COCO", "image_captions.npy"), mmap_mode="r")
-            self.video_captions = np.load(os.path.join(caption_folder, "ActivityNet", "video_captions.npy"), mmap_mode="r")
+            self.tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+            self.model = AutoModel.from_pretrained("bert-base-uncased").cuda()
+            with open(os.path.join(caption_folder, "COCO", "image_captions.json"), "r") as fp:
+                self.image_captions = json.load(fp)
+            with open(os.path.join(caption_folder, "ActivityNet", "video_captions.json"), "r") as fp:
+                self.video_captions = json.load(fp)
+            # self.image_captions = np.load(os.path.join(caption_folder, "COCO", "image_captions.npy"), mmap_mode="r")
+            # self.video_captions = np.load(os.path.join(caption_folder, "ActivityNet", "video_captions.npy"), mmap_mode="r")
 
     def __getitem__(self, idx):
         sample = self.data[idx]
