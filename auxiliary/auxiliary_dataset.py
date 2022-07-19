@@ -18,6 +18,8 @@ import random
 import re
 import torch.nn.functional as F
 
+from transformers import AutoTokenizer, AutoModel
+
 def get_ucf101():
     folder = '/mnt/hdd1/UCF101/videos'
     fnames, labels = [], []
@@ -292,10 +294,12 @@ class VideoDataset(Dataset):
         # wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
         # wv_model = wv_model.key_to_index
 
-        tokenizer = torch.hub.load('huggingface/pytorch-transformers', 'tokenizer', 'bert-base-uncased')
+        # tokenizer = torch.hub.load('huggingface/pytorch-transformers', 'tokenizer', 'bert-base-uncased')
+        tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
         # Load pre-trained model (weights)
-        model = torch.hub.load('huggingface/pytorch-transformers', 'model', 'bert-base-uncased')
-        model.to("cuda")
+        # model = torch.hub.load('huggingface/pytorch-transformers', 'model', 'bert-base-uncased')
+        # model.to("cuda")
+        model = AutoModel.from_pretrained("bert-base-uncased")
 
         image_captions = list()
         UNK_count = 0
@@ -307,12 +311,14 @@ class VideoDataset(Dataset):
                     caption = datum["caption"]
 
                     # tokenized_text = tokenizer.tokenize(caption)
-                    indexed_tokens = tokenizer.encode(caption, add_special_tokens=True)
-                    tokens_tensor = torch.tensor([indexed_tokens]).cuda()
+                    # indexed_tokens = tokenizer.encode(caption, add_special_tokens=True)
+                    # tokens_tensor = torch.tensor([indexed_tokens]).cuda()
+                    inputs = tokenizer("Hello world!", return_tensors="pt")
                     # Predict hidden states features for each layer
-                    with torch.no_grad():
-                        encoded_layers, _ = model(tokens_tensor)
-                    embeddings = encoded_layers["last_hidden_state"].detach().cpu().numpy()
+                    # with torch.no_grad():
+                    #     encoded_layers, _ = model(tokens_tensor)
+                    outputs = model(**inputs)
+                    embeddings = outputs["last_hidden_state"].detach().cpu().numpy()
                     print(embeddings.shape)
                     exit()
 
