@@ -374,10 +374,10 @@ class Encoder(nn.Module):
         encoder_layer = nn.TransformerEncoderLayer(d_model=self.d_model, dim_feedforward=self.d_model * 4,
                                                    nhead=8, dropout=0.1, activation="gelu")
         self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=6)
-        self.output2dis_proj = nn.Linear(self.d_model, 1)
-        self.output2emb_proj = nn.Linear(self.d_model, 300)
-        # self.output2dis_proj = MLP(self.d_model, self.d_model, 1, 3)
-        # self.output2emb_proj = MLP(self.d_model, self.d_model, 300, 3)
+        # self.output2dis_proj = nn.Linear(self.d_model, 1)
+        # self.output2emb_proj = nn.Linear(self.d_model, 300)
+        self.output2dis_proj = MLP(self.d_model, self.d_model, 1, 3)
+        self.output2emb_proj = MLP(self.d_model, self.d_model, 300, 3)
 
         self.reset_parameters()
 
