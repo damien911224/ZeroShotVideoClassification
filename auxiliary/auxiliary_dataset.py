@@ -294,8 +294,7 @@ class VideoDataset(Dataset):
 
         tokenizer = torch.hub.load('huggingface/pytorch-transformers', 'tokenizer', 'bert-base-uncased')
         # Load pre-trained model (weights)
-        model = torch.hub.load('huggingface/pytorch-transformers', 'model', 'bert-base-uncased').cuda()
-        model.eval()
+        model = torch.hub.load('huggingface/pytorch-transformers', 'model', 'bert-base-uncased').cuda()\
 
         image_captions = list()
         UNK_count = 0
@@ -310,9 +309,10 @@ class VideoDataset(Dataset):
                     indexed_tokens = tokenizer.convert_tokens_to_ids(tokenized_text)
                     tokens_tensor = torch.tensor([indexed_tokens]).cuda()
                     # Predict hidden states features for each layer
-                    encoded_layers, _ = model(tokens_tensor)
+                    with torch.no_grad():
+                        encoded_layers, _ = model(tokens_tensor)
                     embeddings = encoded_layers[-1]
-                    print(encoded_layers)
+                    print(embeddings)
                     exit()
 
                     # tokens = self.preprocess_text(caption)
