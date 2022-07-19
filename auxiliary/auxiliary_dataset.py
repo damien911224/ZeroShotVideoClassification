@@ -307,6 +307,8 @@ class VideoDataset(Dataset):
                     caption = datum["caption"]
 
                     inputs = tokenizer(caption, return_tensors="pt")
+                    for key in inputs.keys():
+                        inputs[key] = inputs[key].cuda()
                     outputs = model(**inputs)
                     embeddings = outputs["last_hidden_state"].detach().cpu().numpy().squeeze(0)
 
