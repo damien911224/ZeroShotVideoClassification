@@ -15,6 +15,7 @@ from sklearn.metrics import accuracy_score
 from colorama import Fore, Style
 from torch.cuda.amp import GradScaler, autocast
 import random
+import torch.nn.functional as F
 
 Style.RESET_ALL
 
@@ -168,6 +169,14 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
 
         X = X.cuda()
         Z = Z.cuda()
+
+        new_image_captions = list()
+        for image_caption in image_captions:
+            image_caption = F.one_hot(image_caption, 3000002).float()
+            if len(image_caption) < 50:
+                image_caption = F.pad(image_caption, (0, 0, 0, 50 - len(image_caption)))
+            new_image_captions.append(image_caption)
+        image_captions = torch.stack(new_image_captions, dim=0)
         image_captions = image_captions.cuda()
         # video_captions = video_captions.cuda()
 
