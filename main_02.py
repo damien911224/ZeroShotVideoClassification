@@ -171,7 +171,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         Z = Z.cuda()
 
         image_captions = torch.where(image_captions != -1,
-                                     F.one_hot(torch.maximum(image_captions, 0), 3000002).float(),
+                                     F.one_hot(torch.maximum(image_captions, torch.Tensor(0)), 3000002).float(),
                                      torch.zeros(dtype=torch.float32, size=(len(X), 3000002)))
 
         # new_image_captions = list()
