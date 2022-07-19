@@ -308,7 +308,7 @@ class Decoder(nn.Module):
             # pred[end_flags] = torch.zeros_like(pred[0])
             # all_preds.append(pred)
             all_preds[np.logical_not(end_flags), i] = pred[np.logical_not(end_flags)]
-            next_inp = torch.Tensor(self.wv_model[next_token]).view(bs, 300).cuda()
+            next_inp = torch.Tensor(self.wv_model[next_token]).view(bs, 300).detach().cuda()
             next_inp[end_flags] = torch.zeros_like(next_inp[0])
             inp = torch.cat((inp, (self.word2input_proj(next_inp) + s_pos_embeds[:, i]).unsqueeze(1)), dim=1)
             # inp = torch.cat((inp, (self.word2input_proj(pred_embeddings) + s_pos_embeds[:, i]).unsqueeze(1)), dim=1)
