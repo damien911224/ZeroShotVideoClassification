@@ -312,7 +312,7 @@ class VideoDataset(Dataset):
                     # Predict hidden states features for each layer
                     with torch.no_grad():
                         encoded_layers, _ = model(tokens_tensor)
-                    embeddings = encoded_layers[-1]["last_hidden_state"].detach().cpu().numpy()
+                    embeddings = encoded_layers["last_hidden_state"].detach().cpu().numpy()
                     print(embeddings.shape)
                     exit()
 
