@@ -196,12 +196,12 @@ class Model(nn.Module):
         x, f = self.model(x)
 
         # bs, l, v
-        fake_samples, text_samples = self.decoder(f)
+        fake_samples = self.decoder(f)
 
         fake_dis, fake_emb = self.encoder(fake_samples)
         real_dis, real_emb = self.encoder(real_samples)
 
-        return fake_emb, (real_dis, fake_dis), text_samples
+        return fake_emb, (real_dis, fake_dis)
 
 
 class Decoder(nn.Module):

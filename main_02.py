@@ -187,7 +187,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         tt_model = time.time()
         with autocast():
             # Compute embeddings for input batch.
-            fake_emb, (real_dis, fake_dis), text_samples = model(X, image_captions)
+            fake_emb, (real_dis, fake_dis) = model(X, image_captions)
             # Y = Y[:s[0]]
 
             # Compute loss.
@@ -234,10 +234,10 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             txwriter.add_scalar('Train/DiscriminatorLoss', d_loss.item(), i + 1)
             txwriter.add_scalar('Train/Accuracy', np.mean(acc), epoch)
 
-            random_index = random.choice(range(len(X)))
-            txwriter.add_text("Train/Caption", " ".join(text_samples[random_index]))
-            videos = ((X.squeeze().detach().cpu().numpy() * 2.0 + 1) * 255.0).astype(np.uint8).permute(0, 2, 1, 3, 4)
-            txwriter.add_video("Train/Video", " ".join(videos[random_index].unsqueeze(0)))
+            # random_index = random.choice(range(len(X)))
+            # txwriter.add_text("Train/Caption", " ".join(text_samples[random_index]))
+            # videos = ((X.squeeze().detach().cpu().numpy() * 2.0 + 1) * 255.0).astype(np.uint8).permute(0, 2, 1, 3, 4)
+            # txwriter.add_video("Train/Video", " ".join(videos[random_index].unsqueeze(0)))
 
 
         # if i == len(train_dataloader)-1 or i*opt.bs > 100000:
