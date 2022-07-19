@@ -213,7 +213,7 @@ class Decoder(nn.Module):
         self.temperature = 1.0
         self.max_seq_len = 50
 
-        self.wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
+        # self.wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
         split = 0
         # self.embeddings = list()
         # for w_i in tqdm(range(len(self.wv_model))):
@@ -230,12 +230,12 @@ class Decoder(nn.Module):
         self.w_pos_embeds = nn.Embedding(7, self.d_model)
         self.s_pos_embeds = nn.Embedding(self.max_seq_len, self.d_model)
 
-        self.word2input_proj = nn.Linear(300, self.d_model)
+        # self.word2input_proj = nn.Linear(300, self.d_model)
         self.feature2input_proj = nn.Linear(512, self.d_model)
         decoder_layer = nn.TransformerDecoderLayer(d_model=self.d_model, dim_feedforward=self.d_model * 4,
                                                    nhead=8, dropout=0.1, activation="gelu")
-        self.decoder = nn.TransformerDecoder(decoder_layer, num_layers=2)
-        self.output2word_proj = nn.Linear(self.d_model, len(self.wv_model))
+        self.decoder = nn.TransformerDecoder(decoder_layer, num_layers=6)
+        self.output2word_proj = nn.Linear(self.d_model, 768)
 
         self.reset_parameters()
 
@@ -248,6 +248,31 @@ class Decoder(nn.Module):
         nn.init.normal_(self.h_pos_embeds.weight)
         nn.init.normal_(self.w_pos_embeds.weight)
         nn.init.normal_(self.s_pos_embeds.weight)
+
+    def forward(self, feats):
+        """
+        RelGAN step forward
+        :param inp: [batch_size]
+        :param hidden: memory size
+        :return: pred, hidden, next_token, next_token_onehot, next_o
+            - pred: batch_size * vocab_size, use for adversarial training backward
+            - hidden: next hidden
+            - next_token: [batch_size], next sentence token
+            - next_token_onehot: batch_size * vocab_size, not used yet
+            - next_o: batch_size * vocab_size, not used yet
+        """
+        bs, c, t, h, w = feats.shape
+        feats = self.feature2input_proj(feats.view(bs, c, t * h * w).permute(0, 2, 1))
+        pos_embeds = (self.t_pos_embeds.weight.view(t, 1, 1, self.d_model) +
+                      self.h_pos_embeds.weight.view(1, h, 1, self.d_model) +
+                      self.w_pos_embeds.weight.view(1, 1, w, self.d_model)).view(1, t * h * w, self.d_model)
+        feats = feats + pos_embeds.cuda()
+
+        s_pos_embeds = self.s_pos_embeds.weight.view(1, self.max_seq_len, self.d_model).repeat(bs, 1, 1).cuda()
+        out = self.decoder(s_pos_embeds.permute(1, 0, 2), feats.permute(1, 0, 2)).permute(1, 0, 2)
+        out = self.output2word_proj(out)
+
+        return out
 
     def step(self, embs, feats):
         """
@@ -340,12 +365,12 @@ class Encoder(nn.Module):
         self.d_model = 256
         self.max_seq_len = 50
 
-        self.wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
+        # self.wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
         self.s_pos_embeds = nn.Embedding(self.max_seq_len, self.d_model)
 
         self.special_tokens = nn.Embedding(2, self.d_model)
 
-        self.word2input_proj = nn.Linear(len(self.wv_model), self.d_model)
+        self.word2input_proj = nn.Linear(768, self.d_model)
         encoder_layer = nn.TransformerEncoderLayer(d_model=self.d_model, dim_feedforward=self.d_model * 4,
                                                    nhead=8, dropout=0.1, activation="gelu")
         self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=2)
@@ -383,7 +408,7 @@ if __name__ == "__main__":
     # model = Model(network, decoder=decoder, encoder=encoder, fixconvs=False, nopretrained=True).cuda()
 
     dummy_data = torch.tensor(np.zeros(dtype=np.float32, shape=(8, 512, 2, 7, 7)), requires_grad=True).cuda()
-    dummy_captions = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 50, 3000002))).cuda()
+    dummy_captions = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 50, 768))).cuda()
 
     # bs, l, v
     fake_samples, text_samples = decoder.sample(dummy_data)
