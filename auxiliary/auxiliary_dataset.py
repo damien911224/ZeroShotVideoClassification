@@ -420,20 +420,13 @@ class VideoDataset(Dataset):
 
         if 'kinetics' in self.name:
             image_caption = torch.Tensor(random.choice(self.image_captions)).long()
-            print(image_caption)
             image_caption = F.one_hot(image_caption, 3000002).float()
             if len(image_caption) < self.max_seq_len:
-                image_caption = torch.cat((image_caption,
-                                           torch.zeros(dtype=torch.float32,
-                                                       shape=(self.max_seq_len - len(image_caption), 3000002))),
-                                          dim=0)
+                image_caption = F.pad(image_caption, (0, 0, 0, self.max_seq_len - len(image_caption)))
             video_caption = torch.Tensor(random.choice(self.video_captions)).long()
             video_caption = F.one_hot(video_caption, 3000002).float()
             if len(video_caption) < self.max_seq_len:
-                video_caption = torch.cat((video_caption,
-                                           torch.zeros(dtype=torch.float32,
-                                                       shape=(self.max_seq_len - len(image_caption), 3000002))),
-                                          dim=0)
+                video_caption = F.pad(video_caption, (0, 0, 0, self.max_seq_len - len(image_caption)))
 
             return buffer, label, self.class_embed[label], idx, (image_caption, video_caption)
         else:
