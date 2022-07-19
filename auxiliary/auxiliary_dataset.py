@@ -295,7 +295,7 @@ class VideoDataset(Dataset):
         # wv_model = wv_model.key_to_index
 
         tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-        model = AutoModel.from_pretrained("bert-base-uncased")
+        model = AutoModel.from_pretrained("bert-base-uncased").cuda()
 
         image_captions = list()
         UNK_count = 0
@@ -363,6 +363,8 @@ class VideoDataset(Dataset):
                     captions = caption_json[identity]["sentences"]
                     for caption in captions:
                         inputs = tokenizer(caption, return_tensors="pt")
+                        for value in inputs.values():
+                            value = value.cuda()
                         outputs = model(**inputs)
                         embeddings = outputs["last_hidden_state"].detach().cpu().numpy().squeeze(0)
 
