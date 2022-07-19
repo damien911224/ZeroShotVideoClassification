@@ -420,6 +420,7 @@ class VideoDataset(Dataset):
 
         if 'kinetics' in self.name:
             image_caption = torch.Tensor(random.choice(self.image_captions)).int64()
+            print(image_caption)
             image_caption = F.one_hot(image_caption, 3000002).float()
             if len(image_caption) < self.max_seq_len:
                 image_caption = torch.cat((image_caption,
