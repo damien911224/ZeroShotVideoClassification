@@ -297,7 +297,7 @@ class VideoDataset(Dataset):
         tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
         # Load pre-trained model (weights)
         model = AutoModel.from_pretrained("bert-base-uncased")
-        model.to("cuda")
+        # model.to("cuda")
 
         image_captions = list()
         UNK_count = 0
