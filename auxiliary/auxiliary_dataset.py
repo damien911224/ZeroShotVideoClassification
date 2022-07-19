@@ -294,11 +294,7 @@ class VideoDataset(Dataset):
         # wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
         # wv_model = wv_model.key_to_index
 
-        # tokenizer = torch.hub.load('huggingface/pytorch-transformers', 'tokenizer', 'bert-base-uncased')
         tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-        # Load pre-trained model (weights)
-        # model = torch.hub.load('huggingface/pytorch-transformers', 'model', 'bert-base-uncased')
-        # model.to("cuda")
         model = AutoModel.from_pretrained("bert-base-uncased")
 
         image_captions = list()
@@ -310,18 +306,9 @@ class VideoDataset(Dataset):
                 for datum in tqdm(caption_json["annotations"], desc="Image Caption ({})".format(c_i + 1)):
                     caption = datum["caption"]
 
-                    # tokenized_text = tokenizer.tokenize(caption)
-                    # indexed_tokens = tokenizer.encode(caption, add_special_tokens=True)
-                    # tokens_tensor = torch.tensor([indexed_tokens]).cuda()
                     inputs = tokenizer(caption, return_tensors="pt")
-                    print(inputs)
-                    # Predict hidden states features for each layer
-                    # with torch.no_grad():
-                    #     encoded_layers, _ = model(tokens_tensor)
                     outputs = model(**inputs)
-                    embeddings = outputs["last_hidden_state"].detach().cpu().numpy()
-                    print(embeddings.shape)
-                    exit()
+                    embeddings = outputs["last_hidden_state"].detach().cpu().numpy().squeeze(0)
 
                     # tokens = self.preprocess_text(caption)
                     # caption = self.clean_text(caption)
@@ -375,40 +362,44 @@ class VideoDataset(Dataset):
                 for identity in tqdm(caption_json.keys(), desc="Video Caption ({})".format(c_i + 1)):
                     captions = caption_json[identity]["sentences"]
                     for caption in captions:
-                        caption = self.clean_text(caption)
-                        caption = self.clean_numbers(caption)
-                        tokens = word_tokenize(caption)
-                        tokens.append("<EOS>")
-                        this_len = len(tokens)
-                        if this_len > max_len:
-                            max_len = this_len
-                        embeddings = list()
-                        for token in tokens:
-                            try:
-                                embeds = wv_model[token]
-                            except KeyError:
-                                if token.lower() in wv_model:
-                                    embeds = wv_model[token.lower()]
-                                elif token.lower().title() in wv_model:
-                                    embeds = wv_model[token.lower().title()]
-                                elif "-" in token:
-                                    new_tokens = token.split("-")
-                                    for new_token in new_tokens:
-                                        try:
-                                            embeds = wv_model[new_token]
-                                        except KeyError:
-                                            if token.lower() in wv_model:
-                                                embeds = wv_model[token.lower()]
-                                            elif token.lower().title() in wv_model:
-                                                embeds = wv_model[token.lower().title()]
-                                            else:
-                                                embeds = wv_model["<UNK>"]
-                                                UNK_count += 1
-                                else:
-                                    embeds = wv_model["<UNK>"]
-                                    UNK_count += 1
-                            embeddings.append(embeds)
-                        embeddings = np.array(embeddings, dtype=np.int64)
+                        inputs = tokenizer(caption, return_tensors="pt")
+                        outputs = model(**inputs)
+                        embeddings = outputs["last_hidden_state"].detach().cpu().numpy().squeeze(0)
+
+                        # caption = self.clean_text(caption)
+                        # caption = self.clean_numbers(caption)
+                        # tokens = word_tokenize(caption)
+                        # tokens.append("<EOS>")
+                        # this_len = len(tokens)
+                        # if this_len > max_len:
+                        #     max_len = this_len
+                        # embeddings = list()
+                        # for token in tokens:
+                        #     try:
+                        #         embeds = wv_model[token]
+                        #     except KeyError:
+                        #         if token.lower() in wv_model:
+                        #             embeds = wv_model[token.lower()]
+                        #         elif token.lower().title() in wv_model:
+                        #             embeds = wv_model[token.lower().title()]
+                        #         elif "-" in token:
+                        #             new_tokens = token.split("-")
+                        #             for new_token in new_tokens:
+                        #                 try:
+                        #                     embeds = wv_model[new_token]
+                        #                 except KeyError:
+                        #                     if token.lower() in wv_model:
+                        #                         embeds = wv_model[token.lower()]
+                        #                     elif token.lower().title() in wv_model:
+                        #                         embeds = wv_model[token.lower().title()]
+                        #                     else:
+                        #                         embeds = wv_model["<UNK>"]
+                        #                         UNK_count += 1
+                        #         else:
+                        #             embeds = wv_model["<UNK>"]
+                        #             UNK_count += 1
+                        #     embeddings.append(embeds)
+                        # embeddings = np.array(embeddings, dtype=np.int64)
                         # if len(embeddings) < 83:
                         #     embeddings = np.concatenate((embeddings,
                         #                                  np.zeros(dtype=np.float32, shape=(83 - len(embeddings), 300))),
