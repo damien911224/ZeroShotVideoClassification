@@ -438,7 +438,7 @@ if __name__ == "__main__":
     dummy_captions = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 50, 768))).cuda()
 
     # bs, l, v
-    fake_samples, text_samples = decoder.sample(dummy_data)
+    fake_samples, text_samples = decoder(dummy_data)
 
     adversarial_criterion = torch.nn.BCEWithLogitsLoss().cuda()
 
