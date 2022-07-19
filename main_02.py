@@ -382,6 +382,13 @@ if __name__ == '__main__':
         print(opt.savename)
         tt = time.time()
 
+        ### Evaluation
+        accuracies = []
+        for test_dataloader in dataloaders['testing']:
+            accuracy, _ = evaluate(test_dataloader, txwriter, epoch)
+            accuracies.append(accuracy)
+        accuracy = np.mean(accuracies)
+
         ## Train one epoch
         if not opt.evaluate:
             _ = model.train()
