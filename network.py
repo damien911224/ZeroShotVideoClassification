@@ -27,8 +27,8 @@ def get_network(opt):
         raise Exception('Network {} not available!'.format(opt.network))
     decoder = Decoder()
     encoder = Encoder()
-    return ResNet18(network, fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
-    # return Model(network, decoder=decoder, encoder=encoder, fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
+    # return ResNet18(network, fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
+    return Model(network, decoder=decoder, encoder=encoder, fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
 
 
 """=================================================================================================================="""
@@ -214,7 +214,7 @@ class Decoder(nn.Module):
 
         self.d_model = 256
         self.temperature = 1.0
-        self.max_seq_len = 64
+        self.max_seq_len = 20
 
         # self.wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
         split = 0
@@ -366,7 +366,7 @@ class Encoder(nn.Module):
         super(Encoder, self).__init__()
 
         self.d_model = 256
-        self.max_seq_len = 64
+        self.max_seq_len = 20
 
         # self.wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
         self.s_pos_embeds = nn.Embedding(self.max_seq_len, self.d_model)

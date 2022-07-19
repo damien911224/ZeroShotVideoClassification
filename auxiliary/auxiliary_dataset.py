@@ -430,7 +430,7 @@ class VideoDataset(Dataset):
         # exit()
         split = 0
         if 'kinetics' in name:
-            self.max_seq_len = 64
+            self.max_seq_len = 20
             caption_folder = "/mnt/hdd1/captions"
             self.tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
             self.model = AutoModel.from_pretrained("bert-base-uncased")
@@ -464,7 +464,10 @@ class VideoDataset(Dataset):
             with torch.no_grad():
                 image_caption = self.model(**image_caption)
             image_caption = image_caption["last_hidden_state"].detach().squeeze(0)
-            if len(image_caption) < self.max_seq_len:
+            if len(image_caption) > self.max_seq_len:
+                random_start_index = random.choice(range(len(image_caption) - self.max_seq_len + 1))
+                image_caption = image_caption[random_start_index:random_start_index + self.max_seq_len]
+            elif len(image_caption) < self.max_seq_len:
                 image_caption = F.pad(image_caption, (0, 0, 0, self.max_seq_len - len(image_caption)),
                                       "constant", value=0.0)
             # video_caption = torch.Tensor(random.choice(self.video_captions)).long()
