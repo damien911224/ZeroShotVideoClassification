@@ -363,8 +363,8 @@ class VideoDataset(Dataset):
                     captions = caption_json[identity]["sentences"]
                     for caption in captions:
                         inputs = tokenizer(caption, return_tensors="pt")
-                        for value in inputs.values():
-                            value = value.cuda()
+                        for key in inputs.keys():
+                            inputs[key] = inputs[key].cuda()
 
                         with torch.no_grad():
                             outputs = model(**inputs)
