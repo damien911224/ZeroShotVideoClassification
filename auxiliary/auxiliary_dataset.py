@@ -294,7 +294,8 @@ class VideoDataset(Dataset):
 
         tokenizer = torch.hub.load('huggingface/pytorch-transformers', 'tokenizer', 'bert-base-uncased')
         # Load pre-trained model (weights)
-        model = torch.hub.load('huggingface/pytorch-transformers', 'model', 'bert-base-uncased').cuda()
+        model = torch.hub.load('huggingface/pytorch-transformers', 'model', 'bert-base-uncased')
+        model.to("cuda")
 
         image_captions = list()
         UNK_count = 0
