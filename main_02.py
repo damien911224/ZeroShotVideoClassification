@@ -27,7 +27,7 @@ parser.add_argument('--split',        default=-1,   type=int, help='Train/test c
 parser.add_argument('--dataset',      default='kinetics2oboth',   type=str, help='Dataset: [kinetics2oboth, kinetics2others, sun2both]')
 
 parser.add_argument('--train_samples',  default=-1,  type=int, help='Reduce number of train samples to the given value')
-parser.add_argument('--class_total',  default=-1,  type=int, help='For debugging only. Reduce the total number of classes')
+parser.add_argument('--class_total',  default=60,  type=int, help='For debugging only. Reduce the total number of classes')
 
 parser.add_argument('--clip_len',     default=16,   type=int, help='Number of frames of each sample clip')
 parser.add_argument('--n_clips',     default=1,   type=int, help='Number of clips per video')
