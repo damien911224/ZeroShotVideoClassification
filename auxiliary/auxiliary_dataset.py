@@ -14,7 +14,6 @@ from nltk.corpus import stopwords
 from string import punctuation
 from tqdm import tqdm
 import random
-from pytorch_pretrained_bert import BertTokenizer, BertModel
 
 import re
 import torch.nn.functional as F
@@ -293,9 +292,9 @@ class VideoDataset(Dataset):
         # wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
         # wv_model = wv_model.key_to_index
 
-        tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        tokenizer = torch.hub.load('huggingface/pytorch-transformers', 'tokenizer', 'bert-base-uncased')
         # Load pre-trained model (weights)
-        model = BertModel.from_pretrained('bert-base-uncased').cuda()
+        model = torch.hub.load('huggingface/pytorch-transformers', 'model', 'bert-base-uncased').cuda()
         model.eval()
 
         image_captions = list()
