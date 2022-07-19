@@ -354,7 +354,7 @@ class VideoDataset(Dataset):
                     #                                  np.zeros(dtype=np.float32, shape=(50 - len(embeddings), 300))),
                     #                                 axis=0)
                     image_captions.append(caption)
-        np.save(os.path.join(caption_folder, "COCO", "image_captions.npy"), np.array(image_captions, dtype=np.float32))
+        # np.save(os.path.join(caption_folder, "COCO", "image_captions.npy"), np.array(image_captions, dtype=np.float32))
         print("Image Captions: {} Sentences, {} UNK, MAXLEN {}".format(len(image_captions), UNK_count, max_len))
 
         with open(os.path.join(caption_folder, "COCO", "image_captions.json"), "w") as fp:
@@ -418,8 +418,8 @@ class VideoDataset(Dataset):
                         #                                  np.zeros(dtype=np.float32, shape=(83 - len(embeddings), 300))),
                         #                                 axis=0)
                         video_captions.append(caption)
-        np.save(os.path.join(caption_folder, "ActivityNet", "video_captions.npy"),
-                np.array(video_captions, dtype=np.float32))
+        # np.save(os.path.join(caption_folder, "ActivityNet", "video_captions.npy"),
+        #         np.array(video_captions, dtype=np.float32))
         print("Video Captions: {} Sentences, {} UNK, MAXLEN {}".format(len(video_captions), UNK_count, max_len))
 
         with open(os.path.join(caption_folder, "ActivityNet", "video_captions.json"), "w") as fp:
@@ -431,7 +431,7 @@ class VideoDataset(Dataset):
             self.max_seq_len = 50
             caption_folder = "/mnt/hdd1/captions"
             self.tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-            self.model = AutoModel.from_pretrained("bert-base-uncased").cuda()
+            self.model = AutoModel.from_pretrained("bert-base-uncased")
             with open(os.path.join(caption_folder, "COCO", "image_captions.json"), "r") as fp:
                 self.image_captions = json.load(fp)
             with open(os.path.join(caption_folder, "ActivityNet", "video_captions.json"), "r") as fp:
