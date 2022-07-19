@@ -180,7 +180,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         #     if len(image_caption) < 50:
         #         image_caption = F.pad(image_caption, (0, 0, 0, 50 - len(image_caption)))
         #     new_image_captions.append(image_caption)
-        image_captions = torch.stack(new_image_captions, dim=0)
+        # image_captions = torch.stack(new_image_captions, dim=0)
         image_captions = image_captions.cuda()
         # video_captions = video_captions.cuda()
 
