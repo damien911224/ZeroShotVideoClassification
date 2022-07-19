@@ -365,7 +365,9 @@ class VideoDataset(Dataset):
                         inputs = tokenizer(caption, return_tensors="pt")
                         for value in inputs.values():
                             value = value.cuda()
-                        outputs = model(**inputs)
+
+                        with torch.no_grad():
+                            outputs = model(**inputs)
                         embeddings = outputs["last_hidden_state"].detach().cpu().numpy().squeeze(0)
 
                         # caption = self.clean_text(caption)
