@@ -190,7 +190,7 @@ class Model(nn.Module):
         self.decoder = decoder
         self.encoder = encoder
 
-    def forward(self, x, real_samples):
+    def forward(self, x, real_samples=None):
         bs, nc, ch, l, h, w = x.shape
         x = x.reshape(bs*nc, ch, l, h, w)
         x, f = self.model(x)
@@ -199,7 +199,10 @@ class Model(nn.Module):
         fake_samples = self.decoder(f)
 
         fake_dis, fake_emb = self.encoder(fake_samples)
-        real_dis, real_emb = self.encoder(real_samples)
+        if real_samples is not None:
+            real_dis, real_emb = self.encoder(real_samples)
+        else:
+            real_dis, real_emb = None, None
 
         return fake_emb, (real_dis, fake_dis)
 

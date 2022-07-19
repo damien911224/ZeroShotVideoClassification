@@ -197,7 +197,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
 
             embed_loss = embed_criterion(fake_emb, Z)
 
-            loss = embed_loss + 1.0e-4 * adv_loss
+            loss = embed_loss + 1.0e-7 * adv_loss
 
         # Compute Accuracy.
         pred_embed = fake_emb.detach().cpu().numpy()
@@ -232,7 +232,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             txwriter.add_scalar('Train/EmbeddingLoss', embed_loss.item(), i + 1)
             txwriter.add_scalar('Train/GeneratorLoss', g_loss.item(), i + 1)
             txwriter.add_scalar('Train/DiscriminatorLoss', d_loss.item(), i + 1)
-            txwriter.add_scalar('Train/Accuracy', np.mean(acc), epoch)
+            txwriter.add_scalar('Train/Accuracy', np.mean(acc), i + 1)
 
             # random_index = random.choice(range(len(X)))
             # txwriter.add_text("Train/Caption", " ".join(text_samples[random_index]))
@@ -282,7 +282,8 @@ def evaluate(test_dataloader, txwriter, epoch):
             X, l, Z = X[not_broken], l[not_broken], Z[not_broken]
             if len(X) == 0: continue
             # Run network on batch
-            Y = model(X.to(opt.device))
+            # Y = model(X.to(opt.device))
+            Y, _ = model(X.to(opt.device))
             Y = Y.cpu().detach().numpy()
             l = l.cpu().detach().numpy()
             predicted_embed[fi:fi + len(l)] = Y
