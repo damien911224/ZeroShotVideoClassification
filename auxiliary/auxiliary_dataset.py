@@ -306,8 +306,8 @@ class VideoDataset(Dataset):
                 for datum in tqdm(caption_json["annotations"], desc="Image Caption ({})".format(c_i + 1)):
                     caption = datum["caption"]
 
-                    tokenized_text = tokenizer.tokenize(caption)
-                    indexed_tokens = tokenizer.encode(tokenized_text, add_special_tokens=True)
+                    # tokenized_text = tokenizer.tokenize(caption)
+                    indexed_tokens = tokenizer.encode(caption, add_special_tokens=True)
                     tokens_tensor = torch.tensor([indexed_tokens]).cuda()
                     # Predict hidden states features for each layer
                     with torch.no_grad():
