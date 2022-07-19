@@ -315,6 +315,7 @@ class Decoder(nn.Module):
             next_token[end_flags] = ""
             all_samples.append(next_token)
             end_flags = np.logical_or(end_flags, next_token == end_letter)
+            print(i)
         # all_preds = torch.stack(all_preds, dim=1)
         all_samples = np.stack(all_samples, axis=1).tolist()
 
