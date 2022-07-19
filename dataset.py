@@ -130,8 +130,10 @@ def get_both_datasets(opt):
     n_clips = opt.n_clips if not opt.evaluate else max(5*5, opt.n_clips)
     val_dataset   = VideoDataset(test_fnames, test_labels, test_class_embedding, test_classes, 'ucf101',
                                  clip_len=opt.clip_len, n_clips=n_clips, crop_size=opt.size, is_validation=True,
+                                 load_clips=load_frames_tsn,
                                  evaluation_only=opt.evaluate)
     val_dataset2  = VideoDataset(test_fnames2, test_labels2, test_class_embedding2, test_classes2, 'hmdb51',
+                                 load_clips=load_frames_tsn,
                                  clip_len=opt.clip_len, n_clips=n_clips, crop_size=opt.size, is_validation=True,
                                  evaluation_only=opt.evaluate)
     if opt.evaluate:

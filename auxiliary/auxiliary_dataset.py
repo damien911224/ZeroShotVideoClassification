@@ -21,7 +21,8 @@ import torch.nn.functional as F
 from transformers import AutoTokenizer, AutoModel
 
 def get_ucf101():
-    folder = '/mnt/hdd1/UCF101/videos'
+    # folder = '/mnt/hdd1/UCF101/videos'
+    folder = '/mnt/hdd1/UCF101/frames'
     fnames, labels = [], []
     paths = sorted(glob.glob(os.path.join(folder, "*")))
     for path in paths:
@@ -61,7 +62,8 @@ def get_hmdb():
             class_map[int(idx)] = name
 
     fnames, labels = [], []
-    paths = sorted(glob.glob(os.path.join(root_folder, "videos", "*")))
+    # paths = sorted(glob.glob(os.path.join(root_folder, "videos", "*")))
+    paths = sorted(glob.glob(os.path.join(root_folder, "frames", "*")))
     for fname in paths:
         fnames.append(fname)
         label = class_map[gt_json["database"][os.path.basename(fname).split(".")[0]]["annotations"]]
