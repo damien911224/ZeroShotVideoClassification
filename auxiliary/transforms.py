@@ -48,7 +48,7 @@ def get_transform(is_validation, crop_size=112):
     #                       std=[0.22803, 0.22145, 0.216989])
     transform = [
         ToFloatTensorInZeroOne(),
-        # Resize(size),
+        Resize(size),
         # normalize,
         crop]
     if not is_validation:
