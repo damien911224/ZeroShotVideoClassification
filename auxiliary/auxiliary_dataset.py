@@ -308,7 +308,7 @@ class VideoDataset(Dataset):
                 for datum in tqdm(caption_json["annotations"], desc="Image Caption ({})".format(c_i + 1)):
                     caption = datum["caption"]
 
-                    inputs = tokenizer(caption, return_tensors="pt").cuda()
+                    inputs = tokenizer(caption, return_tensors="pt")
                     # Predict hidden states features for each layer
                     outputs = model(model(**inputs))
                     # embeddings = encoded_layers[-1].detach().cpu().numpy()
