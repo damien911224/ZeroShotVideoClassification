@@ -313,7 +313,7 @@ class VideoDataset(Dataset):
                     # tokenized_text = tokenizer.tokenize(caption)
                     # indexed_tokens = tokenizer.encode(caption, add_special_tokens=True)
                     # tokens_tensor = torch.tensor([indexed_tokens]).cuda()
-                    inputs = tokenizer("Hello world!", return_tensors="pt")
+                    inputs = tokenizer(caption, return_tensors="pt")
                     # Predict hidden states features for each layer
                     # with torch.no_grad():
                     #     encoded_layers, _ = model(tokens_tensor)
