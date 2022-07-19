@@ -461,7 +461,7 @@ class VideoDataset(Dataset):
             image_caption = self.tokenizer(image_caption, return_tensors="pt")
             with torch.no_grad():
                 image_caption = self.model(**image_caption)
-            image_caption = image_caption["last_hidden_state"].detach().cpu().numpy().squeeze(0)
+            image_caption = image_caption["last_hidden_state"].detach().squeeze(0)
             if len(image_caption) < self.max_seq_len:
                 image_caption = F.pad(image_caption, (0, 0, 0, self.max_seq_len - len(image_caption)),
                                       "constant", value=0.0)
