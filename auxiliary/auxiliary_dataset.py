@@ -18,8 +18,6 @@ import random
 import re
 import torch.nn.functional as F
 
-from transformers import AutoTokenizer, AutoModel
-
 def get_ucf101():
     folder = '/mnt/hdd1/UCF101/videos'
     fnames, labels = [], []
@@ -294,10 +292,10 @@ class VideoDataset(Dataset):
         # wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
         # wv_model = wv_model.key_to_index
 
-        tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+        tokenizer = torch.hub.load('huggingface/pytorch-transformers', 'tokenizer', 'bert-base-uncased')
         # Load pre-trained model (weights)
-        model = AutoModel.from_pretrained("bert-base-uncased")
-        # model.to("cuda")
+        model = torch.hub.load('huggingface/pytorch-transformers', 'model', 'bert-base-uncased')
+        model.to("cuda")
 
         image_captions = list()
         UNK_count = 0
@@ -308,11 +306,14 @@ class VideoDataset(Dataset):
                 for datum in tqdm(caption_json["annotations"], desc="Image Caption ({})".format(c_i + 1)):
                     caption = datum["caption"]
 
-                    inputs = tokenizer(caption, return_tensors="pt")
+                    tokenized_text = tokenizer.tokenize(caption)
+                    indexed_tokens = tokenizer.encode(tokenized_text, add_special_tokens=True)
+                    tokens_tensor = torch.tensor([indexed_tokens]).cuda()
                     # Predict hidden states features for each layer
-                    outputs = model(**inputs)
-                    # embeddings = encoded_layers[-1].detach().cpu().numpy()
-                    print(outputs)
+                    with torch.no_grad():
+                        encoded_layers, _ = model(tokens_tensor)
+                    embeddings = encoded_layers[-1]["last_hidden_state"].detach().cpu().numpy()
+                    print(embeddings.shape)
                     exit()
 
                     # tokens = self.preprocess_text(caption)
