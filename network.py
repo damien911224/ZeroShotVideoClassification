@@ -7,7 +7,6 @@ import torch.nn.functional as F
 import numpy as np
 from gensim.models import KeyedVectors as Word2Vec
 from tqdm import tqdm
-from pytorch_pretrained_bert import BertModel
 
 """=================================================================================================================="""
 
