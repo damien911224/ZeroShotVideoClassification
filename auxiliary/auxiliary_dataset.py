@@ -426,8 +426,8 @@ class VideoDataset(Dataset):
         if 'kinetics' in name:
             self.max_seq_len = 50
             caption_folder = "/mnt/hdd1/captions"
-            self.image_captions = np.load(os.path.join(caption_folder, "COCO", "image_captions.npy"), allow_pickle=True)
-            self.video_captions = np.load(os.path.join(caption_folder, "ActivityNet", "video_captions.npy"), allow_pickle=True)
+            self.image_captions = np.load(os.path.join(caption_folder, "COCO", "image_captions.npy"), mmap_mode="r")
+            self.video_captions = np.load(os.path.join(caption_folder, "ActivityNet", "video_captions.npy"), mmap_mode="r")
 
     def __getitem__(self, idx):
         sample = self.data[idx]
