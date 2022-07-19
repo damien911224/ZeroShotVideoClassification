@@ -456,7 +456,12 @@ class VideoDataset(Dataset):
         if 'kinetics' in self.name:
             # image_caption = torch.Tensor(random.choice(self.image_captions)).long()
             # image_caption = F.one_hot(image_caption, 3000002).float()
-            image_caption = torch.Tensor(random.choice(self.image_captions)).float()
+            # image_caption = torch.Tensor(random.choice(self.image_captions)).float()
+            image_caption = random.choice(self.image_captions)
+            image_caption = self.tokenizer(image_caption, return_tensors="pt")
+            with torch.no_grad():
+                image_caption = self.model(**image_caption)
+            image_caption = image_caption["last_hidden_state"].detach().cpu().numpy().squeeze(0)
             if len(image_caption) < self.max_seq_len:
                 image_caption = F.pad(image_caption, (0, 0, 0, self.max_seq_len - len(image_caption)),
                                       "constant", value=0.0)
