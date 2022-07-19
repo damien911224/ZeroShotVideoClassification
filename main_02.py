@@ -171,7 +171,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         Z = Z.cuda()
 
         one_hot = F.one_hot(torch.maximum(image_captions, torch.zeros_like(image_captions)), 3000002).float()
-        image_captions = torch.where(image_captions != -1, one_hot, torch.zeros_like(one_hot))
+        image_captions = torch.where((image_captions != -1).unsqueeze(-1), one_hot, torch.zeros_like(one_hot))
 
         # new_image_captions = list()
         # for image_caption in image_captions:
