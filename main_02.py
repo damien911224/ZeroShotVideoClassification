@@ -155,7 +155,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
     if opt.progressbar:
         data_iterator = tqdm(train_dataloader, desc='Epoch {} Training...'.format(epoch))
 
-    for i, (X, l, Z, _, (image_captions, video_captions)) in enumerate(data_iterator):
+    for i, (X, l, Z, _, image_captions) in enumerate(data_iterator):
         not_broken = l != -1
         X, l, Z = X[not_broken], l[not_broken], Z[not_broken]
         # if i % 20000 == 0:
@@ -169,7 +169,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         X = X.cuda()
         Z = Z.cuda()
         image_captions = image_captions.cuda()
-        video_captions = video_captions.cuda()
+        # video_captions = video_captions.cuda()
 
         optimizer.zero_grad()
         tt_model = time.time()
