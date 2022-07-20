@@ -232,7 +232,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
                 d_loss_real = adversarial_criterion(real_dis[i], torch.ones_like(real_dis[i]))
                 # d_loss = d_loss_real + d_loss_fake
 
-                scaler.scale(d_loss_real).backward(retain_graph=True)
+                scaler.scale(d_loss_real).backward()
                 # scaler.scale(d_loss).backward(retain_graph=True)
                 scaler.step(dis_optimizer)
 
