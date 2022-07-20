@@ -470,12 +470,20 @@ class VideoDataset(Dataset):
             elif len(image_caption) < self.max_seq_len:
                 image_caption = F.pad(image_caption, (0, 0, 0, self.max_seq_len - len(image_caption)),
                                       "constant", value=0.0)
-            # video_caption = torch.Tensor(random.choice(self.video_captions)).long()
-            # video_caption = F.one_hot(video_caption, 3000002).float()
-            # if len(video_caption) < self.max_seq_len:
-            #     video_caption = F.pad(video_caption, (0, 0, 0, self.max_seq_len - len(image_caption)))
 
-            return buffer, label, self.class_embed[label], idx, image_caption
+            video_caption = random.choice(self.video_captions)
+            video_caption = self.tokenizer(video_caption, return_tensors="pt")
+            with torch.no_grad():
+                video_caption = self.model(**video_caption)
+            video_caption = video_caption["last_hidden_state"].detach().squeeze(0)
+            if len(video_caption) > self.max_seq_len:
+                random_start_index = random.choice(range(len(video_caption) - self.max_seq_len + 1))
+                video_caption = video_caption[random_start_index:random_start_index + self.max_seq_len]
+            elif len(video_caption) < self.max_seq_len:
+                video_caption = F.pad(video_caption, (0, 0, 0, self.max_seq_len - len(video_caption)),
+                                      "constant", value=0.0)
+
+            return buffer, label, self.class_embed[label], idx, (image_caption, video_caption)
         else:
             return buffer, label, self.class_embed[label], idx
 
