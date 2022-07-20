@@ -136,8 +136,6 @@ _ = model.to(opt.device)
 embed_criterion = torch.nn.MSELoss().to(opt.device)
 adversarial_criterion = torch.nn.BCEWithLogitsLoss().to(opt.device)
 optimizer = torch.optim.Adam(model.parameters(), lr=opt.lr)
-a = cnn.parameters()
-print(a)
 gan_optimizer = torch.optim.Adam(cnn.parameters() + decoder.parameters(), lr=opt.lr)
 dis_optimizer = torch.optim.Adam(cnn.parameters() + encoder.parameters(), lr=opt.lr)
 if opt.lr == 1e-3:
