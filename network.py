@@ -496,10 +496,11 @@ if __name__ == "__main__":
 
     optimizer.zero_grad()
     gan_optimizer.zero_grad()
+    g_loss.backward(retain_graph=True)
     dis_optimizer.zero_grad()
-    (embed_loss + g_loss).backward()
-    optimizer.step()
-    gan_optimizer.step()
+    embed_loss.backward()
+    # optimizer.step()
+    # gan_optimizer.step()
     # dis_optimizer.step()
 
     print("embed loss done")
@@ -525,6 +526,8 @@ if __name__ == "__main__":
 
     # dis_optimizer.zero_grad()
     d_loss.backward()
+    optimizer.step()
+    gan_optimizer.step()
     dis_optimizer.step()
 
     print("dis loss done")
