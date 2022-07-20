@@ -205,7 +205,7 @@ class Model(nn.Module):
         else:
             real_dis = None
 
-        return fake_emb, (real_dis, (fake_dis_01, fake_dis_02))
+        return fake_samples, fake_emb, (real_dis, (fake_dis_01, fake_dis_02))
 
 
 class Decoder(nn.Module):

@@ -16,6 +16,7 @@ from colorama import Fore, Style
 from torch.cuda.amp import GradScaler, autocast
 import random
 import torch.nn.functional as F
+from transformers import AutoTokenizer, AutoModel
 
 Style.RESET_ALL
 
@@ -147,6 +148,7 @@ else:
 scaler = GradScaler()
 """===========================TRAINER FUNCTION==============================="""
 
+tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 
 def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversarial_criterion, opt, epoch):
     """
@@ -198,7 +200,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             # embed_loss = embed_criterion(fake_emb, Z)
             # loss = embed_loss
             split = 0
-            fake_emb, (real_dis, (fake_dis_01, fake_dis_02)) = model(X, captions)
+            fake_samples, fake_emb, (real_dis, (fake_dis_01, fake_dis_02)) = model(X, captions)
 
             embed_loss = embed_criterion(fake_emb, Z)
             # g_loss = adversarial_criterion(fake_dis_01 - real_dis.detach(), torch.ones_like(fake_dis_01))
@@ -315,7 +317,7 @@ def evaluate(test_dataloader, txwriter, epoch):
             if len(X) == 0: continue
             # Run network on batch
             # Y = model(X.to(opt.device))
-            Y, _ = model(X.to(opt.device))
+            _, Y, _ = model(X.to(opt.device))
             Y = Y.cpu().detach().numpy()
             l = l.cpu().detach().numpy()
             predicted_embed[fi:fi + len(l)] = Y

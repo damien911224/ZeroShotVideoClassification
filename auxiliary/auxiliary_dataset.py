@@ -493,7 +493,7 @@ class VideoDataset(Dataset):
                     image_caption = F.pad(image_caption, (0, 0, 0, self.max_seq_len - len(image_caption)),
                                           "constant", value=0.0)
                 i_caption_embeddings.append(image_caption)
-            i_caption_embeddings = torch.cat(i_caption_embeddings, dim=1)
+            i_caption_embeddings = torch.stack(i_caption_embeddings, dim=0)
 
             cap_ids = random.sample(range(len(self.video_captions)), 2)
             v_caption_embeddings = list()
