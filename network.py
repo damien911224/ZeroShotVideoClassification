@@ -394,7 +394,7 @@ class Encoder(nn.Module):
                 nn.init.xavier_uniform_(p)
 
         nn.init.normal_(self.s_pos_embeds.weight)
-        nn.init.normal_(self.special_tokens.weight)
+        nn.init.xavier_uniform_(self.special_tokens.weight)
 
     def forward(self, x, embed=True, twice=False):
         bs = x.shape[0]
