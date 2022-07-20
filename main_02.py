@@ -277,7 +277,15 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             # bs, l, c
             fake_samples = fake_samples.detach().cpu().numpy()
             # bs, l, vocab, c
-            distances = np.reshape(bert_vocab, (1, 1, 30000, 768)) - np.expand_dims(fake_samples, axis=2)
+            distances = np.square(np.reshape(bert_vocab, (1, 1, 30000, 768)) - np.expand_dims(fake_samples, axis=2))
+            distances = np.sum(distances, axis=-1)
+            word_ids = np.argmin(distances, axis=-1)
+
+            random_batch_idx = random.choice(range(len(word_ids)))
+            sampled_word_ids = word_ids[random_batch_idx]
+            decoded_str = tokenizer.decode(sampled_word_ids.tolist())
+            # print(decoded_str)
+            txwriter.add_text('Train/FakeTextSamples', decoded_str, epoch * len(data_iterator) + (i + 1))
 
 
         # if i == len(train_dataloader)-1 or i*opt.bs > 100000:
