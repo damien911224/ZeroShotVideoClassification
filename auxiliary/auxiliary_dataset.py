@@ -485,7 +485,7 @@ class VideoDataset(Dataset):
                     image_caption = image_caption[random_start_index:random_start_index + self.max_seq_len]
                 elif len(image_caption) < self.max_seq_len:
                     image_caption = F.pad(image_caption, (0, 0, 0, self.max_seq_len - len(image_caption)),
-                                          "constant", value="<PAD>")
+                                          "constant", value=0.0)
                 i_caption_embeddings.append(image_caption)
             i_caption_embeddings = torch.cat(i_caption_embeddings, dim=1)
 
