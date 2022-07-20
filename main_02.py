@@ -135,9 +135,9 @@ _ = model.to(opt.device)
 """==========================OPTIM SETUP=================================="""
 embed_criterion = torch.nn.MSELoss().to(opt.device)
 adversarial_criterion = torch.nn.BCEWithLogitsLoss().to(opt.device)
-optimizer = torch.optim.Adam(model.parameters(), lr=opt.lr)
-gan_optimizer = torch.optim.Adam(cnn.parameters() + decoder.parameters(), lr=opt.lr)
-dis_optimizer = torch.optim.Adam(cnn.parameters() + encoder.parameters(), lr=opt.lr)
+optimizer = torch.optim.Adam(cnn.parameters(), lr=opt.lr)
+gan_optimizer = torch.optim.Adam(decoder.parameters(), lr=opt.lr)
+dis_optimizer = torch.optim.Adam(encoder.parameters(), lr=opt.lr)
 if opt.lr == 1e-3:
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [60, 120], gamma=0.1)
 else:
@@ -231,11 +231,17 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         # scaler.step(optimizer)
 
         optimizer.zero_grad()
+        gan_optimizer.zero_grad()
+        dis_optimizer.zero_grad()
         scaler.scale(embed_loss).backward()
         scaler.step(optimizer)
+        scaler.step(gan_optimizer)
+        scaler.step(dis_optimizer)
 
+        optimizer.zero_grad()
         gan_optimizer.zero_grad()
         scaler.scale(g_loss).backward()
+        scaler.step(optimizer)
         scaler.step(gan_optimizer)
 
         dis_optimizer.zero_grad()
