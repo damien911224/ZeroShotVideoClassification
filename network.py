@@ -449,7 +449,7 @@ if __name__ == "__main__":
     encoder = Encoder
     model = Model(network=models.r2plus1d_18, decoder=decoder, encoder=encoder, fixconvs=False, nopretrained=True).cuda()
 
-    cnn = model.cnn
+    cnn = model.model
     decoder = model.decoder
     encoder = model.encoder
 
