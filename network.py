@@ -476,7 +476,7 @@ if __name__ == "__main__":
     optimizer.zero_grad()
     gan_optimizer.zero_grad()
     dis_optimizer.zero_grad()
-    (embed_loss + g_loss).backward()
+    (embed_loss + g_loss).backward(retain_graph)
     optimizer.step()
     gan_optimizer.step()
     # dis_optimizer.step()
