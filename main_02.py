@@ -210,18 +210,22 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         dis_optimizer.zero_grad()
         # scaler.scale(embed_loss + 1.0e-4 * g_loss).backward()
         scaler.scale(embed_loss).backward()
+        scaler.step(optimizer)
+        scaler.step(gan_optimizer)
+        scaler.step(dis_optimizer)
 
         with autocast():
             # d_loss = adversarial_criterion(real_dis - fake_dis_02, torch.ones_like(real_dis))
 
-            d_loss_real = adversarial_criterion(real_dis, torch.ones_like(real_dis))
             d_loss_fake = adversarial_criterion(fake_dis_02, torch.zeros_like(fake_dis_02))
-            d_loss = d_loss_real + d_loss_fake
+            real_dis = torch.split(real_dis, X.shape[0], dim=0)
+            for i in range(5):
+                d_loss_real = adversarial_criterion(real_dis[i], torch.ones_like(real_dis))
+                d_loss = d_loss_real + d_loss_fake
 
-        scaler.scale(d_loss).backward()
-        scaler.step(optimizer)
-        scaler.step(gan_optimizer)
-        scaler.step(dis_optimizer)
+                dis_optimizer.zero_grad()
+                scaler.scale(d_loss).backward()
+                scaler.step(dis_optimizer)
 
         adv_loss = g_loss + d_loss
         loss = embed_loss + adv_loss
