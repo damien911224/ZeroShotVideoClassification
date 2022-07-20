@@ -132,6 +132,8 @@ _ = model.to(opt.device)
 embed_criterion = torch.nn.MSELoss().to(opt.device)
 adversarial_criterion = torch.nn.BCEWithLogitsLoss().to(opt.device)
 optimizer = torch.optim.Adam(model.parameters(), lr=opt.lr)
+gan_optimizer = torch.optim.Adam(model.decoder.parameters(), lr=opt.lr)
+dis_optimizer = torch.optim.Adam(model.encoder.parameters(), lr=opt.lr)
 if opt.lr == 1e-3:
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [60, 120], gamma=0.1)
 else:
@@ -184,7 +186,6 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         video_captions = video_captions.cuda()
         captions = image_captions if random.random() < 0.50 else video_captions
 
-        optimizer.zero_grad()
         tt_model = time.time()
         with autocast():
             split = 0
@@ -203,7 +204,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
 
             embed_loss = embed_criterion(fake_emb, Z)
 
-            loss = embed_loss * 0.0 + 1.0 * adv_loss
+            loss = embed_loss + 1.0 * adv_loss
             split = 0
 
         # Compute Accuracy.
@@ -220,12 +221,22 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         # Scales loss.  Calls backward() on scaled loss to create scaled gradients.
         # Backward passes under autocast are not recommended.
         # Backward ops run in the same dtype autocast chose for corresponding forward ops.
-        scaler.scale(loss).backward()
+        # optimizer.zero_grad()
+        # scaler.scale(loss).backward()
+        #
+        # scaler.step(optimizer)
 
-        # scaler.step() first unscales the gradients of the optimizer's assigned params.
-        # If these gradients do not contain infs or NaNs, optimizer.step() is then called,
-        # otherwise, optimizer.step() is skipped.
+        optimizer.zero_grad()
+        scaler.scale(embed_loss).backward()
         scaler.step(optimizer)
+
+        gan_optimizer.zero_grad()
+        scaler.scale(g_loss).backward()
+        scaler.step(gan_optimizer)
+
+        dis_optimizer.zero_grad()
+        scaler.scale(d_loss).backward()
+        scaler.step(dis_optimizer)
 
         # Updates the scale for next iteration.
         scaler.update()
