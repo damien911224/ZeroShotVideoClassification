@@ -316,8 +316,8 @@ class VideoDataset(Dataset):
                     outputs = model(**inputs)
                     input_ids = inputs["input_ids"].detach().cpu().numpy().squeeze(0)
                     embeddings = outputs["last_hidden_state"].detach().cpu().numpy().squeeze(0)
-                    for this_id in input_ids:
-                        vocab[this_id] += embeddings
+                    for i, this_id in enumerate(input_ids):
+                        vocab[this_id] += embeddings[i]
                         counts[this_id] += 1.0
 
                     # if len(embeddings) < 50:
@@ -386,8 +386,8 @@ class VideoDataset(Dataset):
                             outputs = model(**inputs)
                         input_ids = inputs["input_ids"].detach().cpu().numpy().squeeze(0)
                         embeddings = outputs["last_hidden_state"].detach().cpu().numpy().squeeze(0)
-                        for this_id in input_ids:
-                            vocab[this_id] += embeddings
+                        for i, this_id in enumerate(input_ids):
+                            vocab[this_id] += embeddings[i]
                             counts[this_id] += 1.0
                         # if len(embeddings) < 83:
                         #     embeddings = np.pad(embeddings, ((0, 83 - len(embeddings)), (0, 0)))
