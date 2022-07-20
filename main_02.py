@@ -206,7 +206,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
 
         optimizer.zero_grad()
         gan_optimizer.zero_grad()
-        scaler.scale(1.0e-4 * g_loss).backward(retain_graph=True)
+        scaler.scale(g_loss).backward(retain_graph=True)
         dis_optimizer.zero_grad()
         # scaler.scale(embed_loss + 1.0e-4 * g_loss).backward()
         scaler.scale(embed_loss).backward()
@@ -218,7 +218,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             d_loss_fake = adversarial_criterion(fake_dis_02, torch.zeros_like(fake_dis_02))
             d_loss = d_loss_real + d_loss_fake
 
-        scaler.scale(1.0e-4 * d_loss).backward()
+        scaler.scale(d_loss).backward()
         scaler.step(optimizer)
         scaler.step(gan_optimizer)
         scaler.step(dis_optimizer)
