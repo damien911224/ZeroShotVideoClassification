@@ -350,7 +350,10 @@ def evaluate(test_dataloader, txwriter, epoch):
             if len(X) == 0: continue
             # Run network on batch
             # Y = model(X.to(opt.device))
-            _, Y, _ = model(X.to(opt.device))
+            # _, Y, _ = model(X.to(opt.device))
+            features = cnn(X)
+            fake_samples = decoder(features)
+            Y, _ = encoder(fake_samples)
             Y = Y.cpu().detach().numpy()
             l = l.cpu().detach().numpy()
             predicted_embed[fi:fi + len(l)] = Y
