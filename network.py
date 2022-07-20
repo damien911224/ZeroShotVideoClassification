@@ -471,27 +471,27 @@ if __name__ == "__main__":
 
     embed_loss = embed_criterion(fake_emb, torch.zeros_like(fake_emb))
 
+    g_loss = adversarial_criterion(fake_dis - real_dis.detach(), torch.ones_like(fake_dis))
+
     optimizer.zero_grad()
     gan_optimizer.zero_grad()
     dis_optimizer.zero_grad()
-    embed_loss.backward()
+    (embed_loss + g_loss).backward(retain_graph=True)
     optimizer.step()
     gan_optimizer.step()
-    dis_optimizer.step()
+    # dis_optimizer.step()
 
     print("embed loss done")
 
-    fake_emb, (real_dis, fake_dis) = model(dummy_data, dummy_captions)
-
     # Compute loss.
-    g_loss = adversarial_criterion(fake_dis - real_dis, torch.ones_like(fake_dis))
+    # g_loss = adversarial_criterion(fake_dis - real_dis.detach(), torch.ones_like(fake_dis))
     # adv_loss = g_loss + d_loss
 
-    optimizer.zero_grad()
-    gan_optimizer.zero_grad()
-    g_loss.backward()
-    optimizer.step()
-    gan_optimizer.step()
+    # optimizer.zero_grad()
+    # gan_optimizer.zero_grad()
+    # g_loss.backward()
+    # optimizer.step()
+    # gan_optimizer.step()
 
     print("gan loss done")
 
