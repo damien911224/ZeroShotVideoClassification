@@ -508,7 +508,7 @@ class VideoDataset(Dataset):
                     video_caption = F.pad(video_caption, (0, 0, 0, self.max_seq_len - len(video_caption)),
                                           "constant", value=0.0)
                 v_caption_embeddings.append(video_caption)
-            v_caption_embeddings = torch.cat(v_caption_embeddings, dim=0)
+            v_caption_embeddings = torch.stack(v_caption_embeddings, dim=0)
 
             return buffer, label, self.class_embed[label], idx, (v_caption_embeddings, v_caption_embeddings)
         else:

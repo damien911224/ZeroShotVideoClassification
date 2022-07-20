@@ -187,8 +187,8 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         #         image_caption = F.pad(image_caption, (0, 0, 0, 50 - len(image_caption)))
         #     new_image_captions.append(image_caption)
         # image_captions = torch.stack(new_image_captions, dim=0)
-        image_captions = image_captions.cuda()
-        video_captions = video_captions.cuda()
+        image_captions = image_captions.flatten(0, 1).cuda()
+        video_captions = video_captions.flatten(0, 1).cuda()
         captions = image_captions if random.random() < 0.50 else video_captions
 
         tt_model = time.time()
