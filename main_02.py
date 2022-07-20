@@ -197,65 +197,27 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             # embed_loss = embed_criterion(fake_emb, Z)
             # loss = embed_loss
             split = 0
-            # Compute embeddings for input batch.
-            fake_emb, (real_dis, fake_dis) = model(X, captions)
-            # Y = Y[:s[0]]
-
-            # Compute loss.
-            d_loss = adversarial_criterion(real_dis - fake_dis, torch.ones_like(real_dis))
-            g_loss = adversarial_criterion(fake_dis - real_dis, torch.ones_like(fake_dis))
-            adv_loss = g_loss + d_loss
+            fake_emb, (real_dis, fake_dis_01, fake_dis_02) = model(X, captions)
 
             embed_loss = embed_criterion(fake_emb, Z)
-
-            loss = embed_loss + 1.0 * adv_loss
+            g_loss = adversarial_criterion(fake_dis_01 - real_dis.detach(), torch.ones_like(fake_dis_01))
             split = 0
 
         optimizer.zero_grad()
         gan_optimizer.zero_grad()
         dis_optimizer.zero_grad()
-        scaler.scale(embed_loss).backward()
-        scaler.step(optimizer)
-        scaler.step(gan_optimizer)
-        scaler.step(dis_optimizer)
-
-        with autocast():
-            # Compute embeddings for input batch.
-            fake_emb, (real_dis, fake_dis) = model(X, captions)
-            # Y = Y[:s[0]]
-
-            # Compute loss.
-            d_loss = adversarial_criterion(real_dis - fake_dis, torch.ones_like(real_dis))
-            g_loss = adversarial_criterion(fake_dis - real_dis, torch.ones_like(fake_dis))
-            adv_loss = g_loss + d_loss
-
-            embed_loss = embed_criterion(fake_emb, Z)
-
-            loss = embed_loss + 1.0 * adv_loss
-
-        optimizer.zero_grad()
-        gan_optimizer.zero_grad()
-        scaler.scale(g_loss).backward()
+        scaler.scale(embed_loss + g_loss).backward()
         scaler.step(optimizer)
         scaler.step(gan_optimizer)
 
         with autocast():
-            # Compute embeddings for input batch.
-            fake_emb, (real_dis, fake_dis) = model(X, captions)
-            # Y = Y[:s[0]]
+            d_loss = adversarial_criterion(real_dis - fake_dis_02, torch.ones_like(real_dis))
 
-            # Compute loss.
-            d_loss = adversarial_criterion(real_dis - fake_dis, torch.ones_like(real_dis))
-            g_loss = adversarial_criterion(fake_dis - real_dis, torch.ones_like(fake_dis))
-            adv_loss = g_loss + d_loss
-
-            embed_loss = embed_criterion(fake_emb, Z)
-
-            loss = embed_loss + 1.0 * adv_loss
-
-        dis_optimizer.zero_grad()
         scaler.scale(d_loss).backward()
         scaler.step(dis_optimizer)
+
+        adv_loss = g_loss + d_loss
+        loss = embed_loss + adv_loss
 
         # Compute Accuracy.
         pred_embed = fake_emb.detach().cpu().numpy()
