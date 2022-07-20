@@ -464,7 +464,7 @@ if __name__ == "__main__":
 
     # fake_emb, (real_dis, fake_dis) = model(dummy_data, dummy_captions)
 
-    f = model(dummy_data)
+    f = cnn(dummy_data)
 
     fake_samples = decoder(f)
     fake_dis, fake_emb = encoder(fake_samples)
