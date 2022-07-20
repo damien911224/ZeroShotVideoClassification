@@ -25,12 +25,13 @@ def get_network(opt):
         return C3D(fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
     else:
         raise Exception('Network {} not available!'.format(opt.network))
+    cnn = Model(network, fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
     decoder = Decoder
     encoder = Encoder
     # return ResNet18(network, fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
-    return Model(network, decoder=decoder, encoder=encoder, fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
+    # return Model(network, decoder=decoder, encoder=encoder, fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
 
-    # return cnn, decoder, encoder
+    return cnn, decoder, encoder
 
 
 """=================================================================================================================="""
@@ -179,33 +180,33 @@ class Model(nn.Module):
     to target specific layers/blocks directly.
     """
 
-    def __init__(self, network, decoder, encoder, fixconvs=False, nopretrained=False):
+    def __init__(self, network, fixconvs=False, nopretrained=False):
         super(Model, self).__init__()
         self.model = network(pretrained=nopretrained)
         if fixconvs:
             for param in self.model.parameters():
                 param.requires_grad = False
 
-        # self.dropout = torch.nn.Dropout(p=0.05)
-
-        self.decoder = decoder()
-        self.encoder = encoder()
+        # self.decoder = decoder()
+        # self.encoder = encoder()
 
     def forward(self, x, real_samples=None):
         bs, nc, ch, l, h, w = x.shape
         x = x.reshape(bs*nc, ch, l, h, w)
         _, f = self.model(x)
 
-        # bs, l, v
-        fake_samples = self.decoder(f)
+        # # bs, l, v
+        # fake_samples = self.decoder(f)
+        #
+        # (fake_dis_01, fake_dis_02), fake_emb = self.encoder(fake_samples, twice=True, embed=True)
+        # if real_samples is not None:
+        #     (real_dis, _), _ = self.encoder(real_samples, twice=False, embed=False)
+        # else:
+        #     real_dis = None
+        #
+        # return fake_samples, fake_emb, (real_dis, (fake_dis_01, fake_dis_02))
 
-        (fake_dis_01, fake_dis_02), fake_emb = self.encoder(fake_samples, twice=True, embed=True)
-        if real_samples is not None:
-            (real_dis, _), _ = self.encoder(real_samples, twice=False, embed=False)
-        else:
-            real_dis = None
-
-        return fake_samples, fake_emb, (real_dis, (fake_dis_01, fake_dis_02))
+        return f
 
 
 class Decoder(nn.Module):
@@ -378,10 +379,10 @@ class Encoder(nn.Module):
         encoder_layer = nn.TransformerEncoderLayer(d_model=self.d_model, dim_feedforward=self.d_model * 4,
                                                    nhead=8, dropout=0.1, activation="gelu")
         self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=6)
-        # self.output2dis_proj = nn.Linear(self.d_model, 1)
-        # self.output2emb_proj = nn.Linear(self.d_model, 300)
-        self.output2dis_proj = MLP(self.d_model, self.d_model, 1, 3)
-        self.output2emb_proj = MLP(self.d_model, self.d_model, 300, 3)
+        self.output2dis_proj = nn.Linear(self.d_model, 1)
+        self.output2emb_proj = nn.Linear(self.d_model, 300)
+        # self.output2dis_proj = MLP(self.d_model, self.d_model, 1, 3)
+        # self.output2emb_proj = MLP(self.d_model, self.d_model, 300, 3)
 
         # self.dropout = torch.nn.Dropout(p=0.50)
 
@@ -395,14 +396,12 @@ class Encoder(nn.Module):
         nn.init.normal_(self.s_pos_embeds.weight)
         nn.init.normal_(self.special_tokens.weight)
 
-    def forward(self, x, twice=False, embed=True):
+    def forward(self, x, embed=True, twice=False):
         bs = x.shape[0]
 
         special_tokens = self.special_tokens.weight.view(1, 2, self.d_model).repeat(bs, 1, 1).cuda()
         s_pos_embeds = self.s_pos_embeds.weight.view(1, self.max_seq_len, self.d_model).cuda()
         out = self.word2input_proj(x) + s_pos_embeds
-        # if not twice:
-        #     out = self.dropout(out)
         out = torch.cat((special_tokens, out), dim=1)
 
         out = self.encoder(out.permute(1, 0, 2)).permute(1, 0, 2)
@@ -412,20 +411,21 @@ class Encoder(nn.Module):
         else:
             emb_out = None
 
-        if twice:
-            special_tokens = self.special_tokens.weight.view(1, 2, self.d_model).repeat(bs, 1, 1).cuda()
-            s_pos_embeds = self.s_pos_embeds.weight.view(1, self.max_seq_len, self.d_model).cuda()
-            out = self.word2input_proj(x.detach()) + s_pos_embeds
-            # out = self.dropout(out)
-            out = torch.cat((special_tokens, out), dim=1)
+        # if twice:
+        #     special_tokens = self.special_tokens.weight.view(1, 2, self.d_model).repeat(bs, 1, 1).cuda()
+        #     s_pos_embeds = self.s_pos_embeds.weight.view(1, self.max_seq_len, self.d_model).cuda()
+        #     out = self.word2input_proj(x.detach()) + s_pos_embeds
+        #     # out = self.dropout(out)
+        #     out = torch.cat((special_tokens, out), dim=1)
+        #
+        #     out = self.encoder(out.permute(1, 0, 2)).permute(1, 0, 2)
+        #     dis_out_02 = self.output2dis_proj(out[:, 0]).squeeze(-1)
+        # else:
+        #     dis_out_02 = None
+        #
+        # return (dis_out_01, dis_out_02), emb_out
 
-            out = self.encoder(out.permute(1, 0, 2)).permute(1, 0, 2)
-            dis_out_02 = self.output2dis_proj(out[:, 0]).squeeze(-1)
-        else:
-            dis_out_02 = None
-
-        return (dis_out_01, dis_out_02), emb_out
-
+        return emb_out, dis_out_01
 
 
 class MLP(nn.Module):

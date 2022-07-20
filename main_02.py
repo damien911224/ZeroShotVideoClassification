@@ -113,26 +113,31 @@ if not os.path.exists(opt.savename+'/samples/'):
 
 """=============================NETWORK SETUP==============================="""
 opt.device = torch.device('cuda')
-model      = network.get_network(opt)
+# model      = network.get_network(opt)
+cnn, decoder, encoder = network.get_network(opt)
 
-cnn = model.model
-decoder = model.decoder
-encoder = model.encoder
+# cnn = model.model
+# decoder = model.decoder
+# encoder = model.encoder
 
-if opt.weights and opt.weights != "none":
-    #model.load_state_dict(torch.load(opt.weights)['state_dict'])
-    j = len('module.')
-    weights = torch.load(opt.weights)['state_dict']
-    model_dict = model.state_dict()
-    weights = {k[j:]: v for k, v in weights.items() if k[j:] in model_dict.keys()}
-    # if not opt.evaluate:
-    #     weights = {k: v for k, v in weights.items() if 'regressor' not in k}
-    model_dict.update(weights)
-    model.load_state_dict(model_dict)
-    print("LOADED MODEL:  ", opt.weights)
+# if opt.weights and opt.weights != "none":
+#     #model.load_state_dict(torch.load(opt.weights)['state_dict'])
+#     j = len('module.')
+#     weights = torch.load(opt.weights)['state_dict']
+#     model_dict = model.state_dict()
+#     weights = {k[j:]: v for k, v in weights.items() if k[j:] in model_dict.keys()}
+#     # if not opt.evaluate:
+#     #     weights = {k: v for k, v in weights.items() if 'regressor' not in k}
+#     model_dict.update(weights)
+#     model.load_state_dict(model_dict)
+#     print("LOADED MODEL:  ", opt.weights)
 
-model = nn.DataParallel(model)
-_ = model.to(opt.device)
+# model = nn.DataParallel(model)
+# _ = model.to(opt.device)
+
+cnn = nn.DataParallel(cnn).cuda()
+decoder = nn.DataParallel(decoder).cuda()
+encoder = nn.DataParallel(encoder).cuda()
 
 """==========================OPTIM SETUP=================================="""
 embed_criterion = torch.nn.MSELoss().to(opt.device)
@@ -190,9 +195,10 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         #         image_caption = F.pad(image_caption, (0, 0, 0, 50 - len(image_caption)))
         #     new_image_captions.append(image_caption)
         # image_captions = torch.stack(new_image_captions, dim=0)
-        image_captions = image_captions.flatten(0, 1).cuda()
-        video_captions = video_captions.flatten(0, 1).cuda()
-        captions = image_captions if random.random() < 0.50 else video_captions
+        image_captions = image_captions.cuda()
+        video_captions = video_captions.cuda()
+        # captions = image_captions if random.random() < 0.50 else video_captions
+        captions = torch.cat((image_captions, video_captions), dim=1)
 
         tt_model = time.time()
         with autocast():
@@ -201,18 +207,21 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             # embed_loss = embed_criterion(fake_emb, Z)
             # loss = embed_loss
             split = 0
-            fake_samples, fake_emb, (real_dis, (fake_dis_01, fake_dis_02)) = model(X, captions)
+            # fake_samples, fake_emb, (real_dis, (fake_dis_01, fake_dis_02)) = model(X, captions)
+            features = cnn(X)
+            fake_samples = decoder(features)
+            fake_emb, fake_dis = encoder(fake_samples)
 
             embed_loss = embed_criterion(fake_emb, Z)
             # g_loss = adversarial_criterion(fake_dis_01 - real_dis.detach(), torch.ones_like(fake_dis_01))
-            g_loss = -adversarial_criterion(fake_dis_01, torch.zeros_like(fake_dis_01))
+            g_loss = -adversarial_criterion(fake_dis, torch.zeros_like(fake_dis_01))
             split = 0
 
-        optimizer.zero_grad()
+        # optimizer.zero_grad()
         gan_optimizer.zero_grad()
         scaler.scale(g_loss).backward(retain_graph=True)
         dis_optimizer.zero_grad()
-        # scaler.scale(embed_loss + 1.0e-4 * g_loss).backward()
+        optimizer.zero_grad()
         scaler.scale(embed_loss).backward()
         scaler.step(optimizer)
         scaler.step(gan_optimizer)
@@ -221,22 +230,25 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         with autocast():
             # d_loss = adversarial_criterion(real_dis - fake_dis_02, torch.ones_like(real_dis))
 
-            d_loss_fake = adversarial_criterion(fake_dis_02, torch.zeros_like(fake_dis_02))
-            d_loss_real = adversarial_criterion(real_dis, torch.ones_like(real_dis))
-            d_loss = d_loss_real + d_loss_fake
-
-            dis_optimizer.zero_grad()
-            scaler.scale(d_loss).backward()
-            scaler.step(dis_optimizer)
-
-            # real_dis = torch.split(real_dis, X.shape[0], dim=0)
-            # for i in range(len(real_dis)):
-            #     d_loss_real = adversarial_criterion(real_dis[i], torch.ones_like(real_dis[i]))
-            #     d_loss = d_loss_real + d_loss_fake
+            # d_loss_fake = adversarial_criterion(fake_dis_02, torch.zeros_like(fake_dis_02))
+            # d_loss_real = adversarial_criterion(real_dis, torch.ones_like(real_dis))
+            # d_loss = d_loss_real + d_loss_fake
             #
-            #     dis_optimizer.zero_grad()
-            #     scaler.scale(d_loss).backward(retain_graph=True)
-            #     scaler.step(dis_optimizer)
+            # dis_optimizer.zero_grad()
+            # scaler.scale(d_loss).backward()
+            # scaler.step(dis_optimizer)
+
+            for d_i in range(captions.shape[1]):
+                _, fake_dis = encoder(fake_samples, embed=False)
+                _, real_dis = encoder(captions[:, d_i], embed=False)
+
+                d_loss_fake = adversarial_criterion(fake_dis, torch.zeros_like(fake_dis))
+                d_loss_real = adversarial_criterion(real_dis, torch.ones_like(real_dis))
+                d_loss = d_loss_real + d_loss_fake
+
+                dis_optimizer.zero_grad()
+                scaler.scale(d_loss).backward(retain_graph=True)
+                scaler.step(dis_optimizer)
 
         adv_loss = g_loss + d_loss
         loss = embed_loss + adv_loss
