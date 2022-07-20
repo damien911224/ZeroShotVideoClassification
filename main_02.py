@@ -41,7 +41,7 @@ parser.add_argument('--bs',           default=64,   type=int,   help='Mini-Batch
 parser.add_argument('--size',         default=112,  type=int,   help='Image size in input.')
 
 parser.add_argument('--fixconvs', action='store_true', default=False,   help='Freezing conv layers')
-parser.add_argument('--nopretrained', action='store_false', default=True,   help='Pretrain network.')
+parser.add_argument('--nopretrained', action='store_false', default=False,   help='Pretrain network.')
 
 ##### Network parameters
 parser.add_argument('--network', default='r2plus1d_18', type=str,

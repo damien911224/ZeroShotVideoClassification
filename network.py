@@ -383,6 +383,8 @@ class Encoder(nn.Module):
         self.output2dis_proj = MLP(self.d_model, self.d_model, 1, 3)
         self.output2emb_proj = MLP(self.d_model, self.d_model, 300, 3)
 
+        self.dropout = torch.nn.Dropout(p=0.50)
+
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -399,6 +401,8 @@ class Encoder(nn.Module):
         special_tokens = self.special_tokens.weight.view(1, 2, self.d_model).repeat(bs, 1, 1).cuda()
         s_pos_embeds = self.s_pos_embeds.weight.view(1, self.max_seq_len, self.d_model).cuda()
         out = self.word2input_proj(x) + s_pos_embeds
+        if not twice:
+            out = self.dropout(out)
         out = torch.cat((special_tokens, out), dim=1)
 
         out = self.encoder(out.permute(1, 0, 2)).permute(1, 0, 2)
@@ -412,6 +416,7 @@ class Encoder(nn.Module):
             special_tokens = self.special_tokens.weight.view(1, 2, self.d_model).repeat(bs, 1, 1).cuda()
             s_pos_embeds = self.s_pos_embeds.weight.view(1, self.max_seq_len, self.d_model).cuda()
             out = self.word2input_proj(x.detach()) + s_pos_embeds
+            out = self.dropout(out)
             out = torch.cat((special_tokens, out), dim=1)
 
             out = self.encoder(out.permute(1, 0, 2)).permute(1, 0, 2)
