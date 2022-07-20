@@ -499,7 +499,7 @@ if __name__ == "__main__":
     # fake_emb, (real_dis, fake_dis) = model(dummy_data, dummy_captions)
 
     fake_dis, _ = encoder(fake_samples.detach())
-    real_dis, _ = encoder(dummy_captions)
+    # real_dis, _ = encoder(dummy_captions)
 
     d_loss = adversarial_criterion(real_dis - fake_dis, torch.ones_like(real_dis))
 
