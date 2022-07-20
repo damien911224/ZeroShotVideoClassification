@@ -494,6 +494,7 @@ class VideoDataset(Dataset):
             v_caption_embeddings = list()
             for cap_id in cap_ids:
                 video_caption = self.video_captions["{}".format(cap_id)]
+                print(video_caption.shape)
                 # video_caption = self.tokenizer(video_caption, return_tensors="pt")
                 # with torch.no_grad():
                 #     video_caption = self.model(**video_caption)
