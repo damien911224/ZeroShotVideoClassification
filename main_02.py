@@ -257,6 +257,8 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             txwriter.add_scalar('Train/EmbeddingLoss', embed_loss.item(),epoch * len(data_iterator) + (i + 1))
             txwriter.add_scalar('Train/GeneratorLoss', g_loss.item(), epoch * len(data_iterator) + (i + 1))
             txwriter.add_scalar('Train/DiscriminatorLoss', d_loss.item(), epoch * len(data_iterator) + (i + 1))
+            txwriter.add_scalar('Train/DiscriminatorRealLoss', d_loss_real.item(), epoch * len(data_iterator) + (i + 1))
+            txwriter.add_scalar('Train/DiscriminatorFakeLoss', d_loss_fake.item(), epoch * len(data_iterator) + (i + 1))
             txwriter.add_scalar('Train/Accuracy', np.mean(acc), epoch * len(data_iterator) + (i + 1))
 
             # random_index = random.choice(range(len(X)))
