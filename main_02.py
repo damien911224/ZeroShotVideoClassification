@@ -221,7 +221,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             d_loss_fake = adversarial_criterion(fake_dis_02, torch.zeros_like(fake_dis_02))
             real_dis = torch.split(real_dis, X.shape[0], dim=0)
             for i in range(5):
-                d_loss_real = adversarial_criterion(real_dis[i], torch.ones_like(real_dis))
+                d_loss_real = adversarial_criterion(real_dis[i], torch.ones_like(real_dis[i]))
                 d_loss = d_loss_real + d_loss_fake
 
                 dis_optimizer.zero_grad()
