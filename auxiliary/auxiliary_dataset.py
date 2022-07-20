@@ -461,6 +461,7 @@ class VideoDataset(Dataset):
             # image_caption = torch.Tensor(random.choice(self.image_captions)).float()
             image_caption = random.choice(self.image_captions)
             image_caption = self.tokenizer(image_caption, return_tensors="pt")
+            print(image_caption)
             with torch.no_grad():
                 image_caption = self.model(**image_caption)
             image_caption = image_caption["last_hidden_state"].detach().squeeze(0)
