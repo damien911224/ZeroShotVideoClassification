@@ -25,10 +25,12 @@ def get_network(opt):
         return C3D(fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
     else:
         raise Exception('Network {} not available!'.format(opt.network))
-    decoder = Decoder()
-    encoder = Encoder()
+    decoder = Decoder
+    encoder = Encoder
     # return ResNet18(network, fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
     return Model(network, decoder=decoder, encoder=encoder, fixconvs=opt.fixconvs, nopretrained=opt.nopretrained)
+
+    # return cnn, decoder, encoder
 
 
 """=================================================================================================================="""
@@ -177,7 +179,7 @@ class Model(nn.Module):
     to target specific layers/blocks directly.
     """
 
-    def __init__(self, network, fixconvs=False, nopretrained=False):
+    def __init__(self, network, decoder, encoder, fixconvs=False, nopretrained=False):
         super(Model, self).__init__()
         self.model = network(pretrained=nopretrained)
         if fixconvs:
@@ -185,28 +187,25 @@ class Model(nn.Module):
                 param.requires_grad = False
 
         # self.dropout = torch.nn.Dropout(p=0.05)
-        #
-        # self.d_model = 256
-        # self.decoder = decoder
-        # self.encoder = encoder
 
-    def forward(self, x):
+        self.decoder = decoder()
+        self.encoder = encoder()
+
+    def forward(self, x, real_samples=None):
         bs, nc, ch, l, h, w = x.shape
         x = x.reshape(bs*nc, ch, l, h, w)
-        x, f = self.model(x)
+        _, f = self.model(x)
 
-        # # bs, l, v
-        # fake_samples = self.decoder(f)
-        #
-        # fake_dis, fake_emb = self.encoder(fake_samples)
-        # if real_samples is not None:
-        #     real_dis, real_emb = self.encoder(real_samples)
-        # else:
-        #     real_dis, real_emb = None, None
-        #
-        # return fake_emb, (real_dis, fake_dis)
+        # bs, l, v
+        fake_samples = self.decoder(f)
 
-        return f
+        (fake_dis_01, fake_dis_02), fake_emb = self.encoder(fake_samples, twice=True, embed=True)
+        if real_samples is not None:
+            (real_dis, _), _ = self.encoder(real_samples, twice=False, embed=False)
+        else:
+            real_dis = None
+
+        return fake_emb, (real_dis, (fake_dis_01, fake_dis_02))
 
 
 class Decoder(nn.Module):
@@ -394,17 +393,34 @@ class Encoder(nn.Module):
         nn.init.normal_(self.s_pos_embeds.weight)
         nn.init.normal_(self.special_tokens.weight)
 
-    def forward(self, x):
+    def forward(self, x, twice=False, embed=True):
         bs = x.shape[0]
+
         special_tokens = self.special_tokens.weight.view(1, 2, self.d_model).repeat(bs, 1, 1).cuda()
         s_pos_embeds = self.s_pos_embeds.weight.view(1, self.max_seq_len, self.d_model).cuda()
         x = self.word2input_proj(x) + s_pos_embeds
         x = torch.cat((special_tokens, x), dim=1)
-        out = self.encoder(x.permute(1, 0, 2)).permute(1, 0, 2)
-        dis_out = self.output2dis_proj(out[:, 0]).squeeze(-1)
-        emb_out = F.normalize(self.output2emb_proj(out[:, 1]))
 
-        return dis_out, emb_out
+        out = self.encoder(x.permute(1, 0, 2)).permute(1, 0, 2)
+        dis_out_01 = self.output2dis_proj(out[:, 0]).squeeze(-1)
+        if embed:
+            emb_out = F.normalize(self.output2emb_proj(out[:, 1]))
+        else:
+            emb_out = None
+
+        if twice:
+            special_tokens = self.special_tokens.weight.view(1, 2, self.d_model).repeat(bs, 1, 1).cuda()
+            s_pos_embeds = self.s_pos_embeds.weight.view(1, self.max_seq_len, self.d_model).cuda()
+            x = self.word2input_proj(x.detach()) + s_pos_embeds
+            x = torch.cat((special_tokens, x), dim=1)
+
+            out = self.encoder(x.permute(1, 0, 2)).permute(1, 0, 2)
+            dis_out_02 = self.output2dis_proj(out[:, 0]).squeeze(-1)
+        else:
+            dis_out_02 = None
+
+        return (dis_out_01, dis_out_02), emb_out
+
 
 
 class MLP(nn.Module):
@@ -429,9 +445,13 @@ class MLP(nn.Module):
 
 
 if __name__ == "__main__":
-    cnn = Model(network=models.r2plus1d_18, fixconvs=False, nopretrained=True).cuda()
-    decoder = Decoder().cuda()
-    encoder = Encoder().cuda()
+    decoder = Decoder
+    encoder = Encoder
+    model = Model(network=models.r2plus1d_18, decoder=decoder, encoder=encoder, fixconvs=False, nopretrained=True).cuda()
+
+    cnn = model.cnn
+    decoder = model.decoder
+    encoder = model.encoder
 
     dummy_data = torch.tensor(np.zeros(dtype=np.float32, shape=(8, 1, 3, 16, 112, 112))).cuda()
     dummy_captions = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 20, 768))).cuda()
@@ -462,17 +482,17 @@ if __name__ == "__main__":
     gan_optimizer = torch.optim.Adam(decoder.parameters(), lr=1.0e-3)
     dis_optimizer = torch.optim.Adam(encoder.parameters(), lr=1.0e-3)
 
-    # fake_emb, (real_dis, fake_dis) = model(dummy_data, dummy_captions)
+    fake_emb, (real_dis, (fake_dis_01, fake_dis_02)) = model(dummy_data, dummy_captions)
 
-    f = cnn(dummy_data)
-
-    fake_samples = decoder(f)
-    fake_dis, fake_emb = encoder(fake_samples)
-    real_dis, _ = encoder(dummy_captions)
+    # f = cnn(dummy_data)
+    #
+    # fake_samples = decoder(f)
+    # fake_dis, fake_emb = encoder(fake_samples)
+    # real_dis, _ = encoder(dummy_captions)
 
     embed_loss = embed_criterion(fake_emb, torch.zeros_like(fake_emb))
 
-    g_loss = adversarial_criterion(fake_dis - real_dis.detach(), torch.ones_like(fake_dis))
+    g_loss = adversarial_criterion(fake_dis_01 - real_dis.detach(), torch.ones_like(fake_dis_01))
 
     optimizer.zero_grad()
     gan_optimizer.zero_grad()
@@ -498,10 +518,10 @@ if __name__ == "__main__":
 
     # fake_emb, (real_dis, fake_dis) = model(dummy_data, dummy_captions)
 
-    fake_dis, _ = encoder(fake_samples.detach())
+    # fake_dis, _ = encoder(fake_samples.detach())
     # real_dis, _ = encoder(dummy_captions)
 
-    d_loss = adversarial_criterion(real_dis - fake_dis, torch.ones_like(real_dis))
+    d_loss = adversarial_criterion(real_dis - fake_dis_02, torch.ones_like(real_dis))
 
     # dis_optimizer.zero_grad()
     d_loss.backward()
