@@ -477,7 +477,7 @@ if __name__ == "__main__":
     optimizer.zero_grad()
     gan_optimizer.zero_grad()
     dis_optimizer.zero_grad()
-    (embed_loss + g_loss).backward(retain_graph=True)
+    (embed_loss + g_loss).backward()
     optimizer.step()
     gan_optimizer.step()
     # dis_optimizer.step()
@@ -499,6 +499,7 @@ if __name__ == "__main__":
     # fake_emb, (real_dis, fake_dis) = model(dummy_data, dummy_captions)
 
     fake_dis, _ = encoder(fake_samples)
+    real_dis, _ = encoder(dummy_captions)
 
     d_loss = adversarial_criterion(real_dis - fake_dis, torch.ones_like(real_dis))
 
