@@ -386,7 +386,7 @@ class VideoDataset(Dataset):
                             outputs = model(**inputs)
                         input_ids = inputs["input_ids"].detach().cpu().numpy().squeeze(0)
                         embeddings = outputs["last_hidden_state"].detach().cpu().numpy().squeeze(0)
-                        for this_id in enumerate(input_ids):
+                        for this_id in input_ids:
                             vocab[this_id] += embeddings
                             counts[this_id] += 1.0
                         # if len(embeddings) < 83:
