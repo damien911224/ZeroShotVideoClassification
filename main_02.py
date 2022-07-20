@@ -57,8 +57,8 @@ parser.add_argument('--evaluate', action='store_true', default=False,   help='Ev
 opt = parser.parse_args()
 
 opt.multiple_clips = False
-# opt.kernels = multiprocessing.cpu_count()
-opt.kernels = 10
+opt.kernels = multiprocessing.cpu_count()
+# opt.kernels = 10
 
 """=================================DATALOADER SETUPS====================="""
 if torch.cuda.device_count() > 1:
