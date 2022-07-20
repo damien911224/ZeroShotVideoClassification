@@ -447,7 +447,7 @@ class VideoDataset(Dataset):
             self.max_seq_len = 20
             caption_folder = "/mnt/hdd1/captions"
             self.tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-            self.model = AutoModel.from_pretrained("bert-base-uncased").cuda()
+            self.model = AutoModel.from_pretrained("bert-base-uncased")
             with open(os.path.join(caption_folder, "COCO", "image_captions.json"), "r") as fp:
                 self.image_captions = json.load(fp)
             with open(os.path.join(caption_folder, "ActivityNet", "video_captions.json"), "r") as fp:
@@ -477,8 +477,6 @@ class VideoDataset(Dataset):
             i_caption_embeddings = list()
             for image_caption in image_captions:
                 image_caption = self.tokenizer(image_caption, return_tensors="pt")
-                for key in image_caption.keys():
-                    image_caption[key] = image_caption[key].cuda()
                 with torch.no_grad():
                     image_caption = self.model(**image_caption)
                 image_caption = image_caption["last_hidden_state"].detach().cpu().squeeze(0)
@@ -487,7 +485,7 @@ class VideoDataset(Dataset):
                     image_caption = image_caption[random_start_index:random_start_index + self.max_seq_len]
                 elif len(image_caption) < self.max_seq_len:
                     image_caption = F.pad(image_caption, (0, 0, 0, self.max_seq_len - len(image_caption)),
-                                          "constant", value=0.0)
+                                          "constant", value="<PAD>")
                 i_caption_embeddings.append(image_caption)
             i_caption_embeddings = torch.cat(i_caption_embeddings, dim=1)
 
