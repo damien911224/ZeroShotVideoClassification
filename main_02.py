@@ -190,12 +190,6 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         video_captions = video_captions.cuda()
         captions = image_captions if random.random() < 0.50 else video_captions
 
-        d_loss_real = bce_loss(d_out_real, torch.ones_like(d_out_real))
-        d_loss_fake = bce_loss(d_out_fake, torch.zeros_like(d_out_fake))
-        d_loss = d_loss_real + d_loss_fake
-
-        g_loss = -d_loss_fake
-
         tt_model = time.time()
         with autocast():
             split = 0
