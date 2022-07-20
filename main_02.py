@@ -149,6 +149,7 @@ scaler = GradScaler()
 """===========================TRAINER FUNCTION==============================="""
 
 tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+bert_vocab = np.load("/mnt/hdd1/captions/bert_vocab.npy")
 
 def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversarial_criterion, opt, epoch):
     """
@@ -227,7 +228,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
                 d_loss = d_loss_real + d_loss_fake
 
                 dis_optimizer.zero_grad()
-                scaler.scale(d_loss).backward()
+                scaler.scale(d_loss).backward(retain_graph=True)
                 scaler.step(dis_optimizer)
 
         adv_loss = g_loss + d_loss
@@ -267,11 +268,16 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             txwriter.add_scalar('Train/DiscriminatorRealLoss', d_loss_real.item(), epoch * len(data_iterator) + (i + 1))
             txwriter.add_scalar('Train/DiscriminatorFakeLoss', d_loss_fake.item(), epoch * len(data_iterator) + (i + 1))
             txwriter.add_scalar('Train/Accuracy', np.mean(acc), epoch * len(data_iterator) + (i + 1))
-
+            split = 0
             # random_index = random.choice(range(len(X)))
             # txwriter.add_text("Train/Caption", " ".join(text_samples[random_index]))
             # videos = ((X.squeeze().detach().cpu().numpy() * 2.0 + 1) * 255.0).astype(np.uint8).permute(0, 2, 1, 3, 4)
             # txwriter.add_video("Train/Video", " ".join(videos[random_index].unsqueeze(0)))
+            split = 0
+            # bs, l, c
+            fake_samples = fake_samples.detach().cpu().numpy()
+            # bs, l, vocab, c
+            distances = np.reshape(bert_vocab, (1, 1, 30000, 768)) - np.expand_dims(fake_samples, axis=2)
 
 
         # if i == len(train_dataloader)-1 or i*opt.bs > 100000:
