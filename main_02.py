@@ -190,6 +190,12 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         video_captions = video_captions.cuda()
         captions = image_captions if random.random() < 0.50 else video_captions
 
+        d_loss_real = bce_loss(d_out_real, torch.ones_like(d_out_real))
+        d_loss_fake = bce_loss(d_out_fake, torch.zeros_like(d_out_fake))
+        d_loss = d_loss_real + d_loss_fake
+
+        g_loss = -d_loss_fake
+
         tt_model = time.time()
         with autocast():
             split = 0
@@ -200,18 +206,25 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             fake_emb, (real_dis, (fake_dis_01, fake_dis_02)) = model(X, captions)
 
             embed_loss = embed_criterion(fake_emb, Z)
-            g_loss = adversarial_criterion(fake_dis_01 - real_dis.detach(), torch.ones_like(fake_dis_01))
+            # g_loss = adversarial_criterion(fake_dis_01 - real_dis.detach(), torch.ones_like(fake_dis_01))
+
+            g_loss = -adversarial_criterion(fake_dis_01, torch.zeros_like(fake_dis_01))
+
             split = 0
 
         optimizer.zero_grad()
         gan_optimizer.zero_grad()
         dis_optimizer.zero_grad()
-        scaler.scale(embed_loss + 1.0e-7 * g_loss).backward()
+        scaler.scale(embed_loss + 1.0e-4 * g_loss).backward()
         scaler.step(optimizer)
         scaler.step(gan_optimizer)
 
         with autocast():
-            d_loss = adversarial_criterion(real_dis - fake_dis_02, torch.ones_like(real_dis))
+            # d_loss = adversarial_criterion(real_dis - fake_dis_02, torch.ones_like(real_dis))
+
+            d_loss_real = adversarial_criterion(real_dis, torch.ones_like(real_dis))
+            d_loss_fake = adversarial_criterion(fake_dis_02, torch.zeros_like(fake_dis_02))
+            d_loss = d_loss_real + d_loss_fake
 
         scaler.scale(1.0e-4 * d_loss).backward()
         scaler.step(dis_optimizer)
