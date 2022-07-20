@@ -299,8 +299,8 @@ class VideoDataset(Dataset):
         tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
         model = AutoModel.from_pretrained("bert-base-uncased").cuda()
 
-        vocab = np.zeros(dtype=np.float32, shape=(30000, 300))
-        counts = np.zeros(dtype=np.float32, shape=(30000))
+        vocab = np.zeros(dtype=np.float32, shape=(30000, 768))
+        counts = np.zeros(dtype=np.float32, shape=(30000, ))
         image_captions = list()
         UNK_count = 0
         max_len = -1
@@ -438,7 +438,7 @@ class VideoDataset(Dataset):
         # with open(os.path.join(caption_folder, "ActivityNet", "video_captions.json"), "w") as fp:
         #     json.dump(video_captions, fp, indent=4, sort_keys=True)
 
-        vocab = vocab / np.expand_dims(counts, axis=-1)
+        vocab = vocab / np.expand_dims(np.maximum(counts, 1.0), axis=-1)
         np.save(os.path.join(caption_folder, "bert_vocab.npy"), vocab)
 
         exit()
