@@ -136,8 +136,8 @@ _ = model.to(opt.device)
 embed_criterion = torch.nn.MSELoss().to(opt.device)
 adversarial_criterion = torch.nn.BCEWithLogitsLoss().to(opt.device)
 optimizer = torch.optim.Adam(model.parameters(), lr=opt.lr)
-gan_optimizer = torch.optim.Adam(cnn.paramters() + decoder.parameters(), lr=opt.lr)
-dis_optimizer = torch.optim.Adam(cnn.paramters() + encoder.parameters(), lr=opt.lr)
+gan_optimizer = torch.optim.Adam(cnn.parameters() + decoder.parameters(), lr=opt.lr)
+dis_optimizer = torch.optim.Adam(cnn.parameters() + encoder.parameters(), lr=opt.lr)
 if opt.lr == 1e-3:
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [60, 120], gamma=0.1)
 else:
