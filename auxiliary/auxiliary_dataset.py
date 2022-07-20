@@ -299,6 +299,8 @@ class VideoDataset(Dataset):
         tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
         model = AutoModel.from_pretrained("bert-base-uncased").cuda()
 
+        vocab = np.zeros(dtype=np.float32, shape=(30000, 300))
+        counts = np.zeros(dtype=np.float32, shape=(30000))
         image_captions = list()
         UNK_count = 0
         max_len = -1
@@ -311,12 +313,15 @@ class VideoDataset(Dataset):
                     inputs = tokenizer(caption, return_tensors="pt")
                     for key in inputs.keys():
                         inputs[key] = inputs[key].cuda()
-                    print(inputs)
-                    exit()
                     outputs = model(**inputs)
+                    input_ids = inputs["input_ids"].detach().cpu().numpy().squeeze(0)
                     embeddings = outputs["last_hidden_state"].detach().cpu().numpy().squeeze(0)
-                    if len(embeddings) < 50:
-                        embeddings = np.pad(embeddings, ((0, 50 - len(embeddings)), (0, 0)))
+                    for this_id in enumerate(input_ids):
+                        vocab[this_id] += embeddings
+                        counts[this_id] += 1.0
+
+                    # if len(embeddings) < 50:
+                    #     embeddings = np.pad(embeddings, ((0, 50 - len(embeddings)), (0, 0)))
 
                     # tokens = self.preprocess_text(caption)
                     # caption = self.clean_text(caption)
@@ -379,9 +384,13 @@ class VideoDataset(Dataset):
 
                         with torch.no_grad():
                             outputs = model(**inputs)
+                        input_ids = inputs["input_ids"].detach().cpu().numpy().squeeze(0)
                         embeddings = outputs["last_hidden_state"].detach().cpu().numpy().squeeze(0)
-                        if len(embeddings) < 83:
-                            embeddings = np.pad(embeddings, ((0, 83 - len(embeddings)), (0, 0)))
+                        for this_id in enumerate(input_ids):
+                            vocab[this_id] += embeddings
+                            counts[this_id] += 1.0
+                        # if len(embeddings) < 83:
+                        #     embeddings = np.pad(embeddings, ((0, 83 - len(embeddings)), (0, 0)))
 
                         # caption = self.clean_text(caption)
                         # caption = self.clean_numbers(caption)
@@ -428,6 +437,9 @@ class VideoDataset(Dataset):
 
         # with open(os.path.join(caption_folder, "ActivityNet", "video_captions.json"), "w") as fp:
         #     json.dump(video_captions, fp, indent=4, sort_keys=True)
+
+        vocab = vocab / np.expand_dims(counts, axis=-1)
+        np.save(os.path.join(caption_folder, "bert_vocab.npy"), vocab)
 
         exit()
         split = 0
