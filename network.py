@@ -435,7 +435,7 @@ if __name__ == "__main__":
     model = Model(network=models.r2plus1d_18, decoder=decoder, encoder=encoder, fixconvs=False, nopretrained=True).cuda()
 
     dummy_data = torch.tensor(np.zeros(dtype=np.float32, shape=(8, 1, 3, 16, 112, 112))).cuda()
-    dummy_captions = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 50, 768))).cuda()
+    dummy_captions = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 20, 768))).cuda()
 
     # # bs, l, v
     # fake_samples = decoder(dummy_data)
