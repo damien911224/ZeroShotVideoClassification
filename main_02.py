@@ -197,7 +197,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             # embed_loss = embed_criterion(fake_emb, Z)
             # loss = embed_loss
             split = 0
-            fake_emb, (real_dis, fake_dis_01, fake_dis_02) = model(X, captions)
+            fake_emb, (real_dis, (fake_dis_01, fake_dis_02)) = model(X, captions)
 
             embed_loss = embed_criterion(fake_emb, Z)
             g_loss = adversarial_criterion(fake_dis_01 - real_dis.detach(), torch.ones_like(fake_dis_01))
