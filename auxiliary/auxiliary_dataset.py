@@ -453,7 +453,8 @@ class VideoDataset(Dataset):
             # with open(os.path.join(caption_folder, "ActivityNet", "video_captions.json"), "r") as fp:
             #     self.video_captions = json.load(fp)
             # self.image_captions = np.load(os.path.join(caption_folder, "COCO", "image_captions.npy"), allow_pickle=True)
-            self.video_captions = np.load(os.path.join(caption_folder, "ActivityNet", "video_captions.npz"))
+            # self.video_captions = np.load(os.path.join(caption_folder, "ActivityNet", "video_captions.npz"))
+            self.video_captions = sorted(glob.glob(os.path.join(caption_folder, "ActivityNet", "video_captions", "*.npy")))
 
     def __getitem__(self, idx):
         sample = self.data[idx]
@@ -493,8 +494,8 @@ class VideoDataset(Dataset):
             cap_ids = random.sample(range(len(self.video_captions)), 5)
             v_caption_embeddings = list()
             for cap_id in cap_ids:
-                video_caption = self.video_captions["{}".format(cap_id)]
-                print(video_caption.shape)
+                # video_caption = self.video_captions["{}".format(cap_id)]
+                video_caption = np.load(self.video_captions[cap_id])
                 # video_caption = self.tokenizer(video_caption, return_tensors="pt")
                 # with torch.no_grad():
                 #     video_caption = self.model(**video_caption)
