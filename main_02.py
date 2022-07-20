@@ -200,9 +200,9 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             fake_emb, (real_dis, (fake_dis_01, fake_dis_02)) = model(X, captions)
 
             embed_loss = embed_criterion(fake_emb, Z)
-            # g_loss = adversarial_criterion(fake_dis_01 - real_dis.detach(), torch.ones_like(fake_dis_01))
+            g_loss = adversarial_criterion(fake_dis_01 - real_dis.detach(), torch.ones_like(fake_dis_01))
 
-            g_loss = -adversarial_criterion(fake_dis_01, torch.zeros_like(fake_dis_01))
+            # g_loss = -adversarial_criterion(fake_dis_01, torch.zeros_like(fake_dis_01))
 
             split = 0
 
@@ -214,11 +214,11 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         scaler.scale(embed_loss).backward()
 
         with autocast():
-            # d_loss = adversarial_criterion(real_dis - fake_dis_02, torch.ones_like(real_dis))
+            d_loss = adversarial_criterion(real_dis - fake_dis_02, torch.ones_like(real_dis))
 
-            d_loss_real = adversarial_criterion(real_dis, torch.ones_like(real_dis))
-            d_loss_fake = adversarial_criterion(fake_dis_02, torch.zeros_like(fake_dis_02))
-            d_loss = d_loss_real + d_loss_fake
+            # d_loss_real = adversarial_criterion(real_dis, torch.ones_like(real_dis))
+            # d_loss_fake = adversarial_criterion(fake_dis_02, torch.zeros_like(fake_dis_02))
+            # d_loss = d_loss_real + d_loss_fake
 
         scaler.scale(1.0e-4 * d_loss).backward()
         scaler.step(optimizer)
