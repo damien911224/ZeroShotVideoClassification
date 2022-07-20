@@ -479,7 +479,7 @@ class VideoDataset(Dataset):
                 image_caption = self.tokenizer(image_caption, return_tensors="pt")
                 with torch.no_grad():
                     image_caption = self.model(**image_caption)
-                image_caption = image_caption["last_hidden_state"].detach().cpu().squeeze(0)
+                image_caption = image_caption["last_hidden_state"].detach().squeeze(0)
                 if len(image_caption) > self.max_seq_len:
                     random_start_index = random.choice(range(len(image_caption) - self.max_seq_len + 1))
                     image_caption = image_caption[random_start_index:random_start_index + self.max_seq_len]
@@ -495,7 +495,7 @@ class VideoDataset(Dataset):
                 video_caption = self.tokenizer(video_caption, return_tensors="pt")
                 with torch.no_grad():
                     video_caption = self.model(**video_caption)
-                video_caption = video_caption["last_hidden_state"].detach().cpu().squeeze(0)
+                video_caption = video_caption["last_hidden_state"].detach().squeeze(0)
                 if len(video_caption) > self.max_seq_len:
                     random_start_index = random.choice(range(len(video_caption) - self.max_seq_len + 1))
                     video_caption = video_caption[random_start_index:random_start_index + self.max_seq_len]
