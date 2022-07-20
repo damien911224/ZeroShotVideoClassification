@@ -236,8 +236,8 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         if (epoch * len(data_iterator) + (i + 1)) % 10 == 0:
             txwriter.add_scalar('Train/Loss', loss.item(), epoch * len(data_iterator) + (i + 1))
             txwriter.add_scalar('Train/EmbeddingLoss', embed_loss.item(),epoch * len(data_iterator) + (i + 1))
-            # txwriter.add_scalar('Train/GeneratorLoss', g_loss.item(), epoch * len(data_iterator) + (i + 1))
-            # txwriter.add_scalar('Train/DiscriminatorLoss', d_loss.item(), epoch * len(data_iterator) + (i + 1))
+            txwriter.add_scalar('Train/GeneratorLoss', g_loss.item(), epoch * len(data_iterator) + (i + 1))
+            txwriter.add_scalar('Train/DiscriminatorLoss', d_loss.item(), epoch * len(data_iterator) + (i + 1))
             txwriter.add_scalar('Train/Accuracy', np.mean(acc), epoch * len(data_iterator) + (i + 1))
 
             # random_index = random.choice(range(len(X)))
