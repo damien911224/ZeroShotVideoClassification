@@ -203,7 +203,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
 
             embed_loss = embed_criterion(fake_emb, Z)
 
-            loss = embed_loss + 1.0e-1 * adv_loss
+            loss = embed_loss * 0.0 + 1.0 * adv_loss
             split = 0
 
         # Compute Accuracy.
