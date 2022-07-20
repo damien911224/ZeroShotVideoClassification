@@ -328,7 +328,10 @@ def evaluate(test_dataloader, txwriter, epoch):
     This function is called every epoch to evaluate the model on 50% of the classes.
     """
     name = test_dataloader.dataset.name
-    _ = model.eval()
+    # _ = model.eval()
+    cnn.eval()
+    decoder.eval()
+    encoder.eval()
     with torch.no_grad():
         ### For all test images, extract features
         n_samples = len(test_dataloader.dataset)
@@ -454,7 +457,10 @@ if __name__ == '__main__':
 
         ## Train one epoch
         if not opt.evaluate:
-            _ = model.train()
+            # _ = model.train()
+            cnn.train()
+            decoder.train()
+            encoder.train()
             train_one_epoch(dataloaders['training'][0], model, optimizer,
                             embed_criterion, adversarial_criterion, opt, epoch)
 
@@ -467,8 +473,8 @@ if __name__ == '__main__':
 
         if accuracy > best_acc:
             # Save best model
-            torch.save({'state_dict': model.state_dict(), 'opt': opt, 'accuracy': accuracy},
-                       opt.savename + '/checkpoint.pth.tar')
+            # torch.save({'state_dict': model.state_dict(), 'opt': opt, 'accuracy': accuracy},
+            #            opt.savename + '/checkpoint.pth.tar')
             best_acc = accuracy
 
         #Update the Metric Plot and save it.
