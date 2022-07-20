@@ -493,8 +493,6 @@ class VideoDataset(Dataset):
             v_caption_embeddings = list()
             for video_caption in video_captions:
                 video_caption = self.tokenizer(video_caption, return_tensors="pt")
-                for key in video_caption.keys():
-                    video_caption[key] = video_caption[key].cuda()
                 with torch.no_grad():
                     video_caption = self.model(**video_caption)
                 video_caption = video_caption["last_hidden_state"].detach().cpu().squeeze(0)
