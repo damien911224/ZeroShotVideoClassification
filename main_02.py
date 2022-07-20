@@ -182,6 +182,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         # image_captions = torch.stack(new_image_captions, dim=0)
         image_captions = image_captions.cuda()
         video_captions = video_captions.cuda()
+        captions = image_captions if random.random() < 0.50 else video_captions
 
         optimizer.zero_grad()
         tt_model = time.time()
@@ -192,7 +193,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             # loss = embed_loss
             split = 0
             # Compute embeddings for input batch.
-            fake_emb, (real_dis, fake_dis) = model(X, image_captions)
+            fake_emb, (real_dis, fake_dis) = model(X, captions)
             # Y = Y[:s[0]]
 
             # Compute loss.
