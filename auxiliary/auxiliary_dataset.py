@@ -446,14 +446,14 @@ class VideoDataset(Dataset):
         if 'kinetics' in name:
             self.max_seq_len = 20
             caption_folder = "/mnt/hdd1/captions"
-            self.tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-            self.model = AutoModel.from_pretrained("bert-base-uncased")
-            with open(os.path.join(caption_folder, "COCO", "image_captions.json"), "r") as fp:
-                self.image_captions = json.load(fp)
-            with open(os.path.join(caption_folder, "ActivityNet", "video_captions.json"), "r") as fp:
-                self.video_captions = json.load(fp)
-            # self.image_captions = np.load(os.path.join(caption_folder, "COCO", "image_captions.npy"), mmap_mode="r")
-            # self.video_captions = np.load(os.path.join(caption_folder, "ActivityNet", "video_captions.npy"), mmap_mode="r")
+            # self.tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+            # self.model = AutoModel.from_pretrained("bert-base-uncased")
+            # with open(os.path.join(caption_folder, "COCO", "image_captions.json"), "r") as fp:
+            #     self.image_captions = json.load(fp)
+            # with open(os.path.join(caption_folder, "ActivityNet", "video_captions.json"), "r") as fp:
+            #     self.video_captions = json.load(fp)
+            self.image_captions = np.load(os.path.join(caption_folder, "COCO", "image_captions.npy"), allow_pickle=True)
+            self.video_captions = np.load(os.path.join(caption_folder, "ActivityNet", "video_captions.npy"), allow_pickle=True)
 
     def __getitem__(self, idx):
         sample = self.data[idx]
@@ -476,10 +476,11 @@ class VideoDataset(Dataset):
             image_captions = random.sample(self.image_captions, 5)
             i_caption_embeddings = list()
             for image_caption in image_captions:
-                image_caption = self.tokenizer(image_caption, return_tensors="pt")
-                with torch.no_grad():
-                    image_caption = self.model(**image_caption)
-                image_caption = image_caption["last_hidden_state"].detach().squeeze(0)
+                # image_caption = self.tokenizer(image_caption, return_tensors="pt")
+                # with torch.no_grad():
+                #     image_caption = self.model(**image_caption)
+                # image_caption = image_caption["last_hidden_state"].detach().squeeze(0)
+                image_captions = torch.Tensor(image_captions)
                 if len(image_caption) > self.max_seq_len:
                     random_start_index = random.choice(range(len(image_caption) - self.max_seq_len + 1))
                     image_caption = image_caption[random_start_index:random_start_index + self.max_seq_len]
@@ -492,10 +493,11 @@ class VideoDataset(Dataset):
             video_captions = random.sample(self.video_captions, 5)
             v_caption_embeddings = list()
             for video_caption in video_captions:
-                video_caption = self.tokenizer(video_caption, return_tensors="pt")
-                with torch.no_grad():
-                    video_caption = self.model(**video_caption)
-                video_caption = video_caption["last_hidden_state"].detach().squeeze(0)
+                # video_caption = self.tokenizer(video_caption, return_tensors="pt")
+                # with torch.no_grad():
+                #     video_caption = self.model(**video_caption)
+                # video_caption = video_caption["last_hidden_state"].detach().squeeze(0)
+                video_caption = torch.Tensor(video_caption)
                 if len(video_caption) > self.max_seq_len:
                     random_start_index = random.choice(range(len(video_caption) - self.max_seq_len + 1))
                     video_caption = video_caption[random_start_index:random_start_index + self.max_seq_len]
