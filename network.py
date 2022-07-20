@@ -499,7 +499,7 @@ if __name__ == "__main__":
 
     d_loss = adversarial_criterion(real_dis - fake_dis, torch.ones_like(real_dis))
 
-    dis_optimizer.zero_grad()
+    # dis_optimizer.zero_grad()
     d_loss.backward()
     dis_optimizer.step()
 
