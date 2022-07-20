@@ -481,12 +481,11 @@ if __name__ == "__main__":
 
     print("embed loss done")
 
-    fake_emb, (real_dis, fake_dis) = model(dummy_data, dummy_captions)
+    # fake_emb, (real_dis, fake_dis) = model(dummy_data, dummy_captions)
 
     # Compute loss.
-    d_loss = adversarial_criterion(real_dis - fake_dis, torch.ones_like(real_dis))
     g_loss = adversarial_criterion(fake_dis - real_dis, torch.ones_like(fake_dis))
-    adv_loss = g_loss + d_loss
+    # adv_loss = g_loss + d_loss
 
     optimizer.zero_grad()
     gan_optimizer.zero_grad()
@@ -496,7 +495,8 @@ if __name__ == "__main__":
 
     print("gan loss done")
 
-    fake_emb, (real_dis, fake_dis) = model(dummy_data, dummy_captions)
+    d_loss = adversarial_criterion(real_dis - fake_dis, torch.ones_like(real_dis))
+    # fake_emb, (real_dis, fake_dis) = model(dummy_data, dummy_captions)
 
     dis_optimizer.zero_grad()
     d_loss.backward()
