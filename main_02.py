@@ -156,6 +156,8 @@ scaler = GradScaler()
 tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 bert_vocab = np.load("/mnt/hdd1/captions/bert_vocab.npy")
 
+adv_weight = 1.0e-1
+
 def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversarial_criterion, opt, epoch):
     """
     This function is called every epoch to perform training of the network over one full
@@ -219,7 +221,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
 
         # optimizer.zero_grad()
         gan_optimizer.zero_grad()
-        scaler.scale(g_loss).backward(retain_graph=True)
+        scaler.scale(adv_weight * g_loss).backward(retain_graph=True)
         dis_optimizer.zero_grad()
         optimizer.zero_grad()
         scaler.scale(embed_loss).backward()
@@ -247,7 +249,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
                 d_loss = d_loss_real + d_loss_fake
 
                 dis_optimizer.zero_grad()
-                scaler.scale(d_loss).backward()
+                scaler.scale(adv_weight * d_loss).backward()
                 scaler.step(dis_optimizer)
 
         adv_loss = g_loss + d_loss
