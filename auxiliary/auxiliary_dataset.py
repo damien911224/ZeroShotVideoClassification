@@ -495,7 +495,7 @@ class VideoDataset(Dataset):
             # image_caption = torch.Tensor(random.choice(self.image_captions)).float()
             # image_captions = random.sample(self.image_captions, 5)
 
-            cap_ids = random.sample(range(len(self.image_captions)), 2)
+            cap_ids = random.sample(range(len(self.image_captions)), 1)
             i_caption_embeddings = list()
             for cap_id in cap_ids:
                 # image_caption = self.tokenizer(image_caption, return_tensors="pt")
@@ -513,7 +513,7 @@ class VideoDataset(Dataset):
                 i_caption_embeddings.append(image_caption)
             i_caption_embeddings = torch.stack(i_caption_embeddings, dim=0)
 
-            cap_ids = random.sample(range(len(self.video_captions)), 2)
+            cap_ids = random.sample(range(len(self.video_captions)), 1)
             v_caption_embeddings = list()
             for cap_id in cap_ids:
                 # video_caption = self.video_captions["{}".format(cap_id)]
