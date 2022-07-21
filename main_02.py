@@ -42,7 +42,7 @@ parser.add_argument('--bs',           default=64,   type=int,   help='Mini-Batch
 parser.add_argument('--size',         default=112,  type=int,   help='Image size in input.')
 
 parser.add_argument('--fixconvs', action='store_true', default=False,   help='Freezing conv layers')
-parser.add_argument('--nopretrained', action='store_false', default=True,   help='Pretrain network.')
+parser.add_argument('--nopretrained', action='store_false', default=False,   help='Pretrain network.')
 
 ##### Network parameters
 parser.add_argument('--network', default='r2plus1d_18', type=str,
@@ -156,7 +156,7 @@ scaler = GradScaler()
 tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 bert_vocab = np.load("/mnt/hdd1/captions/bert_vocab.npy")
 
-adv_weight = 1.0e-4
+adv_weight = 0.0e-1
 
 def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversarial_criterion, opt, epoch):
     """
