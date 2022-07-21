@@ -247,7 +247,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
                 d_loss = d_loss_real + d_loss_fake
 
                 dis_optimizer.zero_grad()
-                scaler.scale(d_loss).backward(retain_graph=True)
+                scaler.scale(d_loss).backward()
                 scaler.step(dis_optimizer)
 
         adv_loss = g_loss + d_loss
