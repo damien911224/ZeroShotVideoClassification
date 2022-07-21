@@ -241,7 +241,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             # scaler.step(dis_optimizer)
 
             for d_i in range(captions.shape[1]):
-                _, fake_dis = encoder(fake_samples, embed=False)
+                _, fake_dis = encoder(fake_samples.detach(), embed=False)
                 _, real_dis = encoder(captions[:, d_i], embed=False)
 
                 d_loss_fake = adversarial_criterion(fake_dis, torch.zeros_like(fake_dis))
