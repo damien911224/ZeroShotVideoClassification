@@ -240,6 +240,9 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             # scaler.scale(d_loss).backward()
             # scaler.step(dis_optimizer)
 
+            d_loss_sum = 0.0
+            d_loss_fake_sum = 0.0
+            d_loss_real_sum = 0.0
             for d_i in range(captions.shape[1]):
                 _, fake_dis = encoder(fake_samples.detach(), embed=False)
                 _, real_dis = encoder(captions[:, d_i], embed=False)
@@ -248,9 +251,16 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
                 d_loss_real = adversarial_criterion(real_dis, torch.ones_like(real_dis))
                 d_loss = d_loss_real + d_loss_fake
 
-                dis_optimizer.zero_grad()
                 scaler.scale(adv_weight * d_loss).backward()
+
+                d_loss_sum += d_loss
+                d_loss_fake_sum += d_loss_fake
+                d_loss_real_sum += d_loss_real
         scaler.step(dis_optimizer)
+
+        d_loss /= captions.shape[1]
+        d_loss_fake /= captions.shape[1]
+        d_loss_real /= captions.shape[1]
 
         adv_loss = g_loss + d_loss
         loss = embed_loss + adv_loss
@@ -295,15 +305,17 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             # videos = ((X.squeeze().detach().cpu().numpy() * 2.0 + 1) * 255.0).astype(np.uint8).permute(0, 2, 1, 3, 4)
             # txwriter.add_video("Train/Video", " ".join(videos[random_index].unsqueeze(0)))
             split = 0
-            # bs, l, c
-            fake_samples = fake_samples.detach().cpu().numpy()
-            # bs, l, vocab, c
-            distances = np.square(np.reshape(bert_vocab, (1, 1, 30000, 768)) - np.expand_dims(fake_samples, axis=2))
+            random_batch_idx = random.choice(range(len(word_ids)))
+            # l, c
+            fake_samples = fake_samples.detach().cpu().numpy()[random_batch_idx]
+            # l, vocab, c
+            distances = np.square(np.expand_dims(bert_vocab, axis=0) - np.expand_dims(fake_samples, axis=1))
+            # l, vocab
             distances = np.sum(distances, axis=-1)
+            # l
             word_ids = np.argmin(distances, axis=-1)
 
-            random_batch_idx = random.choice(range(len(word_ids)))
-            sampled_word_ids = word_ids[random_batch_idx]
+            sampled_word_ids = word_ids
             decoded_str = tokenizer.decode(sampled_word_ids.tolist())
             # print(decoded_str)
             txwriter.add_text('Train/FakeTextSamples', decoded_str, epoch * len(data_iterator) + (i + 1))
