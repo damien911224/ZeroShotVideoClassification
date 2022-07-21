@@ -156,7 +156,7 @@ scaler = GradScaler()
 tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 bert_vocab = np.load("/mnt/hdd1/captions/bert_vocab.npy")
 
-adv_weight = 1.0e-1
+adv_weight = 1.0e-4
 
 def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversarial_criterion, opt, epoch):
     """
