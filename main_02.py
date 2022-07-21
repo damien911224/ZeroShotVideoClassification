@@ -305,7 +305,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             # videos = ((X.squeeze().detach().cpu().numpy() * 2.0 + 1) * 255.0).astype(np.uint8).permute(0, 2, 1, 3, 4)
             # txwriter.add_video("Train/Video", " ".join(videos[random_index].unsqueeze(0)))
             split = 0
-            random_batch_idx = random.choice(range(len(word_ids)))
+            random_batch_idx = random.choice(range(len(fake_samples)))
             # l, c
             fake_samples = fake_samples.detach().cpu().numpy()[random_batch_idx]
             # l, vocab, c
