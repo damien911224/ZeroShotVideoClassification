@@ -224,8 +224,8 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         for key in video_caption_input.keys():
             video_caption_input[key] = torch.cat(video_caption_input[key], dim=0).cuda()
 
-        image_captions = bert_model(image_captions)
-        video_captions = bert_model(video_captions)
+        image_captions = bert_model(**image_captions)
+        video_captions = bert_model(**video_captions)
 
         # captions = image_captions if random.random() < 0.50 else video_captions
         captions = torch.cat((image_captions, video_captions), dim=1)
