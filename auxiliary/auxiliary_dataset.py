@@ -466,14 +466,14 @@ class VideoDataset(Dataset):
             caption_folder = "/mnt/hdd1/captions"
             self.tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
             # self.model = AutoModel.from_pretrained("bert-base-uncased")
-            with open(os.path.join(caption_folder, "COCO", "image_captions.json"), "r") as fp:
-                self.image_captions = json.load(fp)
-            with open(os.path.join(caption_folder, "ActivityNet", "video_captions.json"), "r") as fp:
-                self.video_captions = json.load(fp)
+            # with open(os.path.join(caption_folder, "COCO", "image_captions.json"), "r") as fp:
+            #     self.image_captions = json.load(fp)
+            # with open(os.path.join(caption_folder, "ActivityNet", "video_captions.json"), "r") as fp:
+            #     self.video_captions = json.load(fp)
             # self.image_captions = np.load(os.path.join(caption_folder, "COCO", "image_captions.npy"), allow_pickle=True)
             # self.video_captions = np.load(os.path.join(caption_folder, "ActivityNet", "video_captions.npz"))
-            # self.image_captions = sorted(glob.glob(os.path.join(caption_folder, "COCO", "image_captions", "*.npy")))
-            # self.video_captions = sorted(glob.glob(os.path.join(caption_folder, "ActivityNet", "video_captions", "*.npy")))
+            self.image_captions = sorted(glob.glob(os.path.join(caption_folder, "COCO", "image_captions", "*.npy")))
+            self.video_captions = sorted(glob.glob(os.path.join(caption_folder, "ActivityNet", "video_captions", "*.npy")))
 
     def __getitem__(self, idx):
         sample = self.data[idx]
