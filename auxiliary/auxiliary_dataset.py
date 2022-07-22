@@ -536,14 +536,16 @@ class VideoDataset(Dataset):
             image_caption_tensors = list()
             for image_caption in image_captions:
                 image_caption = self.tokenizer(image_caption, return_tensors="pt")
-                if len(image_caption["input_ids"]) > self.max_seq_len:
-                    random_start_index = random.choice(range(len(image_caption) - self.max_seq_len + 1))
+                if len(image_caption["input_ids"][0]) > self.max_seq_len:
+                    random_start_index = random.choice(range(len(image_caption["input_ids"][0]) - self.max_seq_len + 1))
                     for key in image_caption.keys():
-                        image_caption[key] = image_caption[key][random_start_index:random_start_index + self.max_seq_len]
-                elif len(image_caption["input_ids"]) < self.max_seq_len:
+                        image_caption[key][0] = \
+                            image_caption[key][0][random_start_index:random_start_index + self.max_seq_len]
+                elif len(image_caption["input_ids"][0]) < self.max_seq_len:
                     for key in image_caption.keys():
-                        image_caption[key] = F.pad(image_caption, (0, 0, 0, self.max_seq_len - len(image_caption[key])),
-                                                   "constant", value=0)
+                        image_caption[key][0] = F.pad(image_caption[key][0],
+                                                      (0, 0, 0, self.max_seq_len - len(image_caption[key])),
+                                                      "constant", value=0)
                 image_caption_tensors.append(image_caption)
             image_caption_tensors = torch.stack(image_caption_tensors, dim=0)
 
@@ -551,15 +553,16 @@ class VideoDataset(Dataset):
             video_caption_tensors = list()
             for video_caption in video_captions:
                 video_caption = self.tokenizer(video_caption, return_tensors="pt")
-                if len(video_caption["input_ids"]) > self.max_seq_len:
-                    random_start_index = random.choice(range(len(video_caption) - self.max_seq_len + 1))
+                if len(video_caption["input_ids"][0]) > self.max_seq_len:
+                    random_start_index = random.choice(range(len(video_caption["input_ids"][0]) - self.max_seq_len + 1))
                     for key in video_caption.keys():
-                        video_caption[key] = video_caption[key][
-                                             random_start_index:random_start_index + self.max_seq_len]
-                elif len(video_caption["input_ids"]) < self.max_seq_len:
+                        video_caption[key][0] = \
+                            video_caption[key][0][random_start_index:random_start_index + self.max_seq_len]
+                elif len(video_caption["input_ids"][0]) < self.max_seq_len:
                     for key in video_caption.keys():
-                        video_caption[key] = F.pad(video_caption, (0, 0, 0, self.max_seq_len - len(video_caption[key])),
-                                                   "constant", value=0)
+                        video_caption[key][0] = F.pad(video_caption[key][0],
+                                                      (0, 0, 0, self.max_seq_len - len(video_caption[key])),
+                                                      "constant", value=0)
                 video_caption_tensors.append(video_caption)
             video_caption_tensors = torch.stack(video_caption_tensors, dim=0)
 
