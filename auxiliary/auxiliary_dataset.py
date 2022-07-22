@@ -544,7 +544,7 @@ class VideoDataset(Dataset):
                 elif len(image_caption["input_ids"][0]) < self.max_seq_len:
                     for key in image_caption.keys():
                         image_caption[key][0] = F.pad(image_caption[key][0],
-                                                      (0, 0, 0, self.max_seq_len - len(image_caption[key])),
+                                                      (0, 0, 0, self.max_seq_len - len(image_caption[key][0])),
                                                       "constant", value=0)
                 image_caption_tensors.append(image_caption)
             image_caption_tensors = torch.stack(image_caption_tensors, dim=0)
@@ -561,7 +561,7 @@ class VideoDataset(Dataset):
                 elif len(video_caption["input_ids"][0]) < self.max_seq_len:
                     for key in video_caption.keys():
                         video_caption[key][0] = F.pad(video_caption[key][0],
-                                                      (0, 0, 0, self.max_seq_len - len(video_caption[key])),
+                                                      (0, 0, 0, self.max_seq_len - len(video_caption[key][0])),
                                                       "constant", value=0)
                 video_caption_tensors.append(video_caption)
             video_caption_tensors = torch.stack(video_caption_tensors, dim=0)
