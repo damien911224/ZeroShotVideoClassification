@@ -155,6 +155,8 @@ scaler = GradScaler()
 
 tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 bert_vocab = np.load("/mnt/hdd1/captions/bert_vocab.npy")
+bert_model = nn.DataParallel(AutoModel.from_pretrained("bert-base-uncased")).cuda()
+bert_model.eval()
 
 adv_weight = 0.0e-1
 
@@ -199,6 +201,10 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         # image_captions = torch.stack(new_image_captions, dim=0)
         image_captions = image_captions.cuda()
         video_captions = video_captions.cuda()
+
+        image_captions = bert_model(image_captions)
+        video_captions = bert_model(video_captions)
+
         # captions = image_captions if random.random() < 0.50 else video_captions
         captions = torch.cat((image_captions, video_captions), dim=1)
 

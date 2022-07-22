@@ -464,16 +464,16 @@ class VideoDataset(Dataset):
         if 'kinetics' in name:
             self.max_seq_len = 20
             caption_folder = "/mnt/hdd1/captions"
-            # self.tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+            self.tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
             # self.model = AutoModel.from_pretrained("bert-base-uncased")
-            # with open(os.path.join(caption_folder, "COCO", "image_captions.json"), "r") as fp:
-            #     self.image_captions = json.load(fp)
-            # with open(os.path.join(caption_folder, "ActivityNet", "video_captions.json"), "r") as fp:
-            #     self.video_captions = json.load(fp)
+            with open(os.path.join(caption_folder, "COCO", "image_captions.json"), "r") as fp:
+                self.image_captions = json.load(fp)
+            with open(os.path.join(caption_folder, "ActivityNet", "video_captions.json"), "r") as fp:
+                self.video_captions = json.load(fp)
             # self.image_captions = np.load(os.path.join(caption_folder, "COCO", "image_captions.npy"), allow_pickle=True)
             # self.video_captions = np.load(os.path.join(caption_folder, "ActivityNet", "video_captions.npz"))
-            self.image_captions = sorted(glob.glob(os.path.join(caption_folder, "COCO", "image_captions", "*.npy")))
-            self.video_captions = sorted(glob.glob(os.path.join(caption_folder, "ActivityNet", "video_captions", "*.npy")))
+            # self.image_captions = sorted(glob.glob(os.path.join(caption_folder, "COCO", "image_captions", "*.npy")))
+            # self.video_captions = sorted(glob.glob(os.path.join(caption_folder, "ActivityNet", "video_captions", "*.npy")))
 
     def __getitem__(self, idx):
         sample = self.data[idx]
@@ -495,44 +495,75 @@ class VideoDataset(Dataset):
             # image_caption = torch.Tensor(random.choice(self.image_captions)).float()
             # image_captions = random.sample(self.image_captions, 5)
 
-            cap_ids = random.sample(range(len(self.image_captions)), 1)
-            i_caption_embeddings = list()
-            for cap_id in cap_ids:
-                # image_caption = self.tokenizer(image_caption, return_tensors="pt")
-                # with torch.no_grad():
-                #     image_caption = self.model(**image_caption)
-                # image_caption = image_caption["last_hidden_state"].detach().squeeze(0)
-                image_caption = np.load(self.image_captions[cap_id])
-                image_caption = torch.Tensor(image_caption)
+            # cap_ids = random.sample(range(len(self.image_captions)), 1)
+            # i_caption_embeddings = list()
+            # for cap_id in cap_ids:
+            #     # image_caption = self.tokenizer(image_caption, return_tensors="pt")
+            #     # with torch.no_grad():
+            #     #     image_caption = self.model(**image_caption)
+            #     # image_caption = image_caption["last_hidden_state"].detach().squeeze(0)
+            #     image_caption = np.load(self.image_captions[cap_id])
+            #     image_caption = torch.Tensor(image_caption)
+            #     if len(image_caption) > self.max_seq_len:
+            #         random_start_index = random.choice(range(len(image_caption) - self.max_seq_len + 1))
+            #         image_caption = image_caption[random_start_index:random_start_index + self.max_seq_len]
+            #     elif len(image_caption) < self.max_seq_len:
+            #         image_caption = F.pad(image_caption, (0, 0, 0, self.max_seq_len - len(image_caption)),
+            #                               "constant", value=0.0)
+            #     i_caption_embeddings.append(image_caption)
+            # i_caption_embeddings = torch.stack(i_caption_embeddings, dim=0)
+            #
+            # cap_ids = random.sample(range(len(self.video_captions)), 1)
+            # v_caption_embeddings = list()
+            # for cap_id in cap_ids:
+            #     # video_caption = self.video_captions["{}".format(cap_id)]
+            #     video_caption = np.load(self.video_captions[cap_id])
+            #     # video_caption = self.tokenizer(video_caption, return_tensors="pt")
+            #     # with torch.no_grad():
+            #     #     video_caption = self.model(**video_caption)
+            #     # video_caption = video_caption["last_hidden_state"].detach().squeeze(0)
+            #     video_caption = torch.Tensor(video_caption)
+            #     if len(video_caption) > self.max_seq_len:
+            #         random_start_index = random.choice(range(len(video_caption) - self.max_seq_len + 1))
+            #         video_caption = video_caption[random_start_index:random_start_index + self.max_seq_len]
+            #     elif len(video_caption) < self.max_seq_len:
+            #         video_caption = F.pad(video_caption, (0, 0, 0, self.max_seq_len - len(video_caption)),
+            #                               "constant", value=0.0)
+            #     v_caption_embeddings.append(video_caption)
+            # v_caption_embeddings = torch.stack(v_caption_embeddings, dim=0)
+
+            image_captions = random.sample(self.image_captions, 1)
+            image_caption_tensors = list()
+            for image_caption in image_captions:
+                image_caption = self.tokenizer(image_caption, return_tensors="pt")
                 if len(image_caption) > self.max_seq_len:
                     random_start_index = random.choice(range(len(image_caption) - self.max_seq_len + 1))
-                    image_caption = image_caption[random_start_index:random_start_index + self.max_seq_len]
+                    for key in image_caption.keys():
+                        image_caption[key] = image_caption[key][random_start_index:random_start_index + self.max_seq_len]
                 elif len(image_caption) < self.max_seq_len:
-                    image_caption = F.pad(image_caption, (0, 0, 0, self.max_seq_len - len(image_caption)),
-                                          "constant", value=0.0)
-                i_caption_embeddings.append(image_caption)
-            i_caption_embeddings = torch.stack(i_caption_embeddings, dim=0)
+                    for key in image_captions.keys():
+                        image_caption[key] = F.pad(image_caption, (0, 0, 0, self.max_seq_len - len(image_caption)),
+                                                   "constant", value=0)
+                image_caption_tensors.append(image_caption)
+            image_caption_tensors = torch.stack(image_caption_tensors, dim=0)
 
-            cap_ids = random.sample(range(len(self.video_captions)), 1)
-            v_caption_embeddings = list()
-            for cap_id in cap_ids:
-                # video_caption = self.video_captions["{}".format(cap_id)]
-                video_caption = np.load(self.video_captions[cap_id])
-                # video_caption = self.tokenizer(video_caption, return_tensors="pt")
-                # with torch.no_grad():
-                #     video_caption = self.model(**video_caption)
-                # video_caption = video_caption["last_hidden_state"].detach().squeeze(0)
-                video_caption = torch.Tensor(video_caption)
+            video_captions = random.sample(self.video_captions, 1)
+            video_caption_tensors = list()
+            for video_caption in video_captions:
+                video_caption = self.tokenizer(video_caption, return_tensors="pt")
                 if len(video_caption) > self.max_seq_len:
                     random_start_index = random.choice(range(len(video_caption) - self.max_seq_len + 1))
-                    video_caption = video_caption[random_start_index:random_start_index + self.max_seq_len]
+                    for key in video_caption.keys():
+                        video_caption[key] = video_caption[key][
+                                             random_start_index:random_start_index + self.max_seq_len]
                 elif len(video_caption) < self.max_seq_len:
-                    video_caption = F.pad(video_caption, (0, 0, 0, self.max_seq_len - len(video_caption)),
-                                          "constant", value=0.0)
-                v_caption_embeddings.append(video_caption)
-            v_caption_embeddings = torch.stack(v_caption_embeddings, dim=0)
+                    for key in video_caption.keys():
+                        video_caption[key] = F.pad(video_caption, (0, 0, 0, self.max_seq_len - len(video_caption)),
+                                                   "constant", value=0)
+                video_caption_tensors.append(video_caption)
+            video_caption_tensors = torch.stack(video_caption_tensors, dim=0)
 
-            return buffer, label, self.class_embed[label], idx, (i_caption_embeddings, v_caption_embeddings)
+            return buffer, label, self.class_embed[label], idx, (image_caption_tensors, video_caption_tensors)
         else:
             return buffer, label, self.class_embed[label], idx
 
