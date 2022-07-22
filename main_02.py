@@ -199,33 +199,33 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         #         image_caption = F.pad(image_caption, (0, 0, 0, 50 - len(image_caption)))
         #     new_image_captions.append(image_caption)
         # image_captions = torch.stack(new_image_captions, dim=0)
-        # image_captions = image_captions.cuda()
-        # video_captions = video_captions.cuda()
+        image_captions = image_captions.cuda()
+        video_captions = video_captions.cuda()
 
-        image_caption_input = dict()
-        for image_caption in image_captions:
-            for key in image_caption.keys():
-                if key not in image_caption_input:
-                    image_caption_input[key] = [image_caption[key]]
-                else:
-                    image_caption_input[key].append(image_caption[key])
-
-        for key in image_caption_input.keys():
-            image_caption_input[key] = torch.cat(image_caption_input[key], dim=0).cuda()
-
-        video_caption_input = dict()
-        for video_caption in video_captions:
-            for key in video_caption.keys():
-                if key not in video_caption_input:
-                    video_caption_input[key] = [video_caption[key]]
-                else:
-                    video_caption_input[key].append(video_caption[key])
-
-        for key in video_caption_input.keys():
-            video_caption_input[key] = torch.cat(video_caption_input[key], dim=0).cuda()
-
-        image_captions = bert_model(**image_captions)
-        video_captions = bert_model(**video_captions)
+        # image_caption_input = dict()
+        # for image_caption in image_captions:
+        #     for key in image_caption.keys():
+        #         if key not in image_caption_input:
+        #             image_caption_input[key] = [image_caption[key]]
+        #         else:
+        #             image_caption_input[key].append(image_caption[key])
+        #
+        # for key in image_caption_input.keys():
+        #     image_caption_input[key] = torch.cat(image_caption_input[key], dim=0).cuda()
+        #
+        # video_caption_input = dict()
+        # for video_caption in video_captions:
+        #     for key in video_caption.keys():
+        #         if key not in video_caption_input:
+        #             video_caption_input[key] = [video_caption[key]]
+        #         else:
+        #             video_caption_input[key].append(video_caption[key])
+        #
+        # for key in video_caption_input.keys():
+        #     video_caption_input[key] = torch.cat(video_caption_input[key], dim=0).cuda()
+        #
+        # image_captions = bert_model(**image_captions)
+        # video_captions = bert_model(**video_captions)
 
         # captions = image_captions if random.random() < 0.50 else video_captions
         captions = torch.cat((image_captions, video_captions), dim=1)

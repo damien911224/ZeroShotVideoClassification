@@ -216,7 +216,7 @@ class Decoder(nn.Module):
 
         self.d_model = 256
         self.temperature = 1.0
-        self.max_seq_len = 20
+        self.max_seq_len = 3
 
         # self.wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
         split = 0
@@ -368,7 +368,7 @@ class Encoder(nn.Module):
         super(Encoder, self).__init__()
 
         self.d_model = 128
-        self.max_seq_len = 20
+        self.max_seq_len = 3
 
         # self.wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
         self.s_pos_embeds = nn.Embedding(self.max_seq_len, self.d_model)
@@ -402,8 +402,8 @@ class Encoder(nn.Module):
         special_tokens = self.special_tokens.weight.view(1, 2, self.d_model).repeat(bs, 1, 1).cuda()
         s_pos_embeds = self.s_pos_embeds.weight.view(1, self.max_seq_len, self.d_model).cuda()
         out = self.word2input_proj(x) + s_pos_embeds
-        if not embed:
-            out = self.dropout(out)
+        # if not embed:
+        #     out = self.dropout(out)
         out = torch.cat((special_tokens, out), dim=1)
 
         out = self.encoder(out.permute(1, 0, 2)).permute(1, 0, 2)
