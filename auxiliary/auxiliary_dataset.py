@@ -539,8 +539,8 @@ class VideoDataset(Dataset):
                 if len(image_caption["input_ids"][0]) > self.max_seq_len:
                     random_start_index = random.choice(range(len(image_caption["input_ids"][0]) - self.max_seq_len + 1))
                     for key in image_caption.keys():
-                        image_caption[key][0] = \
-                            image_caption[key][0][random_start_index:random_start_index + self.max_seq_len]
+                        image_caption[key] = \
+                            image_caption[key][:, random_start_index:random_start_index + self.max_seq_len]
                 elif len(image_caption["input_ids"][0]) < self.max_seq_len:
                     for key in image_caption.keys():
                         image_caption[key] = F.pad(image_caption[key],
@@ -556,8 +556,8 @@ class VideoDataset(Dataset):
                 if len(video_caption["input_ids"][0]) > self.max_seq_len:
                     random_start_index = random.choice(range(len(video_caption["input_ids"][0]) - self.max_seq_len + 1))
                     for key in video_caption.keys():
-                        video_caption[key][0] = \
-                            video_caption[key][0][random_start_index:random_start_index + self.max_seq_len]
+                        video_caption[key] = \
+                            video_caption[key][:, random_start_index:random_start_index + self.max_seq_len]
                 elif len(video_caption["input_ids"][0]) < self.max_seq_len:
                     for key in video_caption.keys():
                         video_caption[key] = F.pad(video_caption[key],
