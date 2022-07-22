@@ -541,7 +541,7 @@ class VideoDataset(Dataset):
                     for key in image_caption.keys():
                         image_caption[key] = image_caption[key][random_start_index:random_start_index + self.max_seq_len]
                 elif len(image_caption) < self.max_seq_len:
-                    for key in image_captions.keys():
+                    for key in image_caption.keys():
                         image_caption[key] = F.pad(image_caption, (0, 0, 0, self.max_seq_len - len(image_caption)),
                                                    "constant", value=0)
                 image_caption_tensors.append(image_caption)
