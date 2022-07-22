@@ -154,9 +154,9 @@ scaler = GradScaler()
 """===========================TRAINER FUNCTION==============================="""
 
 tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-bert_vocab = np.load("/mnt/hdd1/captions/bert_vocab.npy")
-bert_model = nn.DataParallel(AutoModel.from_pretrained("bert-base-uncased")).cuda()
-bert_model.eval()
+# bert_vocab = np.load("/mnt/hdd1/captions/bert_vocab.npy")
+# bert_model = nn.DataParallel(AutoModel.from_pretrained("bert-base-uncased")).cuda()
+# bert_model.eval()
 
 adv_weight = 1.0e-4
 
