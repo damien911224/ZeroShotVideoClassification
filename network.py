@@ -216,7 +216,7 @@ class Decoder(nn.Module):
 
         self.d_model = 256
         self.temperature = 1.0
-        self.max_seq_len = 3
+        self.max_seq_len = 20
 
         # self.wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
         split = 0
@@ -240,7 +240,7 @@ class Decoder(nn.Module):
         decoder_layer = nn.TransformerDecoderLayer(d_model=self.d_model, dim_feedforward=self.d_model * 4,
                                                    nhead=8, dropout=0.1, activation="gelu")
         self.decoder = nn.TransformerDecoder(decoder_layer, num_layers=3)
-        self.output2word_proj = nn.Linear(self.d_model, 768)
+        self.output2word_proj = nn.Linear(self.d_model, 30000)
 
         self.reset_parameters()
 
@@ -276,6 +276,7 @@ class Decoder(nn.Module):
         s_pos_embeds = self.s_pos_embeds.weight.view(1, self.max_seq_len, self.d_model).repeat(bs, 1, 1).cuda()
         out = self.decoder(s_pos_embeds.permute(1, 0, 2), feats.permute(1, 0, 2)).permute(1, 0, 2)
         out = self.output2word_proj(out)
+        out = F.gumbel_softmax(out, tau=1, hard=True)
 
         return out
 
@@ -368,7 +369,7 @@ class Encoder(nn.Module):
         super(Encoder, self).__init__()
 
         self.d_model = 128
-        self.max_seq_len = 3
+        self.max_seq_len = 20
 
         # self.wv_model = Word2Vec.load('./assets/GoogleNewsAdded', mmap='r')
         self.s_pos_embeds = nn.Embedding(self.max_seq_len, self.d_model)

@@ -462,7 +462,7 @@ class VideoDataset(Dataset):
         # exit()
         split = 0
         if 'kinetics' in name:
-            self.max_seq_len = 3
+            self.max_seq_len = 20
             caption_folder = "/mnt/hdd1/captions"
             self.tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
             # self.model = AutoModel.from_pretrained("bert-base-uncased")

@@ -155,6 +155,7 @@ scaler = GradScaler()
 
 tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 bert_vocab = np.load("/mnt/hdd1/captions/bert_vocab.npy")
+bert_vocab_tensor = torch.Tensor(bert_vocab).cuda()
 # bert_model = nn.DataParallel(AutoModel.from_pretrained("bert-base-uncased")).cuda()
 # bert_model.eval()
 
@@ -240,6 +241,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             # fake_samples, fake_emb, (real_dis, (fake_dis_01, fake_dis_02)) = model(X, captions)
             features = cnn(X)
             fake_samples = decoder(features)
+            fake_samples = torch.matmul(fake_samples, bert_vocab_tensor)
             fake_emb, fake_dis = encoder(fake_samples)
 
             embed_loss = embed_criterion(fake_emb, Z)
