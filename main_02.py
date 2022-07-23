@@ -254,7 +254,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         scaler.scale(adv_weight * g_loss).backward(retain_graph=True)
         dis_optimizer.zero_grad()
         # optimizer.zero_grad()
-        scaler.scale(embed_loss * 0.0).backward()
+        scaler.scale(embed_loss).backward()
         scaler.step(optimizer)
         scaler.step(gan_optimizer)
         # scaler.step(dis_optimizer)
