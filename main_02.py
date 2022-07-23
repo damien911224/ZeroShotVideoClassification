@@ -42,7 +42,7 @@ parser.add_argument('--bs',           default=64,   type=int,   help='Mini-Batch
 parser.add_argument('--size',         default=112,  type=int,   help='Image size in input.')
 
 parser.add_argument('--fixconvs', action='store_true', default=False,   help='Freezing conv layers')
-parser.add_argument('--nopretrained', action='store_false', default=True,   help='Pretrain network.')
+parser.add_argument('--nopretrained', action='store_false', default=False,   help='Pretrain network.')
 
 ##### Network parameters
 parser.add_argument('--network', default='r2plus1d_18', type=str,
@@ -159,7 +159,7 @@ bert_vocab_tensor = torch.Tensor(bert_vocab).cuda()
 # bert_model = nn.DataParallel(AutoModel.from_pretrained("bert-base-uncased")).cuda()
 # bert_model.eval()
 
-adv_weight = 1.0e-1
+adv_weight = 1.0e-4
 
 def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversarial_criterion, opt, epoch):
     """
