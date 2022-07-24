@@ -159,7 +159,7 @@ bert_vocab_tensor = torch.Tensor(bert_vocab).cuda()
 # bert_model = nn.DataParallel(AutoModel.from_pretrained("bert-base-uncased")).cuda()
 # bert_model.eval()
 
-adv_weight = 1.0e-4
+adv_weight = 0.0e-4
 
 def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversarial_criterion, opt, epoch):
     """
