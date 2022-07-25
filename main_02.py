@@ -247,6 +247,13 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             embed_loss = embed_criterion(fake_emb, Z)
             # g_loss = adversarial_criterion(fake_dis_01 - real_dis.detach(), torch.ones_like(fake_dis_01))
             g_loss = -adversarial_criterion(fake_dis, torch.zeros_like(fake_dis))
+
+            x = self.avgpool(features).flatten(1)
+            x = self.dropout(x)
+            x = self.regressor(x)
+            x = F.normalize(x)
+
+            aux_loss = embed_criterion(x, Z)
             split = 0
 
         optimizer.zero_grad()
@@ -254,7 +261,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
         scaler.scale(adv_weight * g_loss).backward(retain_graph=True)
         dis_optimizer.zero_grad()
         # optimizer.zero_grad()
-        scaler.scale(embed_loss).backward()
+        scaler.scale(embed_loss + aux_loss).backward()
         scaler.step(optimizer)
         scaler.step(gan_optimizer)
         # scaler.step(dis_optimizer)

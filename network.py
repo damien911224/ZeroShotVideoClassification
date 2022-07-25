@@ -190,6 +190,9 @@ class Model(nn.Module):
         # self.decoder = decoder()
         # self.encoder = encoder()
 
+        self.regressor = nn.Linear(self.model.fc.in_features, 300)
+        self.dropout = torch.nn.Dropout(p=0.05)
+
     def forward(self, x, real_samples=None):
         bs, nc, ch, l, h, w = x.shape
         x = x.reshape(bs*nc, ch, l, h, w)
