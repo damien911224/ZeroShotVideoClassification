@@ -400,6 +400,7 @@ def evaluate(test_dataloader, txwriter, epoch):
             # _, Y, _ = model(X.to(opt.device))
             features = cnn(X)
             fake_samples = decoder(features)
+            fake_samples = torch.matmul(fake_samples, bert_vocab_tensor)
             Y, _ = encoder(fake_samples)
             Y = Y.cpu().detach().numpy()
             l = l.cpu().detach().numpy()
