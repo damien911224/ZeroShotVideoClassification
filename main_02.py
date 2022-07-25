@@ -248,9 +248,9 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             # g_loss = adversarial_criterion(fake_dis_01 - real_dis.detach(), torch.ones_like(fake_dis_01))
             g_loss = -adversarial_criterion(fake_dis, torch.zeros_like(fake_dis))
 
-            x = self.avgpool(features).flatten(1)
-            x = self.dropout(x)
-            x = self.regressor(x)
+            x = cnn.avgpool(features).flatten(1)
+            x = cnn.dropout(x)
+            x = cnn.regressor(x)
             x = F.normalize(x)
 
             aux_loss = embed_criterion(x, Z)
