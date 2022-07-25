@@ -196,7 +196,11 @@ class Model(nn.Module):
     def forward(self, x, real_samples=None):
         bs, nc, ch, l, h, w = x.shape
         x = x.reshape(bs*nc, ch, l, h, w)
-        _, f = self.model(x)
+        x, f = self.model(x)
+
+        x = self.dropout(x)
+        x = self.regressor(x)
+        x = F.normalize(x)
 
         # # bs, l, v
         # fake_samples = self.decoder(f)
@@ -209,7 +213,7 @@ class Model(nn.Module):
         #
         # return fake_samples, fake_emb, (real_dis, (fake_dis_01, fake_dis_02))
 
-        return f
+        return x, f
 
 
 class Decoder(nn.Module):

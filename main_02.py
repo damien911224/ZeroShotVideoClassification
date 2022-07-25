@@ -239,7 +239,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             # loss = embed_loss
             split = 0
             # fake_samples, fake_emb, (real_dis, (fake_dis_01, fake_dis_02)) = model(X, captions)
-            features = cnn(X)
+            x, features = cnn(X)
             fake_samples = decoder(features)
             fake_samples = torch.matmul(fake_samples, bert_vocab_tensor)
             fake_emb, fake_dis = encoder(fake_samples)
@@ -247,11 +247,6 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, adversa
             embed_loss = embed_criterion(fake_emb, Z)
             # g_loss = adversarial_criterion(fake_dis_01 - real_dis.detach(), torch.ones_like(fake_dis_01))
             g_loss = -adversarial_criterion(fake_dis, torch.zeros_like(fake_dis))
-
-            x = cnn.avgpool(features).flatten(1)
-            x = cnn.dropout(x)
-            x = cnn.regressor(x)
-            x = F.normalize(x)
 
             aux_loss = embed_criterion(x, Z)
             split = 0
@@ -406,7 +401,7 @@ def evaluate(test_dataloader, txwriter, epoch):
             # Run network on batch
             # Y = model(X.to(opt.device))
             # _, Y, _ = model(X.to(opt.device))
-            features = cnn(X)
+            _, features = cnn(X)
             fake_samples = decoder(features)
             fake_samples = torch.matmul(fake_samples, bert_vocab_tensor)
             Y, _ = encoder(fake_samples)
