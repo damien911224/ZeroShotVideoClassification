@@ -590,7 +590,7 @@ class Model(nn.Module):
         out = self.encoder(feats.permute(1, 0, 2)).permute(1, 0, 2)
         emb_out = F.normalize(self.output2emb_proj(out[:, 0]))
 
-        return emb_out
+        return emb_out, word_samples
 
 
 """=================================================================================================================="""
