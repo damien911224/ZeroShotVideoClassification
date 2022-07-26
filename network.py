@@ -9,6 +9,7 @@ from gensim.models import KeyedVectors as Word2Vec
 from tqdm import tqdm
 
 import sys
+from PIL import Image
 sys.path.append(r'../MAGIC/image_captioning/language_model/')
 sys.path.append(r'../MAGIC/image_captioning/clip/')
 
@@ -540,7 +541,7 @@ class Model(nn.Module):
 
             word_feats = list()
             word_samples = list()
-            images = x.permute(0, 2, 3, 4, 1).unbind(dim=1)
+            images = Image.fromarray((x.permute(0, 2, 3, 4, 1).unbind(dim=1) * 2 + 1) * 255.0)
             image_indices = np.linspace(0, i_t, self.num_sentences, dtype=np.int32)
             for image_index in image_indices:
                 image_instance = images[image_index]
