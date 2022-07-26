@@ -541,12 +541,11 @@ class Model(nn.Module):
 
             word_feats = list()
             word_samples = list()
-            images = \
-                ((x.permute(0, 2, 3, 4, 1).detach().cpu().numpy() * 2 + 1) * 255.0).astype(np.uint8).unstack(axis=1)
+            images = ((x.permute(0, 2, 3, 4, 1).detach().cpu().numpy() * 2 + 1) * 255.0).astype(np.uint8)
             image_indices = np.linspace(0, i_t, self.num_sentences, dtype=np.int32)
             for image_index in image_indices:
-                print(images[image_index].shape)
-                image_instance = Image.fromarray(images[image_index])
+                print(images[:, image_index].shape)
+                image_instance = Image.fromarray(images[:, image_index])
                 w_feats, tokens = self.generation_model.magic_search(input_ids, self.k, self.alpha, self.decoding_len,
                                                                      self.beta, image_instance, self.clip, 60)
                 w_feats = self.word2input_proj(w_feats)
