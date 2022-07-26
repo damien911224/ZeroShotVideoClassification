@@ -113,20 +113,17 @@ class VideoDataset(Dataset):
 # clip = clip.cuda()
 
 model = Model()
-model = nn.DataParallel(model)
+# model = nn.DataParallel(model)
 model = model.cuda()
 
 folders = glob.glob(os.path.join("/mnt/hdd1", "Kinetics/Kinetics-700", "frames", "*"))
 for folder in tqdm(folders):
     image_paths = sorted(glob.glob(os.path.join(folder, "images", "*")))
     dl = torch.utils.data.DataLoader(VideoDataset(image_paths),
-                                     batch_size=32, num_workers=48, shuffle=False)
+                                     batch_size=16, num_workers=48, shuffle=False)
     this_json = dict()
     for (this_image_paths, pixel_values) in dl:
         texts = model(pixel_values.cuda())
-        print(len(this_image_paths))
-        print(len(pixel_values))
-        print(len(texts))
         for i, image_path in enumerate(this_image_paths):
             keyname = os.path.basename(image_path).split(".")[0]
             this_json[keyname] = texts[i]
