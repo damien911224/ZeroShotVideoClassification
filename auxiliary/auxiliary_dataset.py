@@ -596,7 +596,7 @@ class VideoDataset(Dataset):
 
             word_feats = list()
             word_samples = list()
-            x = buffer.squeeze(1)
+            x = buffer.squeeze(0)
             image = ((x.permute(1, 2, 3, 0).numpy() * 2 + 1) * 255.0).astype(np.uint8)
             image_indices = np.linspace(0, s[1] - 1, self.num_sentences, dtype=np.int32)
             for image_index in image_indices:
