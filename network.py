@@ -540,7 +540,7 @@ class Model(nn.Module):
 
             word_feats = list()
             word_samples = list()
-            images = x.permute(0, 2, 3, 4, 1).unstack(dim=1)
+            images = x.permute(0, 2, 3, 4, 1).unbind(dim=1)
             image_indices = np.linspace(0, i_t, self.num_sentences, dtype=np.int32)
             for image_index in image_indices:
                 image_instance = images[image_index]
@@ -549,7 +549,7 @@ class Model(nn.Module):
                 w_feats = self.word2input_proj(w_feats)
                 word_feats.append(w_feats)
                 batch_word_samples = list()
-                for this_tokens in tokens.unstack(dim=0):
+                for this_tokens in tokens.unbind(dim=0):
                     text = self.tokenizer.decode(this_tokens).strip()
                     text = ' '.join(text.split()).strip()
                     batch_word_samples.append(text)
