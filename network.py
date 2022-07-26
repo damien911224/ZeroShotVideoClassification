@@ -570,7 +570,7 @@ class Model(nn.Module):
                     text = ' '.join(text.split()).strip()
                     batch_word_samples.append(text)
                 word_samples.append(batch_word_samples)
-            word_feats = torch.cat(word_feats, dim=1)
+            word_feats = torch.stack(word_feats, dim=1)
             _, w_s, w_l, w_c = word_feats.shape
             w_pos_embeds = (self.s_pos_embeds.weight.view(w_s, 1, self.d_model) +
                             self.l_pos_embeds.weight.view(1, w_l, self.d_model)).view(1, w_s * w_l, self.d_model)
