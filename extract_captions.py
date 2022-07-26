@@ -55,7 +55,7 @@ class Model(nn.Module):
         for step in range(decoding_len):
             input_ids, past_key_values, last_hidden_states, logits, input_ids_for_class = \
                 PlugAndPlayContrastiveDecodingOneStepFast(
-                    self.generation_model,
+                    self.generation_model.model,
                     input_ids,
                     prefix_len,
                     self.k,
