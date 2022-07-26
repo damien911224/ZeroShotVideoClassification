@@ -521,7 +521,7 @@ class Model(nn.Module):
         nn.init.normal_(self.l_pos_embeds.weight)
         nn.init.xavier_uniform_(self.special_tokens.weight)
 
-    def forward(self, x, word_feats):
+    def forward(self, x):
         bs, nc, i_c, i_t, i_h, i_w = x.shape
         x = x.reshape(bs * nc, i_c, i_t, i_h, i_w)
         _, cnn_feats = self.model(x)
