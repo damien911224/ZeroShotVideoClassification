@@ -542,7 +542,7 @@ class Model(nn.Module):
             word_feats = list()
             word_samples = list()
             images = ((x.permute(0, 2, 3, 4, 1).detach().cpu().numpy() * 2 + 1) * 255.0).astype(np.uint8)
-            image_indices = np.linspace(0, i_t, self.num_sentences, dtype=np.int32)
+            image_indices = np.linspace(0, i_t - 1, self.num_sentences, dtype=np.int32)
             for image_index in image_indices:
                 # batch_word_feats = list()
                 # for batch_index in range(bs):
