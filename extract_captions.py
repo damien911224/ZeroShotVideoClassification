@@ -15,6 +15,7 @@ import torch.nn as nn
 from torch.utils.data import Dataset
 from transformers import CLIPProcessor
 
+
 class Model(nn.Module):
 
     def __init__(self):
@@ -73,6 +74,7 @@ class Model(nn.Module):
 
         return [self.generation_model.parse_output_token_list(tokens) for tokens in input_ids_for_class]
 
+
 class VideoDataset(Dataset):
 
     def __init__(self, paths):
@@ -86,7 +88,7 @@ class VideoDataset(Dataset):
         inputs = self.processor(images=image, return_tensors="pt")
         pixel_values = inputs['pixel_values']
 
-        return image_path, pixel_values
+        return image_path, pixel_values.squeeze(0)
 
     def __len__(self):
         return len(self.paths)
@@ -111,6 +113,7 @@ class VideoDataset(Dataset):
 # clip = clip.cuda()
 
 model = Model()
+model = nn.DataParallel(model)
 model = model.cuda()
 
 folders = glob.glob(os.path.join("/mnt/hdd1", "Kinetics/Kinetics-700", "frames", "*"))
