@@ -176,7 +176,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, opt, ep
     if opt.progressbar:
         data_iterator = tqdm(train_dataloader, desc='Epoch {} Training...'.format(epoch))
 
-    for i, (X, l, Z, _) in enumerate(data_iterator):
+    for i, (X, l, Z, _, (word_feats, word_samples)) in enumerate(data_iterator):
         not_broken = l != -1
         X, l, Z = X[not_broken], l[not_broken], Z[not_broken]
         # if i % 20000 == 0:
@@ -250,7 +250,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, opt, ep
             #
             # aux_loss = embed_criterion(x, Z)
             split = 0
-            embeds, samples = model(X)
+            embeds = model(X, word_feats.cuda())
             embed_loss = embed_criterion(embeds, Z)
             loss = embed_loss
             split = 0
@@ -341,7 +341,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, opt, ep
             txwriter.add_scalar('Train/Accuracy', np.mean(acc), epoch * len(data_iterator) + (i + 1))
             split = 0
             random_batch_idx = random.choice(range(len(X)))
-            videos = ((X.squeeze().detach().cpu().numpy() * 2.0 + 1) * 255.0).astype(np.uint8).permute(0, 2, 1, 3, 4)
+            videos = ((X.squeeze().detach().cpu().numpy() * 2.0 + 1) * 255.0).astype(np.uint8).transpose(0, 2, 1, 3, 4)
             txwriter.add_video("Train/Video", " ".join(videos[random_batch_idx].unsqueeze(0)), epoch * len(data_iterator) + (i + 1))
             split = 0
             # random_batch_idx = random.choice(range(len(fake_samples)))
@@ -360,7 +360,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, opt, ep
             # txwriter.add_text('Train/FakeTextSamples', decoded_str, epoch * len(data_iterator) + (i + 1))
             split = 0
             # random_batch_idx = random.choice(range(len(samples)))
-            decoded_str = ". ".join(samples[random_batch_idx])
+            decoded_str = ". ".join(word_samples[random_batch_idx])
             txwriter.add_text('Train/TextSamples', decoded_str, epoch * len(data_iterator) + (i + 1))
             split = 0
 
@@ -405,13 +405,13 @@ def evaluate(test_dataloader, txwriter, epoch):
 
         fi = 0
         for idx, data in enumerate(final_iter):
-            X, l, Z, _ = data
+            X, l, Z, _, (word_feats, word_samples) = data
             not_broken = l != -1
             X, l, Z = X[not_broken], l[not_broken], Z[not_broken]
             if len(X) == 0: continue
             # Run network on batch
             # Y = model(X.to(opt.device))
-            Y, _ = model(X.to(opt.device))
+            Y = model(X.to(opt.device), word_feats.to(opt.device))
             # _, features = cnn(X)
             # fake_samples = decoder(features)
             # fake_samples = torch.matmul(fake_samples, bert_vocab_tensor)

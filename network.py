@@ -481,14 +481,14 @@ class Model(nn.Module):
             for param in self.model.parameters():
                 param.requires_grad = False
 
-        # Load Language Model
-        language_model_name = r'cambridgeltl/magic_mscoco'  # or r'/path/to/downloaded/cambridgeltl/magic_mscoco'
-        self.sos_token, self.pad_token = r'<-start_of_text->', r'<-pad->'
-        self.k, self.alpha, self.beta, self.decoding_len = 45, 0.1, 2.0, 16
-        self.generation_model = SimCTG(language_model_name, self.sos_token, self.pad_token).cuda()
-
-        model_name = r"openai/clip-vit-base-patch32"  # or r"/path/to/downloaded/openai/clip-vit-base-patch32"
-        self.clip = CLIP(model_name).cuda()
+        # # Load Language Model
+        # language_model_name = r'cambridgeltl/magic_mscoco'  # or r'/path/to/downloaded/cambridgeltl/magic_mscoco'
+        # self.sos_token, self.pad_token = r'<-start_of_text->', r'<-pad->'
+        # self.k, self.alpha, self.beta, self.decoding_len = 45, 0.1, 2.0, 16
+        # self.generation_model = SimCTG(language_model_name, self.sos_token, self.pad_token).cuda()
+        #
+        # model_name = r"openai/clip-vit-base-patch32"  # or r"/path/to/downloaded/openai/clip-vit-base-patch32"
+        # self.clip = CLIP(model_name).cuda()
 
         self.d_model = 128
         self.num_sentences = 4
@@ -520,7 +520,7 @@ class Model(nn.Module):
         nn.init.normal_(self.l_pos_embeds.weight)
         nn.init.xavier_uniform_(self.special_tokens.weight)
 
-    def forward(self, x):
+    def forward(self, x, word_feats):
         bs, nc, i_c, i_t, i_h, i_w = x.shape
         x = x.reshape(bs * nc, i_c, i_t, i_h, i_w)
         _, cnn_feats = self.model(x)
@@ -532,50 +532,57 @@ class Model(nn.Module):
                         self.w_pos_embeds.weight.view(1, 1, v_w, self.d_model)).view(1, v_t * v_h * v_w, self.d_model)
         cnn_feats = cnn_feats + v_pos_embeds.cuda()
 
-        self.clip.eval()
-        self.generation_model.eval()
-        with torch.no_grad():
-            start_token = self.generation_model.tokenizer.tokenize(self.sos_token)
-            start_token_id = self.generation_model.tokenizer.convert_tokens_to_ids(start_token)
-            input_ids = torch.LongTensor(start_token_id).unsqueeze(0).repeat(bs, 1).cuda()
+        # self.clip.eval()
+        # self.generation_model.eval()
+        # with torch.no_grad():
+        #     start_token = self.generation_model.tokenizer.tokenize(self.sos_token)
+        #     start_token_id = self.generation_model.tokenizer.convert_tokens_to_ids(start_token)
+        #     input_ids = torch.LongTensor(start_token_id).unsqueeze(0).repeat(bs, 1).cuda()
+        #
+        #     word_feats = list()
+        #     word_samples = list()
+        #     images = ((x.permute(0, 2, 3, 4, 1).detach().cpu().numpy() * 2 + 1) * 255.0).astype(np.uint8)
+        #     image_indices = np.linspace(0, i_t - 1, self.num_sentences, dtype=np.int32)
+        #     for image_index in image_indices:
+        #         # batch_word_feats = list()
+        #         # for batch_index in range(bs):
+        #         #     input_ids = torch.LongTensor(start_token_id).view(1, -1).cuda()
+        #         #     image_instance = Image.fromarray(images[batch_index, image_index])
+        #         #     w_feats, tokens = \
+        #         #         self.generation_model.magic_search(input_ids, self.k, self.alpha, self.decoding_len,
+        #         #                                            self.beta, image_instance, self.clip, 60)
+        #         #     w_feats = self.word2input_proj(w_feats)
+        #         #     print(w_feats.shape)
+        #         #     batch_word_feats.append(w_feats)
+        #         # batch_word_feats = torch.cat(batch_word_feats, dim=0)
+        #         # word_feats.append(batch_word_feats)
+        #
+        #         image_instance = [Image.fromarray(images[b_i, image_index]) for b_i in range(bs)]
+        #         w_feats, tokens = \
+        #             self.generation_model.magic_search(input_ids, self.k, self.alpha, self.decoding_len,
+        #                                                self.beta, image_instance, self.clip, 60)
+        #         w_feats = self.word2input_proj(w_feats)
+        #         word_feats.append(w_feats)
+        #
+        #         batch_word_samples = list()
+        #         for this_tokens in tokens.unbind(dim=0):
+        #             text = self.generation_model.tokenizer.decode(this_tokens).strip()
+        #             text = ' '.join(text.split()).strip()
+        #             batch_word_samples.append(text)
+        #         word_samples.append(batch_word_samples)
+        #     word_feats = torch.cat(word_feats, dim=1)
+        #     w_s = self.num_sentences
+        #     w_l = self.max_seq_len
+        #     w_pos_embeds = (self.s_pos_embeds.weight.view(w_s, 1, self.d_model) +
+        #                     self.l_pos_embeds.weight.view(1, w_l, self.d_model)).view(1, w_s * w_l, self.d_model)
+        #     word_feats = (word_feats + w_pos_embeds.cuda()).detach()
 
-            word_feats = list()
-            word_samples = list()
-            images = ((x.permute(0, 2, 3, 4, 1).detach().cpu().numpy() * 2 + 1) * 255.0).astype(np.uint8)
-            image_indices = np.linspace(0, i_t - 1, self.num_sentences, dtype=np.int32)
-            for image_index in image_indices:
-                # batch_word_feats = list()
-                # for batch_index in range(bs):
-                #     input_ids = torch.LongTensor(start_token_id).view(1, -1).cuda()
-                #     image_instance = Image.fromarray(images[batch_index, image_index])
-                #     w_feats, tokens = \
-                #         self.generation_model.magic_search(input_ids, self.k, self.alpha, self.decoding_len,
-                #                                            self.beta, image_instance, self.clip, 60)
-                #     w_feats = self.word2input_proj(w_feats)
-                #     print(w_feats.shape)
-                #     batch_word_feats.append(w_feats)
-                # batch_word_feats = torch.cat(batch_word_feats, dim=0)
-                # word_feats.append(batch_word_feats)
 
-                image_instance = [Image.fromarray(images[b_i, image_index]) for b_i in range(bs)]
-                w_feats, tokens = \
-                    self.generation_model.magic_search(input_ids, self.k, self.alpha, self.decoding_len,
-                                                       self.beta, image_instance, self.clip, 60)
-                w_feats = self.word2input_proj(w_feats)
-                word_feats.append(w_feats)
-
-                batch_word_samples = list()
-                for this_tokens in tokens.unbind(dim=0):
-                    text = self.generation_model.tokenizer.decode(this_tokens).strip()
-                    text = ' '.join(text.split()).strip()
-                    batch_word_samples.append(text)
-                word_samples.append(batch_word_samples)
-            word_feats = torch.cat(word_feats, dim=1)
-            w_s = self.num_sentences
-            w_l = self.max_seq_len
-            w_pos_embeds = (self.s_pos_embeds.weight.view(w_s, 1, self.d_model) +
-                            self.l_pos_embeds.weight.view(1, w_l, self.d_model)).view(1, w_s * w_l, self.d_model)
-            word_feats = (word_feats + w_pos_embeds.cuda()).detach()
+        w_s = self.num_sentences
+        w_l = self.max_seq_len
+        w_pos_embeds = (self.s_pos_embeds.weight.view(w_s, 1, self.d_model) +
+                        self.l_pos_embeds.weight.view(1, w_l, self.d_model)).view(1, w_s * w_l, self.d_model)
+        word_feats = (word_feats + w_pos_embeds.cuda()).detach()
 
         special_tokens = self.special_tokens.weight.unsqueeze(0).repeat(bs, 1, 1).cuda()
 
@@ -583,7 +590,7 @@ class Model(nn.Module):
         out = self.encoder(feats.permute(1, 0, 2)).permute(1, 0, 2)
         emb_out = F.normalize(self.output2emb_proj(out[:, 0]))
 
-        return emb_out, word_samples
+        return emb_out
 
 
 """=================================================================================================================="""
