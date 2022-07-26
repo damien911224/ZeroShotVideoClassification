@@ -9,6 +9,7 @@ import glob
 import torch
 import os
 from tqdm import tqdm
+import json
 
 # Load Language Model
 language_model_name = r'cambridgeltl/magic_mscoco'  # or r'/path/to/downloaded/cambridgeltl/magic_mscoco'
@@ -22,27 +23,20 @@ model_name = r"openai/clip-vit-base-patch32"  # or r"/path/to/downloaded/openai/
 clip = CLIP(model_name).cuda()
 clip.eval()
 
-frame_paths = glob.glob(os.path.join("/mnt/hdd1", "Kinetics/Kinetics-700", "frames", "*", "images", "*"))
+start_token = generation_model.tokenizer.tokenize(sos_token)
+start_token_id = generation_model.tokenizer.convert_tokens_to_ids(start_token)
+input_ids = torch.LongTensor(start_token_id).unsqueeze(0).cuda()
 
-
+folders = glob.glob(os.path.join("/mnt/hdd1", "Kinetics/Kinetics-700", "frames", "*"))
 with torch.no_grad():
-    start_token = generation_model.tokenizer.tokenize(sos_token)
-    start_token_id = generation_model.tokenizer.convert_tokens_to_ids(start_token)
-    input_ids = torch.LongTensor(start_token_id).unsqueeze(0)
+    for folder in tqdm(folders):
+        image_paths = glob.glob(os.path.join(folder, "images", "*"))
+        this_json = dict()
+        for image_path in image_paths:
+            keyname = os.path.basename(path).split(".")[0]
+            image_instance = Image.fromarray(image)
+            text = generation_model.magic_search(input_ids, k, alpha, decoding_len, beta, image_instance, clip, 60)
+            this_json[keyname] = text
 
-    word_feats = list()
-    word_samples = list()
-    x = buffer.squeeze(0)
-    image = ((x.permute(1, 2, 3, 0).numpy() * 2 + 1) * 255.0).astype(np.uint8)
-    image_indices = np.linspace(0, s[1] - 1, num_sentences, dtype=np.int32)
-    for image_index in image_indices:
-        image_instance = Image.fromarray(image[image_index])
-        w_feats, tokens = \
-            generation_model.magic_search(input_ids, k, alpha, decoding_len,
-                                               beta, image_instance, clip, 60)
-        word_feats.append(w_feats.squeeze(0))
-
-        text = generation_model.tokenizer.decode(tokens.squeeze(0)).strip()
-        text = ' '.join(text.split()).strip()
-        word_samples.append(text)
-    word_feats = torch.cat(word_feats, dim=0)
+        with open(os.path.join(folder, "captions.json"), "w") as fp:
+            json.dump(this_json, fp, indent=4, sort_keys=True)
