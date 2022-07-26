@@ -34,7 +34,7 @@ with torch.no_grad():
         this_json = dict()
         for image_path in image_paths:
             keyname = os.path.basename(image_path).split(".")[0]
-            image_instance = Image.fromarray(image)
+            image_instance = Image.fromarray(image_path)
             text = generation_model.magic_search(input_ids, k, alpha, decoding_len, beta, image_instance, clip, 60)
             this_json[keyname] = text
 
