@@ -342,7 +342,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, opt, ep
             split = 0
             random_batch_idx = random.choice(range(len(X)))
             videos = ((X.squeeze().detach().cpu().numpy() * 2.0 + 1) * 255.0).astype(np.uint8).permute(0, 2, 1, 3, 4)
-            txwriter.add_video("Train/Video", " ".join(videos[random_batch_idx].unsqueeze(0)))
+            txwriter.add_video("Train/Video", " ".join(videos[random_batch_idx].unsqueeze(0)), epoch * len(data_iterator) + (i + 1))
             split = 0
             # random_batch_idx = random.choice(range(len(fake_samples)))
             # # l, c
