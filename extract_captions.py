@@ -16,13 +16,17 @@ language_model_name = r'cambridgeltl/magic_mscoco'  # or r'/path/to/downloaded/c
 sos_token, pad_token = r'<-start_of_text->', r'<-pad->'
 k, alpha, beta, decoding_len = 45, 0.1, 2.0, 16
 num_sentences = 4
-generation_model = SimCTG(language_model_name, sos_token, pad_token).cuda()
+generation_model = SimCTG(language_model_name, sos_token, pad_token)
+generation_model = nn.DataParallel(generation_model)
 generation_model.eval()
+generation_model = generation_model.cuda()
 
 model_name = r"openai/clip-vit-base-patch32"  # or r"/path/to/downloaded/openai/clip-vit-base-patch32"
-clip = CLIP(model_name).cuda()
+clip = CLIP(model_name)
 clip.cuda_available = True
+clip = nn.DataParallel(clip)
 clip.eval()
+clip = clip.cuda()
 
 start_token = generation_model.tokenizer.tokenize(sos_token)
 start_token_id = generation_model.tokenizer.convert_tokens_to_ids(start_token)
