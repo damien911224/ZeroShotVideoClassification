@@ -583,7 +583,7 @@ if __name__ == "__main__":
     # encoder = Encoder
     model = Model(network=models.r2plus1d_18, fixconvs=False, nopretrained=True).cuda()
 
-    dummy_data = torch.tensor(np.zeros(dtype=np.float32, shape=(8, 1, 3, 16, 112, 112))).cuda()
+    dummy_data = torch.tensor(np.zeros(dtype=np.float32, shape=(8, 1, 3, 16, 224, 224))).cuda()
     # dummy_captions = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 20, 768))).cuda()
 
     # # bs, l, v
