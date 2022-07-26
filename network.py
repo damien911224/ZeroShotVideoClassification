@@ -494,8 +494,8 @@ class Model(nn.Module):
         self.num_sentences = 4
         self.max_seq_len = self.decoding_len
         self.t_pos_embeds = nn.Embedding(2, self.d_model)
-        self.h_pos_embeds = nn.Embedding(14, self.d_model)
-        self.w_pos_embeds = nn.Embedding(14, self.d_model)
+        self.h_pos_embeds = nn.Embedding(7, self.d_model)
+        self.w_pos_embeds = nn.Embedding(7, self.d_model)
         self.s_pos_embeds = nn.Embedding(16, self.d_model)
         self.l_pos_embeds = nn.Embedding(self.max_seq_len, self.d_model)
         self.special_tokens = nn.Embedding(1, self.d_model)
@@ -538,23 +538,33 @@ class Model(nn.Module):
             start_token = self.generation_model.tokenizer.tokenize(self.sos_token)
             start_token_id = self.generation_model.tokenizer.convert_tokens_to_ids(start_token)
             input_ids = torch.LongTensor(start_token_id).view(1, -1).repeat(bs, 1).cuda()
+            print(input_ids.shape)
+            exit()
 
             word_feats = list()
             word_samples = list()
             images = ((x.permute(0, 2, 3, 4, 1).detach().cpu().numpy() * 2 + 1) * 255.0).astype(np.uint8)
             image_indices = np.linspace(0, i_t, self.num_sentences, dtype=np.int32)
             for image_index in image_indices:
-                batch_word_feats = list()
-                for batch_index in range(bs):
-                    image_instance = Image.fromarray(images[batch_index, image_index])
-                    w_feats, tokens = \
-                        self.generation_model.magic_search(input_ids, self.k, self.alpha, self.decoding_len,
-                                                           self.beta, image_instance, self.clip, 60)
-                    w_feats = self.word2input_proj(w_feats)
-                    print(w_feats.shape)
-                    batch_word_feats.append(w_feats)
-                batch_word_feats = torch.cat(batch_word_feats, dim=0)
-                word_feats.append(batch_word_feats)
+                # batch_word_feats = list()
+                # for batch_index in range(bs):
+                #     image_instance = Image.fromarray(images[batch_index, image_index])
+                #     w_feats, tokens = \
+                #         self.generation_model.magic_search(input_ids, self.k, self.alpha, self.decoding_len,
+                #                                            self.beta, image_instance, self.clip, 60)
+                #     w_feats = self.word2input_proj(w_feats)
+                #     print(w_feats.shape)
+                #     batch_word_feats.append(w_feats)
+                # batch_word_feats = torch.cat(batch_word_feats, dim=0)
+                # word_feats.append(batch_word_feats)
+
+                image_instance = images[:, image_index]
+                w_feats, tokens = \
+                    self.generation_model.magic_search(input_ids, self.k, self.alpha, self.decoding_len,
+                                                       self.beta, image_instance, self.clip, 60)
+                w_feats = self.word2input_proj(w_feats)
+                word_feats.append(w_feats)
+
                 batch_word_samples = list()
                 for this_tokens in tokens.unbind(dim=0):
                     text = self.tokenizer.decode(this_tokens).strip()
@@ -583,7 +593,7 @@ if __name__ == "__main__":
     # encoder = Encoder
     model = Model(network=models.r2plus1d_18, fixconvs=False, nopretrained=True).cuda()
 
-    dummy_data = torch.tensor(np.zeros(dtype=np.float32, shape=(8, 1, 3, 16, 224, 224))).cuda()
+    dummy_data = torch.tensor(np.zeros(dtype=np.float32, shape=(8, 1, 3, 16, 112, 112))).cuda()
     # dummy_captions = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 20, 768))).cuda()
 
     # # bs, l, v
