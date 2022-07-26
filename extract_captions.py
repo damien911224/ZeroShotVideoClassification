@@ -122,7 +122,7 @@ for folder in tqdm(folders):
                                      batch_size=256, num_workers=48, shuffle=False)
     this_json = dict()
     for (this_image_paths, pixel_values) in dl:
-        texts = model(pixel_values)
+        texts = model(pixel_values.cuda())
         for i, image_path in enumerate(this_image_paths):
             keyname = os.path.basename(image_path).split(".")[0]
             this_json[keyname] = texts[i]
