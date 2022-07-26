@@ -545,7 +545,8 @@ class Model(nn.Module):
             image_indices = np.linspace(0, i_t, self.num_sentences, dtype=np.int32)
             for image_index in image_indices:
                 print(images[:, image_index].shape)
-                image_instance = Image.fromarray(images[:, image_index])
+                # image_instance = Image.fromarray(images[:, image_index])
+                image_instance = images[:, image_index]
                 w_feats, tokens = self.generation_model.magic_search(input_ids, self.k, self.alpha, self.decoding_len,
                                                                      self.beta, image_instance, self.clip, 60)
                 w_feats = self.word2input_proj(w_feats)
