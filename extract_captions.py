@@ -17,6 +17,8 @@ sos_token, pad_token = r'<-start_of_text->', r'<-pad->'
 k, alpha, beta, decoding_len = 45, 0.1, 2.0, 16
 num_sentences = 4
 generation_model = SimCTG(language_model_name, sos_token, pad_token)
+start_token = generation_model.tokenizer.tokenize(sos_token)
+start_token_id = generation_model.tokenizer.convert_tokens_to_ids(start_token)
 generation_model = torch.nn.DataParallel(generation_model)
 generation_model.eval()
 generation_model = generation_model.cuda()
@@ -27,9 +29,6 @@ clip.cuda_available = True
 clip = torch.nn.DataParallel(clip)
 clip.eval()
 clip = clip.cuda()
-
-start_token = generation_model.tokenizer.tokenize(sos_token)
-start_token_id = generation_model.tokenizer.convert_tokens_to_ids(start_token)
 
 folders = glob.glob(os.path.join("/mnt/hdd1", "Kinetics/Kinetics-700", "frames", "*"))
 with torch.no_grad():
