@@ -33,11 +33,17 @@ with torch.no_grad():
     for folder in tqdm(folders):
         image_paths = glob.glob(os.path.join(folder, "images", "*"))
         this_json = dict()
-        for image_path in image_paths:
+        # for image_path in image_paths:
+        #     keyname = os.path.basename(image_path).split(".")[0]
+        #     image_instance = Image.open(image_path)
+        #     text = generation_model.magic_search(input_ids, k, alpha, decoding_len, beta, image_instance, clip, 60)
+        #     this_json[keyname] = text
+
+        image_instance = [Image.open(image_path) for image_path in image_paths]
+        texts = generation_model.magic_search(input_ids, k, alpha, decoding_len, beta, image_instance, clip, 60)
+        for i, image_path in enumerate(image_paths):
             keyname = os.path.basename(image_path).split(".")[0]
-            image_instance = Image.open(image_path)
-            text = generation_model.magic_search(input_ids, k, alpha, decoding_len, beta, image_instance, clip, 60)
-            this_json[keyname] = text
+            this_json[keyname] = texts[i]
 
         with open(os.path.join(folder, "captions.json"), "w") as fp:
             json.dump(this_json, fp, indent=4, sort_keys=True)
