@@ -15,6 +15,7 @@ import torch.nn as nn
 from torch.utils.data import Dataset
 from transformers import CLIPProcessor
 
+processor = CLIPProcessor.from_pretrained(r"openai/clip-vit-base-patch32")
 
 class Model(nn.Module):
 
@@ -80,12 +81,11 @@ class VideoDataset(Dataset):
     def __init__(self, paths):
 
         self.paths = paths
-        self.processor = CLIPProcessor.from_pretrained(r"openai/clip-vit-base-patch32")
 
     def __getitem__(self, idx):
         image_path = self.paths[idx]
         image = Image.open(image_path)
-        inputs = self.processor(images=image, return_tensors="pt")
+        inputs = processor(images=image, return_tensors="pt")
         pixel_values = inputs['pixel_values']
 
         return image_path, pixel_values.squeeze(0)
