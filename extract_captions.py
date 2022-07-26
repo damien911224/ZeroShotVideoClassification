@@ -125,6 +125,7 @@ for folder in tqdm(folders):
     for (this_image_paths, pixel_values) in dl:
         texts = model(pixel_values.cuda())
         print(len(this_image_paths))
+        print(len(pixel_values))
         print(len(texts))
         for i, image_path in enumerate(this_image_paths):
             keyname = os.path.basename(image_path).split(".")[0]
