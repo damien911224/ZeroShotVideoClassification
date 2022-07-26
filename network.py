@@ -557,7 +557,7 @@ class Model(nn.Module):
                 # batch_word_feats = torch.cat(batch_word_feats, dim=0)
                 # word_feats.append(batch_word_feats)
 
-                image_instance = images[:, image_index].vsplit()
+                image_instance = [Image.fromarray(images[b_i, image_index]) for b_i in range(bs)]
                 w_feats, tokens = \
                     self.generation_model.magic_search(input_ids, self.k, self.alpha, self.decoding_len,
                                                        self.beta, image_instance, self.clip, 60)
