@@ -26,7 +26,6 @@ clip.eval()
 
 start_token = generation_model.tokenizer.tokenize(sos_token)
 start_token_id = generation_model.tokenizer.convert_tokens_to_ids(start_token)
-input_ids = torch.LongTensor(start_token_id).unsqueeze(0).cuda()
 
 folders = glob.glob(os.path.join("/mnt/hdd1", "Kinetics/Kinetics-700", "frames", "*"))
 with torch.no_grad():
@@ -39,6 +38,7 @@ with torch.no_grad():
         #     text = generation_model.magic_search(input_ids, k, alpha, decoding_len, beta, image_instance, clip, 60)
         #     this_json[keyname] = text
 
+        input_ids = torch.LongTensor(start_token_id).unsqueeze(0).repeat(len(image_paths), 1).cuda()
         image_instance = [Image.open(image_path) for image_path in image_paths]
         texts = generation_model.magic_search(input_ids, k, alpha, decoding_len, beta, image_instance, clip, 60)
         for i, image_path in enumerate(image_paths):
