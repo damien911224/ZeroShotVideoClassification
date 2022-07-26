@@ -496,7 +496,7 @@ class Model(nn.Module):
         self.t_pos_embeds = nn.Embedding(2, self.d_model)
         self.h_pos_embeds = nn.Embedding(7, self.d_model)
         self.w_pos_embeds = nn.Embedding(7, self.d_model)
-        self.s_pos_embeds = nn.Embedding(16, self.d_model)
+        self.s_pos_embeds = nn.Embedding(self.num_sentences, self.d_model)
         self.l_pos_embeds = nn.Embedding(self.max_seq_len, self.d_model)
         self.special_tokens = nn.Embedding(1, self.d_model)
         self.word2input_proj = nn.Linear(768, self.d_model)
