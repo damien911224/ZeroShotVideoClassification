@@ -340,10 +340,9 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, opt, ep
             # txwriter.add_scalar('Train/DiscriminatorFakeLoss', d_loss_fake.item(), epoch * len(data_iterator) + (i + 1))
             txwriter.add_scalar('Train/Accuracy', np.mean(acc), epoch * len(data_iterator) + (i + 1))
             split = 0
-            # random_index = random.choice(range(len(X)))
-            # txwriter.add_text("Train/Caption", " ".join(text_samples[random_index]))
-            # videos = ((X.squeeze().detach().cpu().numpy() * 2.0 + 1) * 255.0).astype(np.uint8).permute(0, 2, 1, 3, 4)
-            # txwriter.add_video("Train/Video", " ".join(videos[random_index].unsqueeze(0)))
+            random_batch_idx = random.choice(range(len(X)))
+            videos = ((X.squeeze().detach().cpu().numpy() * 2.0 + 1) * 255.0).astype(np.uint8).permute(0, 2, 1, 3, 4)
+            txwriter.add_video("Train/Video", " ".join(videos[random_batch_idx].unsqueeze(0)))
             split = 0
             # random_batch_idx = random.choice(range(len(fake_samples)))
             # # l, c
@@ -360,7 +359,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, opt, ep
             # # print(decoded_str)
             # txwriter.add_text('Train/FakeTextSamples', decoded_str, epoch * len(data_iterator) + (i + 1))
             split = 0
-            random_batch_idx = random.choice(range(len(samples)))
+            # random_batch_idx = random.choice(range(len(samples)))
             decoded_str = ". ".join(samples[random_batch_idx])
             txwriter.add_text('Train/TextSamples', decoded_str, epoch * len(data_iterator) + (i + 1))
             split = 0
