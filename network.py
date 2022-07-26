@@ -494,8 +494,8 @@ class Model(nn.Module):
         self.num_sentences = 4
         self.max_seq_len = self.decoding_len
         self.t_pos_embeds = nn.Embedding(2, self.d_model)
-        self.h_pos_embeds = nn.Embedding(7, self.d_model)
-        self.w_pos_embeds = nn.Embedding(7, self.d_model)
+        self.h_pos_embeds = nn.Embedding(14, self.d_model)
+        self.w_pos_embeds = nn.Embedding(14, self.d_model)
         self.s_pos_embeds = nn.Embedding(16, self.d_model)
         self.l_pos_embeds = nn.Embedding(self.max_seq_len, self.d_model)
         self.special_tokens = nn.Embedding(1, self.d_model)
