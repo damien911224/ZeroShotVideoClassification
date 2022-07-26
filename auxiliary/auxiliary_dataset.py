@@ -487,6 +487,7 @@ class VideoDataset(Dataset):
         language_model_name = r'cambridgeltl/magic_mscoco'  # or r'/path/to/downloaded/cambridgeltl/magic_mscoco'
         self.sos_token, self.pad_token = r'<-start_of_text->', r'<-pad->'
         self.k, self.alpha, self.beta, self.decoding_len = 45, 0.1, 2.0, 16
+        self.num_sentences = 4
         self.generation_model = SimCTG(language_model_name, self.sos_token, self.pad_token)
         self.generation_model.eval()
 
