@@ -572,16 +572,12 @@ class Model(nn.Module):
 """=================================================================================================================="""
 
 if __name__ == "__main__":
-    decoder = Decoder
-    encoder = Encoder
-    model = Model(network=models.r2plus1d_18, decoder=decoder, encoder=encoder, fixconvs=False, nopretrained=True).cuda()
-
-    cnn = model.model
-    decoder = model.decoder
-    encoder = model.encoder
+    # decoder = Decoder
+    # encoder = Encoder
+    model = Model(network=models.r2plus1d_18, fixconvs=False, nopretrained=True).cuda()
 
     dummy_data = torch.tensor(np.zeros(dtype=np.float32, shape=(8, 1, 3, 16, 112, 112))).cuda()
-    dummy_captions = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 20, 768))).cuda()
+    # dummy_captions = torch.Tensor(np.zeros(dtype=np.float32, shape=(8, 20, 768))).cuda()
 
     # # bs, l, v
     # fake_samples = decoder(dummy_data)
@@ -603,13 +599,11 @@ if __name__ == "__main__":
     # print(dummy_data.grad)
 
     embed_criterion = torch.nn.MSELoss().cuda()
-    adversarial_criterion = torch.nn.BCEWithLogitsLoss().cuda()
+    # adversarial_criterion = torch.nn.BCEWithLogitsLoss().cuda()
 
-    optimizer = torch.optim.Adam(cnn.parameters(), lr=1.0e-3)
-    gan_optimizer = torch.optim.Adam(decoder.parameters(), lr=1.0e-3)
-    dis_optimizer = torch.optim.Adam(encoder.parameters(), lr=1.0e-3)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1.0e-3)
 
-    fake_emb, (real_dis, (fake_dis_01, fake_dis_02)) = model(dummy_data, dummy_captions)
+    # fake_emb, (real_dis, (fake_dis_01, fake_dis_02)) = model(dummy_data, dummy_captions)
 
     # f = cnn(dummy_data)
     #
@@ -617,44 +611,51 @@ if __name__ == "__main__":
     # fake_dis, fake_emb = encoder(fake_samples)
     # real_dis, _ = encoder(dummy_captions)
 
-    embed_loss = embed_criterion(fake_emb, torch.zeros_like(fake_emb))
+    embeds, samples = model(dummy_data)
 
-    g_loss = adversarial_criterion(fake_dis_01 - real_dis.detach(), torch.ones_like(fake_dis_01))
+    print(samples)
 
+    embed_loss = embed_criterion(embeds, torch.zeros_like(embeds))
     optimizer.zero_grad()
-    gan_optimizer.zero_grad()
-    g_loss.backward(retain_graph=True)
-    dis_optimizer.zero_grad()
     embed_loss.backward()
+    optimizer.step()
+
+    # g_loss = adversarial_criterion(fake_dis_01 - real_dis.detach(), torch.ones_like(fake_dis_01))
+    #
+    # optimizer.zero_grad()
+    # gan_optimizer.zero_grad()
+    # g_loss.backward(retain_graph=True)
+    # dis_optimizer.zero_grad()
+    # embed_loss.backward()
+    # # optimizer.step()
+    # # gan_optimizer.step()
+    # # dis_optimizer.step()
+    #
+    # print("embed loss done")
+    #
+    # # Compute loss.
+    # # g_loss = adversarial_criterion(fake_dis - real_dis.detach(), torch.ones_like(fake_dis))
+    # # adv_loss = g_loss + d_loss
+    #
+    # # optimizer.zero_grad()
+    # # gan_optimizer.zero_grad()
+    # # g_loss.backward()
+    # # optimizer.step()
+    # # gan_optimizer.step()
+    #
+    # print("gan loss done")
+    #
+    # # fake_emb, (real_dis, fake_dis) = model(dummy_data, dummy_captions)
+    #
+    # # fake_dis, _ = encoder(fake_samples.detach())
+    # # real_dis, _ = encoder(dummy_captions)
+    #
+    # d_loss = adversarial_criterion(real_dis - fake_dis_02, torch.ones_like(real_dis))
+    #
+    # # dis_optimizer.zero_grad()
+    # d_loss.backward()
     # optimizer.step()
     # gan_optimizer.step()
     # dis_optimizer.step()
-
-    print("embed loss done")
-
-    # Compute loss.
-    # g_loss = adversarial_criterion(fake_dis - real_dis.detach(), torch.ones_like(fake_dis))
-    # adv_loss = g_loss + d_loss
-
-    # optimizer.zero_grad()
-    # gan_optimizer.zero_grad()
-    # g_loss.backward()
-    # optimizer.step()
-    # gan_optimizer.step()
-
-    print("gan loss done")
-
-    # fake_emb, (real_dis, fake_dis) = model(dummy_data, dummy_captions)
-
-    # fake_dis, _ = encoder(fake_samples.detach())
-    # real_dis, _ = encoder(dummy_captions)
-
-    d_loss = adversarial_criterion(real_dis - fake_dis_02, torch.ones_like(real_dis))
-
-    # dis_optimizer.zero_grad()
-    d_loss.backward()
-    optimizer.step()
-    gan_optimizer.step()
-    dis_optimizer.step()
-
-    print("dis loss done")
+    #
+    # print("dis loss done")
