@@ -592,7 +592,7 @@ class VideoDataset(Dataset):
         with torch.no_grad():
             start_token = self.generation_model.tokenizer.tokenize(self.sos_token)
             start_token_id = self.generation_model.tokenizer.convert_tokens_to_ids(start_token)
-            input_ids = torch.LongTensor(start_token_id).unsqueeze(0).cuda()
+            input_ids = torch.LongTensor(start_token_id).unsqueeze(0)
 
             word_feats = list()
             word_samples = list()
