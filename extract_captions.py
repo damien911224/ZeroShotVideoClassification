@@ -61,7 +61,7 @@ class Model(nn.Module):
                     self.k,
                     self.alpha,
                     self.beta,
-                    self.tokenizer,
+                    self.generation_model.tokenizer,
                     image_embeds,
                     self.clip,
                     60,
