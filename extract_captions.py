@@ -44,9 +44,9 @@ class Model(nn.Module):
         past_key_values, last_hidden_states, logits = None, None, None
         input_ids_for_class = input_ids.clone()
 
-        visual_outputs = self.clip.vision_model(pixel_values=x)
+        visual_outputs = self.clip.model.vision_model(pixel_values=x)
         image_embeds = visual_outputs[1]
-        image_embeds = self.clip.visual_projection(image_embeds)  # [1 x embed_dim]
+        image_embeds = self.clip.model.visual_projection(image_embeds)  # [1 x embed_dim]
 
         # the maximum supported length of generation for SimCTG is 256
         # to support longer generated length, you can re-train the SimCTG model with longer sequences
@@ -111,15 +111,13 @@ class VideoDataset(Dataset):
 # clip = clip.cuda()
 
 model = Model()
-model = nn.DataParallel(model)
 model = model.cuda()
 
 folders = glob.glob(os.path.join("/mnt/hdd1", "Kinetics/Kinetics-700", "frames", "*"))
-
 for folder in tqdm(folders):
     image_paths = sorted(glob.glob(os.path.join(folder, "images", "*")))
     dl = torch.utils.data.DataLoader(VideoDataset(image_paths),
-                                     batch_size=256, num_workers=48, shuffle=False)
+                                     batch_size=128, num_workers=48, shuffle=False)
     this_json = dict()
     for (this_image_paths, pixel_values) in dl:
         texts = model(pixel_values.cuda())
