@@ -120,7 +120,7 @@ folders = glob.glob(os.path.join("/mnt/hdd1", "Kinetics/Kinetics-700", "frames",
 for folder in tqdm(folders):
     image_paths = sorted(glob.glob(os.path.join(folder, "images", "*")))
     dl = torch.utils.data.DataLoader(VideoDataset(image_paths),
-                                     batch_size=16, num_workers=48, shuffle=False)
+                                     batch_size=64, num_workers=48, shuffle=False)
     this_json = dict()
     for (this_image_paths, pixel_values) in dl:
         texts = model(pixel_values.cuda())
