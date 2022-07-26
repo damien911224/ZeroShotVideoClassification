@@ -604,9 +604,9 @@ class VideoDataset(Dataset):
                 w_feats, tokens = \
                     self.generation_model.magic_search(input_ids, self.k, self.alpha, self.decoding_len,
                                                        self.beta, image_instance, self.clip, 60)
-                word_feats.append(w_feats)
+                word_feats.append(w_feats.squeeze(0))
 
-                text = self.generation_model.tokenizer.decode(tokens).strip()
+                text = self.generation_model.tokenizer.decode(tokens.squeeze(0)).strip()
                 text = ' '.join(text.split()).strip()
                 word_samples.append(text)
             word_feats = torch.cat(word_feats, dim=0)
