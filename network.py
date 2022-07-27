@@ -538,7 +538,7 @@ class Model(nn.Module):
         with torch.no_grad():
             start_token = self.generation_model.tokenizer.tokenize(self.sos_token)
             start_token_id = self.generation_model.tokenizer.convert_tokens_to_ids(start_token)
-            input_ids = torch.LongTensor(start_token_id).unsqueeze(0).repeat(bs, 1).cuda()
+            input_ids = torch.LongTensor(start_token_id).unsqueeze(0).repeat(bs * self.num_sentences, 1).cuda()
 
             images = ((x.permute(0, 2, 3, 4, 1).detach().cpu().numpy() * 2 + 1) * 255.0).astype(np.uint8)
             b_indices = np.reshape(np.tile(np.arange(bs)[:, None], (1, self.num_sentences)), (-1))
