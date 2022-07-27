@@ -38,7 +38,7 @@ parser.add_argument('--class_overlap', default=0.040,  type=float, help='tau. se
 ### General Training Parameters
 parser.add_argument('--lr',           default=1e-3, type=float, help='Learning Rate for network parameters.')
 parser.add_argument('--n_epochs',     default=150,   type=int,   help='Number of training epochs.')
-parser.add_argument('--bs',           default=16,   type=int,   help='Mini-Batchsize size per GPU.')
+parser.add_argument('--bs',           default=64,   type=int,   help='Mini-Batchsize size per GPU.')
 parser.add_argument('--size',         default=112,  type=int,   help='Image size in input.')
 
 parser.add_argument('--fixconvs', action='store_true', default=False,   help='Freezing conv layers')
@@ -341,22 +341,22 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, opt, ep
             # txwriter.add_scalar('Train/DiscriminatorFakeLoss', d_loss_fake.item(), epoch * len(data_iterator) + (i + 1))
             txwriter.add_scalar('Train/Accuracy', np.mean(acc), epoch * len(data_iterator) + (i + 1))
             split = 0
-            random_batch_idx = random.choice(range(len(X)))
-            sampled_video = ((X[random_batch_idx, 0].detach().cpu().numpy() * 2.0 + 1) * 255.0).astype(np.uint8)
-            sampled_video = np.transpose(sampled_video, (1, 2, 3, 0))
-            t, h, w, _ = sampled_video.shape
-            n_s = len(word_samples[random_batch_idx])
-            temporal_indices = np.linspace(0, t - 1, n_s, dtype=np.uint8)
-            display_images = list()
-            dummy_image = np.zeros(dtype=np.uint8, shape=(h, 10, 3))
-            for t_i in temporal_indices:
-                this_image = sampled_video[t_i]
-                display_images.append(this_image)
-                if t_i < len(temporal_indices) - 1:
-                    display_images.append(dummy_image)
-            display_images = np.concatenate(display_images, axis=1)
-            txwriter.add_image("Train/Images", display_images, epoch * len(data_iterator) + (i + 1),
-                               dataformats="HWC")
+            # random_batch_idx = random.choice(range(len(X)))
+            # sampled_video = ((X[random_batch_idx, 0].detach().cpu().numpy() * 2.0 + 1) * 255.0).astype(np.uint8)
+            # sampled_video = np.transpose(sampled_video, (1, 2, 3, 0))
+            # t, h, w, _ = sampled_video.shape
+            # n_s = len(word_samples[random_batch_idx])
+            # temporal_indices = np.linspace(0, t - 1, n_s, dtype=np.uint8)
+            # display_images = list()
+            # dummy_image = np.zeros(dtype=np.uint8, shape=(h, 10, 3))
+            # for t_i in temporal_indices:
+            #     this_image = sampled_video[t_i]
+            #     display_images.append(this_image)
+            #     if t_i < len(temporal_indices) - 1:
+            #         display_images.append(dummy_image)
+            # display_images = np.concatenate(display_images, axis=1)
+            # txwriter.add_image("Train/Images", display_images, epoch * len(data_iterator) + (i + 1),
+            #                    dataformats="HWC")
             split = 0
             # random_batch_idx = random.choice(range(len(fake_samples)))
             # # l, c
@@ -373,15 +373,15 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, opt, ep
             # # print(decoded_str)
             # txwriter.add_text('Train/FakeTextSamples', decoded_str, epoch * len(data_iterator) + (i + 1))
             split = 0
-            # random_batch_idx = random.choice(range(len(samples)))
-            word_samples = word_samples[random_batch_idx]
-            display_texts = list()
-            for s_tokens in word_samples:
-                text = tokenizer.decode(s_tokens).strip()
-                text = ' '.join(text.split()).strip()
-                display_texts.append(text)
-            decoded_str = ". ".join(display_texts)
-            txwriter.add_text('Train/TextSamples', decoded_str, epoch * len(data_iterator) + (i + 1))
+            # # random_batch_idx = random.choice(range(len(samples)))
+            # word_samples = word_samples[random_batch_idx]
+            # display_texts = list()
+            # for s_tokens in word_samples:
+            #     text = tokenizer.decode(s_tokens).strip()
+            #     text = ' '.join(text.split()).strip()
+            #     display_texts.append(text)
+            # decoded_str = ". ".join(display_texts)
+            # txwriter.add_text('Train/TextSamples', decoded_str, epoch * len(data_iterator) + (i + 1))
             split = 0
 
 

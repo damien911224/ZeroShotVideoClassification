@@ -476,16 +476,16 @@ class Model(nn.Module):
 
     def __init__(self, network, fixconvs=False, nopretrained=False):
         super(Model, self).__init__()
-        self.model = network(pretrained=nopretrained)
-        if fixconvs:
-            for param in self.model.parameters():
-                param.requires_grad = False
+        # self.model = network(pretrained=nopretrained)
+        # if fixconvs:
+        #     for param in self.model.parameters():
+        #         param.requires_grad = False
 
-        # Load Language Model
-        language_model_name = r'cambridgeltl/magic_mscoco'  # or r'/path/to/downloaded/cambridgeltl/magic_mscoco'
-        self.sos_token, self.pad_token = r'<-start_of_text->', r'<-pad->'
-        self.k, self.alpha, self.beta, self.decoding_len = 15, 0.1, 2.0, 16
-        self.generation_model = SimCTG(language_model_name, self.sos_token, self.pad_token).cuda()
+        # # Load Language Model
+        # language_model_name = r'cambridgeltl/magic_mscoco'  # or r'/path/to/downloaded/cambridgeltl/magic_mscoco'
+        # self.sos_token, self.pad_token = r'<-start_of_text->', r'<-pad->'
+        # self.k, self.alpha, self.beta, self.decoding_len = 15, 0.1, 2.0, 16
+        # self.generation_model = SimCTG(language_model_name, self.sos_token, self.pad_token).cuda()
 
         model_name = r"openai/clip-vit-base-patch32"  # or r"/path/to/downloaded/openai/clip-vit-base-patch32"
         self.clip = CLIP(model_name).cuda()
@@ -494,13 +494,13 @@ class Model(nn.Module):
         self.d_model = 256
         self.num_sentences = 2
         self.max_seq_len = self.decoding_len
-        self.t_pos_embeds = nn.Embedding(2, self.d_model)
-        self.h_pos_embeds = nn.Embedding(7, self.d_model)
-        self.w_pos_embeds = nn.Embedding(7, self.d_model)
-        self.s_pos_embeds = nn.Embedding(self.num_sentences, self.d_model)
-        self.l_pos_embeds = nn.Embedding(self.max_seq_len, self.d_model)
+        self.t_pos_embeds = nn.Embedding(self.num_sentences, self.d_model)
+        # self.h_pos_embeds = nn.Embedding(7, self.d_model)
+        # self.w_pos_embeds = nn.Embedding(7, self.d_model)
+        # self.s_pos_embeds = nn.Embedding(self.num_sentences, self.d_model)
+        # self.l_pos_embeds = nn.Embedding(self.max_seq_len, self.d_model)
         self.special_tokens = nn.Embedding(1, self.d_model)
-        self.word2input_proj = nn.Linear(768, self.d_model)
+        # self.word2input_proj = nn.Linear(768, self.d_model)
         self.feature2input_proj = nn.Linear(512, self.d_model)
         encoder_layer = nn.TransformerEncoderLayer(d_model=self.d_model, dim_feedforward=self.d_model * 4,
                                                    nhead=8, dropout=0.1, activation="gelu")
@@ -516,69 +516,70 @@ class Model(nn.Module):
         #         nn.init.xavier_uniform_(p)
 
         nn.init.normal_(self.t_pos_embeds.weight)
-        nn.init.normal_(self.h_pos_embeds.weight)
-        nn.init.normal_(self.w_pos_embeds.weight)
-        nn.init.normal_(self.s_pos_embeds.weight)
-        nn.init.normal_(self.l_pos_embeds.weight)
+        # nn.init.normal_(self.h_pos_embeds.weight)
+        # nn.init.normal_(self.w_pos_embeds.weight)
+        # nn.init.normal_(self.s_pos_embeds.weight)
+        # nn.init.normal_(self.l_pos_embeds.weight)
         nn.init.xavier_uniform_(self.special_tokens.weight)
 
     def forward(self, x):
         bs, nc, i_c, i_t, i_h, i_w = x.shape
         x = x.reshape(bs * nc, i_c, i_t, i_h, i_w)
-        _, cnn_feats = self.model(x)
+        # _, cnn_feats = self.model(x)
+        #
+        # _, v_c, v_t, v_h, v_w = cnn_feats.shape
+        # cnn_feats = self.feature2input_proj(cnn_feats.view(bs, v_c, v_t * v_h * v_w).permute(0, 2, 1))
+        # v_pos_embeds = (self.t_pos_embeds.weight.view(v_t, 1, 1, self.d_model) +
+        #                 self.h_pos_embeds.weight.view(1, v_h, 1, self.d_model) +
+        #                 self.w_pos_embeds.weight.view(1, 1, v_w, self.d_model)).view(1, v_t * v_h * v_w, self.d_model)
+        # cnn_feats = cnn_feats + v_pos_embeds.cuda()
 
-        _, v_c, v_t, v_h, v_w = cnn_feats.shape
-        cnn_feats = self.feature2input_proj(cnn_feats.view(bs, v_c, v_t * v_h * v_w).permute(0, 2, 1))
-        v_pos_embeds = (self.t_pos_embeds.weight.view(v_t, 1, 1, self.d_model) +
-                        self.h_pos_embeds.weight.view(1, v_h, 1, self.d_model) +
-                        self.w_pos_embeds.weight.view(1, 1, v_w, self.d_model)).view(1, v_t * v_h * v_w, self.d_model)
-        cnn_feats = cnn_feats + v_pos_embeds.cuda()
+        # self.clip.eval()
+        # self.generation_model.eval()
+        # with torch.no_grad():
+        #     start_token = self.generation_model.tokenizer.tokenize(self.sos_token)
+        #     start_token_id = self.generation_model.tokenizer.convert_tokens_to_ids(start_token)
+        #     input_ids = torch.LongTensor(start_token_id).unsqueeze(0).repeat(bs * self.num_sentences, 1).cuda()
+        #
+        #     images = ((x.permute(0, 2, 3, 4, 1).detach().cpu().numpy() * 2 + 1) * 255.0).astype(np.uint8)
+        #     b_indices = np.reshape(np.tile(np.arange(bs)[:, None], (1, self.num_sentences)), (-1))
+        #     t_indices = np.linspace(0, i_t - 1, self.num_sentences, dtype=np.int32)
+        #     t_indices = np.reshape(np.tile(t_indices[None], (bs, 1)), (-1))
+        #     image_instances = [Image.fromarray(images[b_i, t_i]) for (b_i, t_i) in zip(b_indices, t_indices)]
+        #     w_feats, tokens = self.generation_model.magic_search(input_ids, self.k, self.alpha, self.decoding_len,
+        #                                                          self.beta, image_instances, self.clip, 60)
+        #     word_feats = self.word2input_proj(w_feats)
+        #     w_s = self.num_sentences
+        #     w_l = self.max_seq_len
+        #     word_feats = word_feats.view(bs, w_s * w_l, self.d_model)
+        #     w_pos_embeds = (self.s_pos_embeds.weight.view(w_s, 1, self.d_model) +
+        #                     self.l_pos_embeds.weight.view(1, w_l, self.d_model)).view(1, w_s * w_l, self.d_model)
+        #     word_feats = (word_feats + w_pos_embeds.cuda()).detach()
+        #
+        #     word_samples = tokens.view(bs, self.num_sentences, self.max_seq_len).detach()
 
         self.clip.eval()
-        self.generation_model.eval()
         with torch.no_grad():
-            start_token = self.generation_model.tokenizer.tokenize(self.sos_token)
-            start_token_id = self.generation_model.tokenizer.convert_tokens_to_ids(start_token)
-            input_ids = torch.LongTensor(start_token_id).unsqueeze(0).repeat(bs * self.num_sentences, 1).cuda()
-
             images = ((x.permute(0, 2, 3, 4, 1).detach().cpu().numpy() * 2 + 1) * 255.0).astype(np.uint8)
             b_indices = np.reshape(np.tile(np.arange(bs)[:, None], (1, self.num_sentences)), (-1))
             t_indices = np.linspace(0, i_t - 1, self.num_sentences, dtype=np.int32)
             t_indices = np.reshape(np.tile(t_indices[None], (bs, 1)), (-1))
             image_instances = [Image.fromarray(images[b_i, t_i]) for (b_i, t_i) in zip(b_indices, t_indices)]
-            w_feats, tokens = self.generation_model.magic_search(input_ids, self.k, self.alpha, self.decoding_len,
-                                                                 self.beta, image_instances, self.clip, 60)
-            word_feats = self.word2input_proj(w_feats)
-            w_s = self.num_sentences
-            w_l = self.max_seq_len
-            word_feats = word_feats.view(bs, w_s * w_l, self.d_model)
-            w_pos_embeds = (self.s_pos_embeds.weight.view(w_s, 1, self.d_model) +
-                            self.l_pos_embeds.weight.view(1, w_l, self.d_model)).view(1, w_s * w_l, self.d_model)
-            word_feats = (word_feats + w_pos_embeds.cuda()).detach()
 
-            word_samples = tokens.view(bs, self.num_sentences, self.max_seq_len).detach()
-            # word_samples = list()
-            # for batch_tokens in tokens:
-            #     this_samples = list()
-            #     for t_tokens in batch_tokens:
-            #         text = self.generation_model.tokenizer.decode(t_tokens).strip()
-            #         text = ' '.join(text.split()).strip()
-            #         this_samples.append(text)
-            #     word_samples.append(this_samples)
+            image_embeds = self.clip.compute_image_representation_from_image_instance(image_instances)
 
-        # w_s = self.num_sentences
-        # w_l = self.max_seq_len
-        # w_pos_embeds = (self.s_pos_embeds.weight.view(w_s, 1, self.d_model) +
-        #                 self.l_pos_embeds.weight.view(1, w_l, self.d_model)).view(1, w_s * w_l, self.d_model)
-        # word_feats = (word_feats + w_pos_embeds.cuda()).detach()
+            image_feats = self.feature2input_proj(image_embeds).view(bs, self.num_sentences, self.d_model).detach() + \
+                          self.t_pos_embeds.weight.view(1, self.num_sentences, self.d_model).cuda()
 
         special_tokens = self.special_tokens.weight.unsqueeze(0).repeat(bs, 1, 1).cuda()
 
-        feats = torch.cat((special_tokens, cnn_feats, word_feats), dim=1)
+        # feats = torch.cat((special_tokens, cnn_feats, word_feats), dim=1)
+        feats = torch.cat((special_tokens, image_feats), dim=1)
         out = self.encoder(feats.permute(1, 0, 2)).permute(1, 0, 2)
         emb_out = F.normalize(self.output2emb_proj(out[:, 0]))
 
-        return emb_out, word_samples
+        # return emb_out, word_samples
+        return emb_out, None
 
 
 class MLP(nn.Module):
