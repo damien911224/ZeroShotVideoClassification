@@ -484,7 +484,7 @@ class Model(nn.Module):
         # Load Language Model
         language_model_name = r'cambridgeltl/magic_mscoco'  # or r'/path/to/downloaded/cambridgeltl/magic_mscoco'
         self.sos_token, self.pad_token = r'<-start_of_text->', r'<-pad->'
-        self.k, self.alpha, self.beta, self.decoding_len = 9, 0.1, 2.0, 16
+        self.k, self.alpha, self.beta, self.decoding_len = 15, 0.1, 2.0, 16
         self.generation_model = SimCTG(language_model_name, self.sos_token, self.pad_token).cuda()
 
         model_name = r"openai/clip-vit-base-patch32"  # or r"/path/to/downloaded/openai/clip-vit-base-patch32"
