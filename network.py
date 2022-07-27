@@ -626,6 +626,7 @@ if __name__ == "__main__":
 
     print(len(samples))
     print(len(samples[0]))
+    print(samples[0][0])
 
     embed_loss = embed_criterion(embeds, torch.zeros_like(embeds))
     optimizer.zero_grad()
