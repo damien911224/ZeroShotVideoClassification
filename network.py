@@ -564,7 +564,6 @@ class Model(nn.Module):
                     text = ' '.join(text.split()).strip()
                     this_samples.append(text)
                 word_samples.append(this_samples)
-            word_samples = np.array(word_samples)
 
         # w_s = self.num_sentences
         # w_l = self.max_seq_len
