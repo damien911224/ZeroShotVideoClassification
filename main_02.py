@@ -132,7 +132,7 @@ model      = network.get_network(opt)
 #     model.load_state_dict(model_dict)
 #     print("LOADED MODEL:  ", opt.weights)
 
-tokenizer = model.generation_model.tokenizer
+# tokenizer = model.generation_model.tokenizer
 model = nn.DataParallel(model)
 _ = model.to(opt.device)
 
