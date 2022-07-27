@@ -491,7 +491,7 @@ class Model(nn.Module):
         self.clip = CLIP(model_name).cuda()
         self.clip.cuda_available = True
 
-        self.d_model = 128
+        self.d_model = 256
         self.num_sentences = 2
         self.max_seq_len = self.decoding_len
         self.t_pos_embeds = nn.Embedding(2, self.d_model)
