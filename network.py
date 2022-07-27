@@ -555,7 +555,7 @@ class Model(nn.Module):
                             self.l_pos_embeds.weight.view(1, w_l, self.d_model)).view(1, w_s * w_l, self.d_model)
             word_feats = (word_feats + w_pos_embeds.cuda()).detach()
 
-            tokens = tokens.view(bs, self.num_sentences, self.max_seq_len)
+            tokens = tokens.view(bs, self.num_sentences, self.max_seq_len).detach().cpu().numpy()
             word_samples = list()
             for batch_tokens in tokens:
                 this_samples = list()
