@@ -38,7 +38,7 @@ parser.add_argument('--class_overlap', default=0.040,  type=float, help='tau. se
 ### General Training Parameters
 parser.add_argument('--lr',           default=1e-3, type=float, help='Learning Rate for network parameters.')
 parser.add_argument('--n_epochs',     default=150,   type=int,   help='Number of training epochs.')
-parser.add_argument('--bs',           default=64,   type=int,   help='Mini-Batchsize size per GPU.')
+parser.add_argument('--bs',           default=32,   type=int,   help='Mini-Batchsize size per GPU.')
 parser.add_argument('--size',         default=112,  type=int,   help='Image size in input.')
 
 parser.add_argument('--fixconvs', action='store_true', default=False,   help='Freezing conv layers')
