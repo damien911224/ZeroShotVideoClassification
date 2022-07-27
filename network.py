@@ -494,7 +494,8 @@ class Model(nn.Module):
         self.d_model = 256
         self.num_sentences = 8
         # self.max_seq_len = self.decoding_len
-        self.t_pos_embeds = nn.Embedding(self.num_sentences, self.d_model)
+        # self.t_pos_embeds = nn.Embedding(self.num_sentences, self.d_model)
+        self.t_pos_embeds = nn.Embedding(self.num_sentences, 512)
         # self.h_pos_embeds = nn.Embedding(7, self.d_model)
         # self.w_pos_embeds = nn.Embedding(7, self.d_model)
         # self.s_pos_embeds = nn.Embedding(self.num_sentences, self.d_model)
@@ -568,7 +569,7 @@ class Model(nn.Module):
 
             image_embeds = self.clip.compute_image_representation_from_image_instance(image_instances)
 
-            image_feats = self.feature2input_proj(image_embeds).view(bs, self.num_sentences, self.d_model).detach() + \
+            image_feats = image_embeds.view(bs, self.num_sentences, 512).detach() + \
                           self.t_pos_embeds.weight.view(1, self.num_sentences, self.d_model).cuda()
 
         # special_tokens = self.special_tokens.weight.unsqueeze(0).repeat(bs, 1, 1).cuda()
