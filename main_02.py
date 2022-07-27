@@ -348,13 +348,13 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, opt, ep
             n_s = len(word_samples[random_batch_idx])
             temporal_indices = np.linspace(0, t - 1, n_s, dtype=np.uint8)
             display_images = list()
-            dummy_image = np.zeros(dtype=np.uint8, shape=(10, h, 3))
+            dummy_image = np.zeros(dtype=np.uint8, shape=(h, 10, 3))
             for t_i in temporal_indices:
                 this_image = sampled_video[t_i]
                 display_images.append(this_image)
                 if t_i < len(temporal_indices) - 1:
                     display_images.append(dummy_image)
-            display_images = np.concatenate(display_images, axis=0)
+            display_images = np.concatenate(display_images, axis=1)
             txwriter.add_image("Train/Images", display_images, epoch * len(data_iterator) + (i + 1),
                                dataformats="HWC")
             split = 0
