@@ -494,7 +494,7 @@ class Model(nn.Module):
         self.d_model = 256
         self.num_sentences = 8
         # self.max_seq_len = self.decoding_len
-        self.t_pos_embeds = nn.Embedding(self.num_sentences, self.d_model)
+        # self.t_pos_embeds = nn.Embedding(self.num_sentences, self.d_model)
         # self.h_pos_embeds = nn.Embedding(7, self.d_model)
         # self.w_pos_embeds = nn.Embedding(7, self.d_model)
         # self.s_pos_embeds = nn.Embedding(self.num_sentences, self.d_model)
@@ -505,8 +505,8 @@ class Model(nn.Module):
         encoder_layer = nn.TransformerEncoderLayer(d_model=self.d_model, dim_feedforward=self.d_model * 4,
                                                    nhead=8, dropout=0.1, activation="gelu")
         self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=6)
-        # self.output2emb_proj = nn.Linear(self.d_model, 300)
-        self.output2emb_proj = MLP(self.d_model, self.d_model, 300, 2)
+        self.output2emb_proj = nn.Linear(512, 300)
+        # self.output2emb_proj = MLP(self.d_model, self.d_model, 300, 2)
 
         self.reset_parameters()
 
