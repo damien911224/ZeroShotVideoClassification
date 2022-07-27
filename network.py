@@ -557,9 +557,9 @@ class Model(nn.Module):
 
             tokens = tokens.view(bs, self.num_sentences, self.max_seq_len)
             word_samples = list()
-            for batch_tokens in tokens.unbind(dim=0):
+            for batch_tokens in tokens:
                 this_samples = list()
-                for t_tokens in batch_tokens.unbind(dim=0):
+                for t_tokens in batch_tokens:
                     text = self.generation_model.tokenizer.decode(t_tokens).strip()
                     text = ' '.join(text.split()).strip()
                     this_samples.append(text)
