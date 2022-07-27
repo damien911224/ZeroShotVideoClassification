@@ -341,9 +341,19 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, opt, ep
             txwriter.add_scalar('Train/Accuracy', np.mean(acc), epoch * len(data_iterator) + (i + 1))
             split = 0
             random_batch_idx = random.choice(range(len(X)))
-            videos = ((X.squeeze().detach().cpu().numpy() * 2.0 + 1) * 255.0).astype(np.uint8).transpose(0, 2, 1, 3, 4)
-            txwriter.add_video("Train/Video", " ".join(np.expand_dims(videos[random_batch_idx], axis=0)),
-                               epoch * len(data_iterator) + (i + 1))
+            sampled_video = ((X[random_batch_idx].detach().cpu().numpy() * 2.0 + 1) * 255.0).astype(np.uint8)
+            sampled_video = np.transpose(sampled_video, (1, 2, 3, 0))
+            t, h, w, _ = sampled_video.shape
+            temporal_indices = np.linspace(0, t - 1, model.num_sentences, dtype=np.uint8)
+            display_images = list()
+            dummy_image = np.zeros(dtype=np.uint8, shape=(10, h, 3))
+            for t_i in temporal_indices:
+                this_image = sampled_video[t_i]
+                display_images.append(this_image)
+                if t_i < len(temporal_indices) - 1:
+                    display_images.append(dummy_image)
+            display_images = np.concatenate(display_images, axis=0)
+            txwriter.add_video("Train/Images", display_images, epoch * len(data_iterator) + (i + 1))
             split = 0
             # random_batch_idx = random.choice(range(len(fake_samples)))
             # # l, c
