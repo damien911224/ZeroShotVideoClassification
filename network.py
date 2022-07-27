@@ -540,43 +540,30 @@ class Model(nn.Module):
             start_token_id = self.generation_model.tokenizer.convert_tokens_to_ids(start_token)
             input_ids = torch.LongTensor(start_token_id).unsqueeze(0).repeat(bs, 1).cuda()
 
-            word_feats = list()
-            word_samples = list()
             images = ((x.permute(0, 2, 3, 4, 1).detach().cpu().numpy() * 2 + 1) * 255.0).astype(np.uint8)
-            image_indices = np.linspace(0, i_t - 1, self.num_sentences, dtype=np.int32)
-            for image_index in image_indices:
-                # batch_word_feats = list()
-                # for batch_index in range(bs):
-                #     input_ids = torch.LongTensor(start_token_id).view(1, -1).cuda()
-                #     image_instance = Image.fromarray(images[batch_index, image_index])
-                #     w_feats, tokens = \
-                #         self.generation_model.magic_search(input_ids, self.k, self.alpha, self.decoding_len,
-                #                                            self.beta, image_instance, self.clip, 60)
-                #     w_feats = self.word2input_proj(w_feats)
-                #     print(w_feats.shape)
-                #     batch_word_feats.append(w_feats)
-                # batch_word_feats = torch.cat(batch_word_feats, dim=0)
-                # word_feats.append(batch_word_feats)
-
-                image_instance = [Image.fromarray(images[b_i, image_index]) for b_i in range(bs)]
-                w_feats, tokens = \
-                    self.generation_model.magic_search(input_ids, self.k, self.alpha, self.decoding_len,
-                                                       self.beta, image_instance, self.clip, 60)
-                w_feats = self.word2input_proj(w_feats)
-                word_feats.append(w_feats)
-
-                batch_word_samples = list()
-                for this_tokens in tokens.unbind(dim=0):
-                    text = self.generation_model.tokenizer.decode(this_tokens).strip()
-                    text = ' '.join(text.split()).strip()
-                    batch_word_samples.append(text)
-                word_samples.append(batch_word_samples)
-            word_feats = torch.cat(word_feats, dim=1)
+            b_indices = np.reshape(np.tile(np.arange(bs)[:, None], (1, self.num_sentences)), (-1))
+            t_indices = np.linspace(0, i_t - 1, self.num_sentences, dtype=np.int32)
+            t_indices = np.reshape(np.tile(t_indices[None], (bs, 1)), (-1))
+            image_instances = [Image.fromarray(images[b_i, t_i]) for (b_i, t_i) in zip(b_indices, t_indices)]
+            w_feats, tokens = self.generation_model.magic_search(input_ids, self.k, self.alpha, self.decoding_len,
+                                                                 self.beta, image_instances, self.clip, 60)
+            word_feats = self.word2input_proj(w_feats)
             w_s = self.num_sentences
             w_l = self.max_seq_len
+            word_feats = word_feats.view(bs, w_s * w_l, self.d_model)
             w_pos_embeds = (self.s_pos_embeds.weight.view(w_s, 1, self.d_model) +
                             self.l_pos_embeds.weight.view(1, w_l, self.d_model)).view(1, w_s * w_l, self.d_model)
             word_feats = (word_feats + w_pos_embeds.cuda()).detach()
+
+            tokens = tokens.view(bs, self.num_sentences, self.max_seq_len)
+            word_samples = list()
+            for batch_tokens in tokens.unbind(dim=0):
+                this_samples = list()
+                for t_tokens in batch_tokens.unbind(dim=0):
+                    text = self.generation_model.tokenizer.decode(t_tokens).strip()
+                    text = ' '.join(text.split()).strip()
+                    this_samples.append(text)
+                word_samples.append(this_samples)
 
         # w_s = self.num_sentences
         # w_l = self.max_seq_len
