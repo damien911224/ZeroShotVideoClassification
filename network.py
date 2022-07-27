@@ -571,7 +571,7 @@ class Model(nn.Module):
             image_embeds = self.clip.compute_image_representation_from_image_instance(image_instances)
 
             image_feats = image_embeds.view(bs, self.num_sentences, 512).detach() + \
-                          self.t_pos_embeds.weight.view(1, self.num_sentences, self.d_model).cuda()
+                          self.t_pos_embeds.weight.view(1, self.num_sentences, 512).cuda()
 
         # special_tokens = self.special_tokens.weight.unsqueeze(0).repeat(bs, 1, 1).cuda()
 
