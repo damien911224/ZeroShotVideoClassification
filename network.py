@@ -555,15 +555,15 @@ class Model(nn.Module):
                             self.l_pos_embeds.weight.view(1, w_l, self.d_model)).view(1, w_s * w_l, self.d_model)
             word_feats = (word_feats + w_pos_embeds.cuda()).detach()
 
-            tokens = tokens.view(bs, self.num_sentences, self.max_seq_len).detach()
-            word_samples = list()
-            for batch_tokens in tokens:
-                this_samples = list()
-                for t_tokens in batch_tokens:
-                    text = self.generation_model.tokenizer.decode(t_tokens).strip()
-                    text = ' '.join(text.split()).strip()
-                    this_samples.append(text)
-                word_samples.append(this_samples)
+            word_samples = tokens.view(bs, self.num_sentences, self.max_seq_len).detach()
+            # word_samples = list()
+            # for batch_tokens in tokens:
+            #     this_samples = list()
+            #     for t_tokens in batch_tokens:
+            #         text = self.generation_model.tokenizer.decode(t_tokens).strip()
+            #         text = ' '.join(text.split()).strip()
+            #         this_samples.append(text)
+            #     word_samples.append(this_samples)
 
         # w_s = self.num_sentences
         # w_l = self.max_seq_len

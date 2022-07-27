@@ -132,6 +132,7 @@ model      = network.get_network(opt)
 #     model.load_state_dict(model_dict)
 #     print("LOADED MODEL:  ", opt.weights)
 
+tokenizer = model.generation_model.tokenizer
 model = nn.DataParallel(model)
 _ = model.to(opt.device)
 
@@ -340,11 +341,10 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, opt, ep
             # txwriter.add_scalar('Train/DiscriminatorFakeLoss', d_loss_fake.item(), epoch * len(data_iterator) + (i + 1))
             txwriter.add_scalar('Train/Accuracy', np.mean(acc), epoch * len(data_iterator) + (i + 1))
             split = 0
-            random_batch_idx = random.choice(range(len(X) // 2))
+            random_batch_idx = random.choice(range(len(X)))
             sampled_video = ((X[random_batch_idx, 0].detach().cpu().numpy() * 2.0 + 1) * 255.0).astype(np.uint8)
             sampled_video = np.transpose(sampled_video, (1, 2, 3, 0))
             t, h, w, _ = sampled_video.shape
-            word_samples = list(word_samples)
             n_s = len(word_samples[random_batch_idx])
             temporal_indices = np.linspace(0, t - 1, n_s, dtype=np.uint8)
             display_images = list()
@@ -374,7 +374,13 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, opt, ep
             # txwriter.add_text('Train/FakeTextSamples', decoded_str, epoch * len(data_iterator) + (i + 1))
             split = 0
             # random_batch_idx = random.choice(range(len(samples)))
-            decoded_str = ". ".join(word_samples[random_batch_idx])
+            word_samples = word_samples[random_batch_idx]
+            display_texts = list()
+            for s_tokens in word_samples:
+                text = tokenizer.decode(s_tokens).strip()
+                text = ' '.join(text.split()).strip()
+                display_texts.append(text)
+            decoded_str = ". ".join(display_texts)
             txwriter.add_text('Train/TextSamples', decoded_str, epoch * len(data_iterator) + (i + 1))
             split = 0
 
