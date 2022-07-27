@@ -345,6 +345,7 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, opt, ep
             sampled_video = np.transpose(sampled_video, (1, 2, 3, 0))
             t, h, w, _ = sampled_video.shape
             print(len(word_samples))
+            exit()
             n_s = len(word_samples[random_batch_idx])
             temporal_indices = np.linspace(0, t - 1, n_s, dtype=np.uint8)
             display_images = list()
