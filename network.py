@@ -562,6 +562,7 @@ class Model(nn.Module):
                 for t_tokens in batch_tokens:
                     text = self.generation_model.tokenizer.decode(t_tokens).strip()
                     text = ' '.join(text.split()).strip()
+                    print(text)
                     this_samples.append(text)
                 word_samples.append(this_samples)
 
