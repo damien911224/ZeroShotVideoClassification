@@ -340,13 +340,10 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, opt, ep
             # txwriter.add_scalar('Train/DiscriminatorFakeLoss', d_loss_fake.item(), epoch * len(data_iterator) + (i + 1))
             txwriter.add_scalar('Train/Accuracy', np.mean(acc), epoch * len(data_iterator) + (i + 1))
             split = 0
-            random_batch_idx = random.choice(range(len(X)))
+            random_batch_idx = random.choice(range(len(X) // 2))
             sampled_video = ((X[random_batch_idx, 0].detach().cpu().numpy() * 2.0 + 1) * 255.0).astype(np.uint8)
             sampled_video = np.transpose(sampled_video, (1, 2, 3, 0))
             t, h, w, _ = sampled_video.shape
-            print(len(word_samples))
-            print(len(word_samples[0]))
-            exit()
             n_s = len(word_samples[random_batch_idx])
             temporal_indices = np.linspace(0, t - 1, n_s, dtype=np.uint8)
             display_images = list()
