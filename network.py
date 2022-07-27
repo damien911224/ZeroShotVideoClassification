@@ -484,7 +484,7 @@ class Model(nn.Module):
         # Load Language Model
         language_model_name = r'cambridgeltl/magic_mscoco'  # or r'/path/to/downloaded/cambridgeltl/magic_mscoco'
         self.sos_token, self.pad_token = r'<-start_of_text->', r'<-pad->'
-        self.k, self.alpha, self.beta, self.decoding_len = 9, 0.1, 2.0, 8
+        self.k, self.alpha, self.beta, self.decoding_len = 9, 0.1, 2.0, 16
         self.generation_model = SimCTG(language_model_name, self.sos_token, self.pad_token).cuda()
 
         model_name = r"openai/clip-vit-base-patch32"  # or r"/path/to/downloaded/openai/clip-vit-base-patch32"
@@ -555,14 +555,13 @@ class Model(nn.Module):
                             self.l_pos_embeds.weight.view(1, w_l, self.d_model)).view(1, w_s * w_l, self.d_model)
             word_feats = (word_feats + w_pos_embeds.cuda()).detach()
 
-            tokens = tokens.view(bs, self.num_sentences, self.max_seq_len).detach().cpu().numpy()
+            tokens = tokens.view(bs, self.num_sentences, self.max_seq_len).detach()
             word_samples = list()
             for batch_tokens in tokens:
                 this_samples = list()
                 for t_tokens in batch_tokens:
                     text = self.generation_model.tokenizer.decode(t_tokens).strip()
                     text = ' '.join(text.split()).strip()
-                    print(text)
                     this_samples.append(text)
                 word_samples.append(this_samples)
             word_samples = np.array(word_samples)
