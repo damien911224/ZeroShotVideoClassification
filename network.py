@@ -505,7 +505,8 @@ class Model(nn.Module):
         encoder_layer = nn.TransformerEncoderLayer(d_model=self.d_model, dim_feedforward=self.d_model * 4,
                                                    nhead=8, dropout=0.1, activation="gelu")
         self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=6)
-        self.output2emb_proj = nn.Linear(self.d_model, 300)
+        # self.output2emb_proj = nn.Linear(self.d_model, 300)
+        self.output2emb_proj = MLP(self.d_model, self.d_model, 300, 2)
 
         self.reset_parameters()
 
@@ -578,6 +579,24 @@ class Model(nn.Module):
         emb_out = F.normalize(self.output2emb_proj(out[:, 0]))
 
         return emb_out, word_samples
+
+
+class MLP(nn.Module):
+    """ Very simple multi-layer perceptron (also called FFN)"""
+
+    def __init__(self, input_dim, hidden_dim, output_dim, num_layers, last_activate=False):
+        super().__init__()
+        self.num_layers = num_layers
+        self.last_activate = last_activate
+        h = [hidden_dim] * (num_layers - 1)
+        self.layers = nn.ModuleList(nn.Linear(n, k) for n, k in zip([input_dim] + h, h + [output_dim]))
+
+    def forward(self, x):
+        # x = x.permute(0, 2, 1)
+        for i, layer in enumerate(self.layers):
+            x = F.relu(layer(x)) if i < self.num_layers - 1 else layer(x)
+        # x = x.permute(0, 2, 1)
+        return x
 
 
 """=================================================================================================================="""
