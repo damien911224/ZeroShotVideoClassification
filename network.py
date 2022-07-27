@@ -571,12 +571,15 @@ class Model(nn.Module):
             image_feats = self.feature2input_proj(image_embeds).view(bs, self.num_sentences, self.d_model).detach() + \
                           self.t_pos_embeds.weight.view(1, self.num_sentences, self.d_model).cuda()
 
-        special_tokens = self.special_tokens.weight.unsqueeze(0).repeat(bs, 1, 1).cuda()
+        # special_tokens = self.special_tokens.weight.unsqueeze(0).repeat(bs, 1, 1).cuda()
 
         # feats = torch.cat((special_tokens, cnn_feats, word_feats), dim=1)
-        feats = torch.cat((special_tokens, image_feats), dim=1)
-        out = self.encoder(feats.permute(1, 0, 2)).permute(1, 0, 2)
-        emb_out = F.normalize(self.output2emb_proj(out[:, 0]))
+        # feats = torch.cat((special_tokens, image_feats), dim=1)
+        # out = self.encoder(feats.permute(1, 0, 2)).permute(1, 0, 2)
+        # emb_out = F.normalize(self.output2emb_proj(out[:, 0]))
+
+        feats = torch.mean(image_feats, dim=1)
+        emb_out = F.normalize(self.output2emb_proj(feats))
 
         # return emb_out, word_samples
         return emb_out, None
