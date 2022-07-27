@@ -354,7 +354,8 @@ def train_one_epoch(train_dataloader, model, optimizer, embed_criterion, opt, ep
                 if t_i < len(temporal_indices) - 1:
                     display_images.append(dummy_image)
             display_images = np.concatenate(display_images, axis=0)
-            txwriter.add_image("Train/Images", display_images, epoch * len(data_iterator) + (i + 1))
+            txwriter.add_image("Train/Images", display_images, epoch * len(data_iterator) + (i + 1),
+                               dataformats="HWC")
             split = 0
             # random_batch_idx = random.choice(range(len(fake_samples)))
             # # l, c
