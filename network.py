@@ -494,7 +494,7 @@ class Model(nn.Module):
         self.d_model = 256
         self.num_sentences = 8
         # self.max_seq_len = self.decoding_len
-        # self.t_pos_embeds = nn.Embedding(self.num_sentences, self.d_model)
+        self.t_pos_embeds = nn.Embedding(self.num_sentences, self.d_model)
         # self.h_pos_embeds = nn.Embedding(7, self.d_model)
         # self.w_pos_embeds = nn.Embedding(7, self.d_model)
         # self.s_pos_embeds = nn.Embedding(self.num_sentences, self.d_model)
