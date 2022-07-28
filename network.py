@@ -577,7 +577,7 @@ class Model(nn.Module):
             # image_embeds = self.clip.compute_image_representation_from_image_instance(image_instances)
 
             image_instances = [self.clip_preprocess(image_instance) for image_instance in image_instances]
-            image_instances = torch.cat(image_instances).cuda()
+            image_instances = torch.stack(image_instances, dim=0).cuda()
             image_embeds = self.clip.encode_image(image_instances)
 
             # image_feats = image_embeds.view(bs, self.num_sentences, 512).detach() + \
