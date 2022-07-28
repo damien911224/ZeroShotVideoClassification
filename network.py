@@ -514,7 +514,7 @@ class Model(nn.Module):
         self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=6)
         # self.output2emb_proj = nn.Linear(512, 300)
         # self.output2emb_proj = MLP(self.d_model, self.d_model, 300, 2)
-        self.output2emb_proj = MLP(512, 512, 300, 2)
+        self.output2emb_proj = MLP(512, 512, 768, 2)
 
         self.reset_parameters()
 
