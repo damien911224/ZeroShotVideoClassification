@@ -8,7 +8,7 @@ from nltk.stem.wordnet import WordNetLemmatizer
 import torch
 import clip
 
-clip, clip_preprocess = clip.load('ViT-L/14@336px', "cuda")
+clip_model, clip_preprocess = clip.load('ViT-L/14@336px', "cuda")
 
 def classes2embedding(dataset_name, class_name_inputs, wv_model):
     if dataset_name == 'ucf101':
@@ -78,7 +78,7 @@ def one_class2embed_ucf(name, wv_model):
     name_vec = "a video of a {}, a type of action".format(" ".join(name_vec)).lower()
     text_inputs = torch.Tensor(clip.tokenize(name_vec)).unsqueeze(0).cuda()
     with torch.no_grad():
-        text_features = clip.encode_text(text_inputs)
+        text_features = clip_model.encode_text(text_inputs)
     text_features /= text_features.norm(dim=-1, keepdim=True)
     text_features = text_features.unsqueeze(0).detach().cpu().numpy()
 
