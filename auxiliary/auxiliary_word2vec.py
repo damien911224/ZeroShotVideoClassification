@@ -75,7 +75,7 @@ def one_class2embed_ucf(name, wv_model):
         name_vec = [n.lower() for n in name_vec]
         name_vec = verbs2basicform(name_vec)
 
-    name_vec = "a video of a {}, a type of action".format(" ".join(name_vec)).lower()
+    name_vec = "a video of {}, a type of human activity".format(" ".join(name_vec)).lower()
     text_inputs = clip.tokenize(name_vec).cuda()
     print(text_inputs.shape)
     exit()
