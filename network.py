@@ -478,10 +478,10 @@ class Model(nn.Module):
 
     def __init__(self, network, fixconvs=False, nopretrained=False):
         super(Model, self).__init__()
-        # self.model = network(pretrained=nopretrained)
-        # if fixconvs:
-        #     for param in self.model.parameters():
-        #         param.requires_grad = False
+        self.model = network(pretrained=nopretrained)
+        if fixconvs:
+            for param in self.model.parameters():
+                param.requires_grad = False
 
         # # Load Language Model
         # language_model_name = r'cambridgeltl/magic_mscoco'  # or r'/path/to/downloaded/cambridgeltl/magic_mscoco'
@@ -493,9 +493,9 @@ class Model(nn.Module):
         # self.clip = CLIP(model_name).cuda()
         # self.clip.cuda_available = True
 
-        model_names = ['RN50', 'RN101', 'RN50x4', 'RN50x16', 'RN50x64',
-                       'ViT-B/32', 'ViT-B/16', 'ViT-L/14', 'ViT-L/14@336px']
-        self.clip, self.clip_preprocess = clip.load(model_names[-1], device="cuda")
+        # model_names = ['RN50', 'RN101', 'RN50x4', 'RN50x16', 'RN50x64',
+        #                'ViT-B/32', 'ViT-B/16', 'ViT-L/14', 'ViT-L/14@336px']
+        # self.clip, self.clip_preprocess = clip.load(model_names[-1], device="cuda")
 
         self.d_model = 256
         self.num_sentences = 1
@@ -533,9 +533,9 @@ class Model(nn.Module):
     def forward(self, x):
         bs, nc, i_c, i_t, i_h, i_w = x.shape
         x = x.reshape(bs * nc, i_c, i_t, i_h, i_w)
-        # _, cnn_feats = self.model(x)
-        #
-        # _, v_c, v_t, v_h, v_w = cnn_feats.shape
+        _, cnn_feats = self.model(x)
+
+        _, v_c, v_t, v_h, v_w = cnn_feats.shape
         # cnn_feats = self.feature2input_proj(cnn_feats.view(bs, v_c, v_t * v_h * v_w).permute(0, 2, 1))
         # v_pos_embeds = (self.t_pos_embeds.weight.view(v_t, 1, 1, self.d_model) +
         #                 self.h_pos_embeds.weight.view(1, v_h, 1, self.d_model) +
@@ -566,25 +566,25 @@ class Model(nn.Module):
         #
         #     word_samples = tokens.view(bs, self.num_sentences, self.max_seq_len).detach()
 
-        self.clip.eval()
-        with torch.no_grad():
-            images = ((x.permute(0, 2, 3, 4, 1).detach().cpu().numpy() * 2 + 1) * 255.0).astype(np.uint8)
-            b_indices = np.reshape(np.tile(np.arange(bs * nc)[:, None], (1, self.num_sentences)), (-1))
-            t_indices = np.linspace(0, i_t - 1, self.num_sentences, dtype=np.int32) + i_t // 2
-            t_indices = np.reshape(np.tile(t_indices[None], (bs * nc, 1)), (-1))
-            image_instances = [Image.fromarray(images[b_i, t_i]) for (b_i, t_i) in zip(b_indices, t_indices)]
-
-            # image_embeds = self.clip.compute_image_representation_from_image_instance(image_instances)
-
-            image_instances = [self.clip_preprocess(image_instance) for image_instance in image_instances]
-            image_instances = torch.stack(image_instances, dim=0).cuda()
-            image_embeds = self.clip.encode_image(image_instances)
-            _, c = image_embeds.shape
-
-            # image_feats = image_embeds.view(bs, self.num_sentences, 512).detach() + \
-            #               self.t_pos_embeds.weight.view(1, self.num_sentences, 512).cuda()
-
-            image_feats = image_embeds.view(bs, nc, self.num_sentences, c).detach()
+        # self.clip.eval()
+        # with torch.no_grad():
+        #     images = ((x.permute(0, 2, 3, 4, 1).detach().cpu().numpy() * 2 + 1) * 255.0).astype(np.uint8)
+        #     b_indices = np.reshape(np.tile(np.arange(bs * nc)[:, None], (1, self.num_sentences)), (-1))
+        #     t_indices = np.linspace(0, i_t - 1, self.num_sentences, dtype=np.int32) + i_t // 2
+        #     t_indices = np.reshape(np.tile(t_indices[None], (bs * nc, 1)), (-1))
+        #     image_instances = [Image.fromarray(images[b_i, t_i]) for (b_i, t_i) in zip(b_indices, t_indices)]
+        #
+        #     # image_embeds = self.clip.compute_image_representation_from_image_instance(image_instances)
+        #
+        #     image_instances = [self.clip_preprocess(image_instance) for image_instance in image_instances]
+        #     image_instances = torch.stack(image_instances, dim=0).cuda()
+        #     image_embeds = self.clip.encode_image(image_instances)
+        #     _, c = image_embeds.shape
+        #
+        #     # image_feats = image_embeds.view(bs, self.num_sentences, 512).detach() + \
+        #     #               self.t_pos_embeds.weight.view(1, self.num_sentences, 512).cuda()
+        #
+        #     image_feats = image_embeds.view(bs, nc, self.num_sentences, c).detach()
         # special_tokens = self.special_tokens.weight.unsqueeze(0).repeat(bs, 1, 1).cuda()
 
         # feats = torch.cat((special_tokens, cnn_feats, word_feats), dim=1)
@@ -592,9 +592,9 @@ class Model(nn.Module):
         # out = self.encoder(feats.permute(1, 0, 2)).permute(1, 0, 2)
         # emb_out = F.normalize(self.output2emb_proj(out[:, 0]))
 
-        feats = torch.mean(image_feats, dim=(1, 2))
-        # emb_out = F.normalize(self.output2emb_proj(feats))
-        emb_out = feats / feats.norm(dim=-1, keepdim=True)
+        feats = torch.mean(cnn_feats, dim=(2, 3, 4))
+        emb_out = F.normalize(self.output2emb_proj(feats))
+        # emb_out = feats / feats.norm(dim=-1, keepdim=True)
 
         # return emb_out, word_samples
         return emb_out, None
