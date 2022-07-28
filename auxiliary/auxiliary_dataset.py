@@ -21,12 +21,12 @@ import torch.nn.functional as F
 # from transformers import AutoTokenizer, AutoModel
 
 import sys
-from PIL import Image
-sys.path.append(r'../MAGIC/image_captioning/language_model/')
-sys.path.append(r'../MAGIC/image_captioning/clip/')
-
-from simctg import SimCTG
-from clip import CLIP
+# from PIL import Image
+# sys.path.append(r'../MAGIC/image_captioning/language_model/')
+# sys.path.append(r'../MAGIC/image_captioning/clip/')
+#
+# from simctg import SimCTG
+# from clip import CLIP
 
 def get_ucf101():
     # folder = '/mnt/hdd1/UCF101/videos'
