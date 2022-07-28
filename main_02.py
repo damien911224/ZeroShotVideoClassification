@@ -414,10 +414,10 @@ def evaluate(test_dataloader, txwriter, epoch):
         ### For all test images, extract features
         n_samples = len(test_dataloader.dataset)
 
-        # predicted_embed = np.zeros([n_samples, 300], 'float32')
-        # true_embed = np.zeros([n_samples, 300], 'float32')
-        predicted_embed = np.zeros([n_samples, 768], 'float32')
-        true_embed = np.zeros([n_samples, 768], 'float32')
+        predicted_embed = np.zeros([n_samples, 300], 'float32')
+        true_embed = np.zeros([n_samples, 300], 'float32')
+        # predicted_embed = np.zeros([n_samples, 768], 'float32')
+        # true_embed = np.zeros([n_samples, 768], 'float32')
         true_label = np.zeros(n_samples, 'int')
         good_samples = np.zeros(n_samples, 'int') == 1
 
