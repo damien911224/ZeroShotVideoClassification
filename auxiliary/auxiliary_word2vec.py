@@ -75,16 +75,16 @@ def one_class2embed_ucf(name, wv_model):
         name_vec = [n.lower() for n in name_vec]
         name_vec = verbs2basicform(name_vec)
 
-    name_vec = "a video of {}, a type of human activity".format(" ".join(name_vec)).lower()
-    text_inputs = clip.tokenize(name_vec).cuda()
-    with torch.no_grad():
-        text_features = clip_model.encode_text(text_inputs)
-    text_features /= text_features.norm(dim=-1, keepdim=True)
-    text_features = text_features.unsqueeze(0).detach().cpu().numpy()
+    # name_vec = "a video of {}, a type of human activity".format(" ".join(name_vec)).lower()
+    # text_inputs = clip.tokenize(name_vec).cuda()
+    # with torch.no_grad():
+    #     text_features = clip_model.encode_text(text_inputs)
+    # text_features /= text_features.norm(dim=-1, keepdim=True)
+    # text_features = text_features.unsqueeze(0).detach().cpu().numpy()
+    #
+    # return text_features, name_vec
 
-    # return wv_model[name_vec].mean(0), name_vec
-
-    return text_features, name_vec
+    return wv_model[name_vec].mean(0), name_vec
 
 
 def one_class2embed_hmdb(name, wv_model):
@@ -95,16 +95,16 @@ def one_class2embed_hmdb(name, wv_model):
         name_vec = name.split(' ')
     name_vec = verbs2basicform(name_vec)
 
-    name_vec = "a video of {}, a type of human activity".format(" ".join(name_vec)).lower()
-    text_inputs = clip.tokenize(name_vec).cuda()
-    with torch.no_grad():
-        text_features = clip_model.encode_text(text_inputs)
-    text_features /= text_features.norm(dim=-1, keepdim=True)
-    text_features = text_features.unsqueeze(0).detach().cpu().numpy()
+    # name_vec = "a video of {}, a type of human activity".format(" ".join(name_vec)).lower()
+    # text_inputs = clip.tokenize(name_vec).cuda()
+    # with torch.no_grad():
+    #     text_features = clip_model.encode_text(text_inputs)
+    # text_features /= text_features.norm(dim=-1, keepdim=True)
+    # text_features = text_features.unsqueeze(0).detach().cpu().numpy()
+    #
+    # return text_features, name_vec
 
-    # return wv_model[name_vec].mean(0), name_vec
-
-    return text_features, name_vec
+    return wv_model[name_vec].mean(0), name_vec
 
 
 def one_class2embed_kinetics(name, wv_model):
@@ -153,16 +153,16 @@ def one_class2embed_kinetics(name, wv_model):
         name_vec = [name.replace('(', '').replace(')', '') for name in name_vec]
         name_vec = verbs2basicform(name_vec)
 
-    name_vec = "a video of {}, a type of human activity".format(" ".join(name_vec)).lower()
-    text_inputs = clip.tokenize(name_vec).cuda()
-    with torch.no_grad():
-        text_features = clip_model.encode_text(text_inputs)
-    text_features /= text_features.norm(dim=-1, keepdim=True)
-    text_features = text_features.unsqueeze(0).detach().cpu().numpy()
+    # name_vec = "a video of {}, a type of human activity".format(" ".join(name_vec)).lower()
+    # text_inputs = clip.tokenize(name_vec).cuda()
+    # with torch.no_grad():
+    #     text_features = clip_model.encode_text(text_inputs)
+    # text_features /= text_features.norm(dim=-1, keepdim=True)
+    # text_features = text_features.unsqueeze(0).detach().cpu().numpy()
+    #
+    # return text_features, name_vec
 
-    # return wv_model[name_vec].mean(0), name_vec
-
-    return text_features, name_vec
+    return wv_model[name_vec].mean(0), name_vec
 
 
 def one_class2embed_activitynet(name_origin, wv_model):
