@@ -27,11 +27,11 @@ for caption in image_captions:
         elif any([a.pos() in ['a', 's'] for a in analysis]):
             w = WordNetLemmatizer().lemmatize(w, 'a')
             adjectives.append(w)
-            print(w)
 
         elif any([a.pos() in ['v'] for a in analysis]):
             w = WordNetLemmatizer().lemmatize(w, 'v')
             verbs.append(w)
+            print(w)
 
         elif any([a.pos() in ['r'] for a in analysis]):
             w = WordNetLemmatizer().lemmatize(w, 'r')
