@@ -579,11 +579,12 @@ class Model(nn.Module):
             image_instances = [self.clip_preprocess(image_instance) for image_instance in image_instances]
             image_instances = torch.stack(image_instances, dim=0).cuda()
             image_embeds = self.clip.encode_image(image_instances)
+            _, c = image_embeds.shape
 
             # image_feats = image_embeds.view(bs, self.num_sentences, 512).detach() + \
             #               self.t_pos_embeds.weight.view(1, self.num_sentences, 512).cuda()
 
-            image_feats = image_embeds.view(bs, nc, self.num_sentences, 512).detach()
+            image_feats = image_embeds.view(bs, nc, self.num_sentences, c).detach()
         # special_tokens = self.special_tokens.weight.unsqueeze(0).repeat(bs, 1, 1).cuda()
 
         # feats = torch.cat((special_tokens, cnn_feats, word_feats), dim=1)
