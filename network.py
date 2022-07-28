@@ -498,7 +498,7 @@ class Model(nn.Module):
         self.clip, self.clip_preprocess = clip.load(model_names[-1], device="cuda")
 
         self.d_model = 256
-        self.num_sentences = 8
+        self.num_sentences = 1
         # self.max_seq_len = self.decoding_len
         # self.t_pos_embeds = nn.Embedding(self.num_sentences, self.d_model)
         self.t_pos_embeds = nn.Embedding(self.num_sentences, 512)
@@ -570,7 +570,7 @@ class Model(nn.Module):
         with torch.no_grad():
             images = ((x.permute(0, 2, 3, 4, 1).detach().cpu().numpy() * 2 + 1) * 255.0).astype(np.uint8)
             b_indices = np.reshape(np.tile(np.arange(bs * nc)[:, None], (1, self.num_sentences)), (-1))
-            t_indices = np.linspace(0, i_t - 1, self.num_sentences, dtype=np.int32)
+            t_indices = np.linspace(0, i_t - 1, self.num_sentences, dtype=np.int32) + i_t // 2
             t_indices = np.reshape(np.tile(t_indices[None], (bs * nc, 1)), (-1))
             image_instances = [Image.fromarray(images[b_i, t_i]) for (b_i, t_i) in zip(b_indices, t_indices)]
 
