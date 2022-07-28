@@ -35,4 +35,3 @@ for caption in image_captions:
         elif any([a.pos() in ['r'] for a in analysis]):
             w = WordNetLemmatizer().lemmatize(w, 'r')
             adverbs.append(w)
-            print(w)
