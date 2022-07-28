@@ -569,9 +569,9 @@ class Model(nn.Module):
         self.clip.eval()
         with torch.no_grad():
             images = ((x.permute(0, 2, 3, 4, 1).detach().cpu().numpy() * 2 + 1) * 255.0).astype(np.uint8)
-            b_indices = np.reshape(np.tile(np.arange(bs)[:, None], (1, self.num_sentences)), (-1))
+            b_indices = np.reshape(np.tile(np.arange(bs * nc)[:, None], (1, self.num_sentences)), (-1))
             t_indices = np.linspace(0, i_t - 1, self.num_sentences, dtype=np.int32)
-            t_indices = np.reshape(np.tile(t_indices[None], (bs, 1)), (-1))
+            t_indices = np.reshape(np.tile(t_indices[None], (bs * nc, 1)), (-1))
             image_instances = [Image.fromarray(images[b_i, t_i]) for (b_i, t_i) in zip(b_indices, t_indices)]
 
             # image_embeds = self.clip.compute_image_representation_from_image_instance(image_instances)
