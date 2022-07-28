@@ -18,6 +18,8 @@ import random
 import torch.nn.functional as F
 from transformers import AutoTokenizer, AutoModel
 
+import clip
+
 Style.RESET_ALL
 
 """=========================INPUT ARGUMENTS====================="""
@@ -407,9 +409,7 @@ def evaluate(test_dataloader, txwriter, epoch):
     """
     name = test_dataloader.dataset.name
     model.eval()
-    # cnn.eval()
-    # decoder.eval()
-    # encoder.eval()
+
     with torch.no_grad():
         ### For all test images, extract features
         n_samples = len(test_dataloader.dataset)
@@ -432,6 +432,7 @@ def evaluate(test_dataloader, txwriter, epoch):
             # Run network on batch
             # Y = model(X.to(opt.device))
             Y, _ = model(X.to(opt.device))
+
             # _, features = cnn(X)
             # fake_samples = decoder(features)
             # fake_samples = torch.matmul(fake_samples, bert_vocab_tensor)

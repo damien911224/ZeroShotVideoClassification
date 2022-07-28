@@ -5,6 +5,10 @@ from sklearn.preprocessing import normalize
 from nltk.corpus import wordnet as wn
 from nltk.stem.wordnet import WordNetLemmatizer
 
+import torch
+import clip
+
+clip, clip_preprocess = clip.load('ViT-L/14@336px', "cuda")
 
 def classes2embedding(dataset_name, class_name_inputs, wv_model):
     if dataset_name == 'ucf101':
@@ -70,7 +74,17 @@ def one_class2embed_ucf(name, wv_model):
             name_vec.append(name[upper_idx[i]: upper_idx[i+1]])
         name_vec = [n.lower() for n in name_vec]
         name_vec = verbs2basicform(name_vec)
-    return wv_model[name_vec].mean(0), name_vec
+
+    name_vec = "a video of a {}, a type of action".format(" ".join(name_vec)).lower()
+    text_inputs = torch.Tensor(clip.tokenize(name_vec)).unsqueeze(0).cuda()
+    with torch.no_grad():
+        text_features = clip.encode_text(text_inputs)
+    text_features /= text_features.norm(dim=-1, keepdim=True)
+    text_features = text_features.unsqueeze(0).detach().cpu().numpy()
+
+    # return wv_model[name_vec].mean(0), name_vec
+
+    return text_features, name_vec
 
 
 def one_class2embed_hmdb(name, wv_model):

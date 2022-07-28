@@ -10,11 +10,13 @@ from tqdm import tqdm
 
 import sys
 from PIL import Image
-sys.path.append(r'../MAGIC/image_captioning/language_model/')
-sys.path.append(r'../MAGIC/image_captioning/clip/')
+# sys.path.append(r'../MAGIC/image_captioning/language_model/')
+# sys.path.append(r'../MAGIC/image_captioning/clip/')
+#
+# from simctg import SimCTG
+# from clip import CLIP
 
-from simctg import SimCTG
-from clip import CLIP
+import clip
 
 """=================================================================================================================="""
 
@@ -487,9 +489,13 @@ class Model(nn.Module):
         # self.k, self.alpha, self.beta, self.decoding_len = 15, 0.1, 2.0, 16
         # self.generation_model = SimCTG(language_model_name, self.sos_token, self.pad_token).cuda()
 
-        model_name = r"openai/clip-vit-base-patch32"  # or r"/path/to/downloaded/openai/clip-vit-base-patch32"
-        self.clip = CLIP(model_name).cuda()
-        self.clip.cuda_available = True
+        # model_name = r"openai/clip-vit-base-patch32"  # or r"/path/to/downloaded/openai/clip-vit-base-patch32"
+        # self.clip = CLIP(model_name).cuda()
+        # self.clip.cuda_available = True
+
+        model_names = ['RN50', 'RN101', 'RN50x4', 'RN50x16', 'RN50x64',
+                       'ViT-B/32', 'ViT-B/16', 'ViT-L/14', 'ViT-L/14@336px']
+        self.clip, self.clip_preprocess = clip.load(model_names[-1], device="cuda")
 
         self.d_model = 256
         self.num_sentences = 8
@@ -568,11 +574,15 @@ class Model(nn.Module):
             t_indices = np.reshape(np.tile(t_indices[None], (bs, 1)), (-1))
             image_instances = [Image.fromarray(images[b_i, t_i]) for (b_i, t_i) in zip(b_indices, t_indices)]
 
-            image_embeds = self.clip.compute_image_representation_from_image_instance(image_instances)
+            # image_embeds = self.clip.compute_image_representation_from_image_instance(image_instances)
 
-            image_feats = image_embeds.view(bs, self.num_sentences, 512).detach() + \
-                          self.t_pos_embeds.weight.view(1, self.num_sentences, 512).cuda()
+            image_instances = self.clip_preprocess(image_instances).cuda()
+            image_embeds = self.clip.encode_image(image_instances)
 
+            # image_feats = image_embeds.view(bs, self.num_sentences, 512).detach() + \
+            #               self.t_pos_embeds.weight.view(1, self.num_sentences, 512).cuda()
+
+            image_feats = image_embeds.view(bs, nc, self.num_sentences, 512).detach()
         # special_tokens = self.special_tokens.weight.unsqueeze(0).repeat(bs, 1, 1).cuda()
 
         # feats = torch.cat((special_tokens, cnn_feats, word_feats), dim=1)
@@ -580,8 +590,9 @@ class Model(nn.Module):
         # out = self.encoder(feats.permute(1, 0, 2)).permute(1, 0, 2)
         # emb_out = F.normalize(self.output2emb_proj(out[:, 0]))
 
-        feats = torch.mean(image_feats, dim=1)
-        emb_out = F.normalize(self.output2emb_proj(feats))
+        feats = torch.mean(image_feats, dim=(1, 2))
+        # emb_out = F.normalize(self.output2emb_proj(feats))
+        emb_out = feats / feats.norm(dim=-1, keepdim=True)
 
         # return emb_out, word_samples
         return emb_out, None
