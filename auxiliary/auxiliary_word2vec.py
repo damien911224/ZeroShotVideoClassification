@@ -76,7 +76,9 @@ def one_class2embed_ucf(name, wv_model):
         name_vec = verbs2basicform(name_vec)
 
     name_vec = "a video of a {}, a type of action".format(" ".join(name_vec)).lower()
-    text_inputs = clip.tokenize(name_vec).unsqueeze(0).cuda()
+    text_inputs = clip.tokenize(name_vec).cuda()
+    print(text_inputs.shape)
+    exit()
     with torch.no_grad():
         text_features = clip_model.encode_text(text_inputs)
     text_features /= text_features.norm(dim=-1, keepdim=True)
