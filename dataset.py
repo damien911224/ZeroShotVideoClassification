@@ -127,7 +127,8 @@ def get_both_datasets(opt):
                                      load_clips=load_frames_tsn,
                                      crop_size=opt.size, is_validation=False)
 
-    n_clips = opt.n_clips if not opt.evaluate else max(5*5, opt.n_clips)
+    # n_clips = opt.n_clips if not opt.evaluate else max(5*5, opt.n_clips)
+    n_clips = opt.n_clips if not opt.evaluate else max(2*2, opt.n_clips)
     val_dataset   = VideoDataset(test_fnames, test_labels, test_class_embedding, test_classes, 'ucf101',
                                  clip_len=opt.clip_len, n_clips=n_clips, crop_size=opt.size, is_validation=True,
                                  load_clips=load_frames_tsn,
